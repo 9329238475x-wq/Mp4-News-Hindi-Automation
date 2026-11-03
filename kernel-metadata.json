@@ -1,0 +1,18 @@
+{
+  "id": "vinodkumartekam/mp4-news-hindi-omnivoice-pipeline",
+  "title": "MP4 News Hindi OmniVoice Pipeline",
+  "code_file": "Mp4_News_Hindi_Pipeline.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": [
+    "sonuji12345/tts-offline-models",
+    "vinodkumartekam/sicreat-automation-code"
+  ],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

@@ -1,0 +1,65 @@
+name: "🎬 Generate MP4 News Hindi Video (Kaggle GPU)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      story_number:
+        description: "Story Number (1 for single story, or 'all' for full bulletin)"
+        required: false
+        default: "1"
+      force_refresh_news:
+        description: "Fetch 100% fresh breaking news from live web"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  render-news-video:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Cloud Dependencies
+        run: |
+          pip install --upgrade kaggle requests
+
+      - name: Configure Kaggle API Credentials
+        run: |
+          mkdir -p ~/.kaggle
+          if [ -n "${{ secrets.KAGGLE_USERNAME }}" ] && [ -n "${{ secrets.KAGGLE_KEY }}" ]; then
+            echo '{"username":"${{ secrets.KAGGLE_USERNAME }}","key":"${{ secrets.KAGGLE_KEY }}"}' > ~/.kaggle/kaggle.json
+          elif [ -f "News Kaggle.json" ]; then
+            cp "News Kaggle.json" ~/.kaggle/kaggle.json
+          else
+            echo '{"username":"vinodkumartekam","key":"debe5f4350257f533281191fd96863c7"}' > ~/.kaggle/kaggle.json
+          fi
+          chmod 600 ~/.kaggle/kaggle.json
+
+      - name: Deploy & Trigger Kaggle GPU Pipeline
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME || 'vinodkumartekam' }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY || 'debe5f4350257f533281191fd96863c7' }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          STORY_NUMBER: ${{ inputs.story_number }}
+          FORCE_REFRESH_NEWS: ${{ inputs.force_refresh_news }}
+        run: |
+          python push_to_kaggle.py
+
+      - name: Upload Rendered Broadcast Video as Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Mp4-News-Hindi-Rendered-Video
+          path: |
+            out/*.mp4
+            out/**/*.mp4
+            out/**/*.wav
+            out/**/*.mp3
+            out/**/script_*.txt
+          retention-days: 14

@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment & Credentials
+.env
+*.env
+News Kaggle.json
+kaggle.json
+*.token
+
+# Build & Output
+dist/
+out/
+kaggle_out/
+*.zip
+.DS_Store
+
+# Temporary & Cache files
+__pycache__/
+*.pyc
+*.pyo
+build_complete_notebook.py
+test_*.wav

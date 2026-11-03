@@ -1,0 +1,84 @@
+{
+  "active_niche": "daily_top10",
+  "niches": {
+    "daily_top10": {
+      "id": "daily_top10",
+      "name_hindi": "सुपरफास्ट टॉप 10 बुलेटिन",
+      "category": "दैनिक समाचार (Daily News)",
+      "status": "in_progress",
+      "target_duration_sec": 360,
+      "stories_count": 10,
+      "sec_per_story": 35,
+      "theme_colors": {
+        "primary": "#d90429",
+        "secondary": "#ffb703",
+        "background": "#0b0f19",
+        "text": "#ffffff"
+      },
+      "api_search_tags": [
+        "breaking news",
+        "india city",
+        "traffic",
+        "indian parliament",
+        "technology",
+        "weather storm",
+        "sports stadium",
+        "indian economy"
+      ],
+      "ticker_speed": 4,
+      "sound_preset": "news_urgent_bulletin"
+    },
+    "geopolitics_defense": {
+      "id": "geopolitics_defense",
+      "name_hindi": "भू-राजनीति और राष्ट्रीय सुरक्षा",
+      "category": "डिफ़ेंस और विदेश नीति (Geopolitics & Defense)",
+      "status": "planned",
+      "target_duration_sec": 480,
+      "stories_count": 1,
+      "sec_per_story": 480,
+      "theme_colors": {
+        "primary": "#b7094c",
+        "secondary": "#e36414",
+        "background": "#050811",
+        "text": "#ffffff"
+      },
+      "api_search_tags": [
+        "fighter jet",
+        "military soldier",
+        "navy warship",
+        "world map diplomacy",
+        "united nations",
+        "missile launch",
+        "border security"
+      ],
+      "ticker_speed": 3,
+      "sound_preset": "cinematic_dramatic_drums"
+    },
+    "space_ai_tech": {
+      "id": "space_ai_tech",
+      "name_hindi": "स्पेस और AI टेक क्रांति",
+      "category": "विज्ञान, इसरो और आर्टिफिशियल इंटेलिजेंस",
+      "status": "planned",
+      "target_duration_sec": 420,
+      "stories_count": 1,
+      "sec_per_story": 420,
+      "theme_colors": {
+        "primary": "#3a86ff",
+        "secondary": "#8338ec",
+        "background": "#03071e",
+        "text": "#ffffff"
+      },
+      "api_search_tags": [
+        "rocket launch",
+        "isro satellite",
+        "artificial intelligence",
+        "cyber futuristic",
+        "robotics",
+        "galaxy universe",
+        "deep learning server"
+      ],
+      "ticker_speed": 3.5,
+      "sound_preset": "futuristic_synth_pulse"
+    }
+  }
+}
