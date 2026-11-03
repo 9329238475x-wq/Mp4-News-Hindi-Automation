@@ -21,7 +21,7 @@
           "BJP \"Democracy Save, Anarchy Remove\" rally Bareilly"
         ],
         "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/news_img_1_02.jpg"
+        "local_visual_path": "out/story_01/news real image/news_img_1_01.jpg"
       },
       {
         "chunk_index": 2,
@@ -34,7 +34,7 @@
           "2.15 km march route Bareilly BJP rally"
         ],
         "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/news_img_1_04.jpg"
+        "local_visual_path": "out/story_01/news real image/news_img_1_02.jpg"
       },
       {
         "chunk_index": 3,
@@ -47,7 +47,7 @@
           "Keshav Maurya JP Nadda rally crowd Bareilly"
         ],
         "meme_keyword_en": "confused guy reaction meme transparent png",
-        "local_visual_path": null
+        "local_visual_path": "out/story_01/meems image/meme_1_01.jpg"
       },
       {
         "chunk_index": 4,
@@ -60,7 +60,7 @@
           "Lalpur Cut road closure Bareilly during BJP rally"
         ],
         "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/news_img_1_11.jpg"
+        "local_visual_path": "out/story_01/news real image/news_img_1_03.jpg"
       },
       {
         "chunk_index": 5,
@@ -72,7 +72,8 @@
           "Bareilly BJP rally leaders boarding transport to Delhi",
           "Bareilly rally concluding ceremony 3:30 PM 2024"
         ],
-        "meme_keyword_en": null
+        "meme_keyword_en": null,
+        "local_visual_path": "out/story_01/news real image/news_img_1_04.jpg"
       }
     ],
     "bulletin_points": [
@@ -142,8 +143,8 @@
     "real_image_url": "https://images.bhaskarassets.com/thumb/730x0/web2images/521/2026/11/02/gifmagic_site__41_1793629855006.gif",
     "real_image_attribution": "दैनिक भास्कर",
     "original_title": "बरेली में आज भाजपा का शक्ति प्रदर्शन:पदयात्रा में नड्डा-केशव होंगे शामिल, 25 हजार कार्यकर्ता जुटाने का दावा",
-    "local_news_image": "out/story_01/news real image\\news_img_1_01.jpg",
-    "local_visual_asset": "out/story_01/news real image\\news_img_1_01.jpg",
+    "local_news_image": "out/story_01/news real image/news_img_1_01.jpg",
+    "local_visual_asset": "out/story_01/news real image/news_img_1_01.jpg",
     "local_audio_asset": "out/story_01/voice over/audio_story_1.mp3",
     "article_url": "https://www.bhaskar.com/local/uttar-pradesh/bareilly/news/bareilly-bjp-rally-jp-nadda-keshav-prasad-maurya-padyatra-news-139571899.html",
     "published_at": "Tue, 03 Nov 2026 00:30:00 +0000",
@@ -171,18 +172,20 @@
     "videos": [],
     "audio_duration": 66.62,
     "all_real_images": [
-      "out/story_01/news real image\\news_img_1_01.jpg",
-      "out/story_01/news real image\\news_img_1_02.jpg",
-      "out/story_01/news real image\\news_img_1_03.jpg",
-      "out/story_01/news real image\\news_img_1_04.jpg",
-      "out/story_01/news real image\\news_img_1_05.jpg",
-      "out/story_01/news real image\\news_img_1_07.jpg",
-      "out/story_01/news real image\\news_img_1_08.jpg",
-      "out/story_01/news real image\\news_img_1_09.jpg",
-      "out/story_01/news real image\\news_img_1_10.jpg",
-      "out/story_01/news real image\\news_img_1_12.jpg"
+      "out/story_01/news real image/news_img_1_01.jpg",
+      "out/story_01/news real image/news_img_1_02.jpg",
+      "out/story_01/news real image/news_img_1_03.jpg",
+      "out/story_01/news real image/news_img_1_04.jpg",
+      "out/story_01/news real image/news_img_1_05.jpg",
+      "out/story_01/news real image/news_img_1_06.jpg",
+      "out/story_01/news real image/news_img_1_07.jpg",
+      "out/story_01/news real image/news_img_1_08.jpg",
+      "out/story_01/news real image/news_img_1_09.jpg",
+      "out/story_01/news real image/news_img_1_10.jpg",
+      "out/story_01/news real image/news_img_1_11.jpg",
+      "out/story_01/news real image/news_img_1_12.jpg"
     ],
-    "image_attribution_tag": "स्रोत: दैनिक भास्कर | घटनास्थल",
+    "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / दैनिक भास्कर",
     "audio_waveform": [
       0.0,
       0.0,

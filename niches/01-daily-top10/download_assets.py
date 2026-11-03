@@ -87,20 +87,23 @@ COMMERCE_AND_SPAM_BLOCKLIST = [
 ]
 
 
-def search_web_real_images(query: str, is_meme: bool = False, max_results: int = 8) -> list[str]:
+def search_web_real_images(query: str, is_meme: bool = False, max_results: int = 15) -> list[str]:
     """वेब से असली न्यूज़ व मीम तस्वीरों के डायरेक्ट लिंक खोजना (स्पैम व कॉमर्स फ़िल्टर्ड)"""
     clean_query = query.strip()
-    if not is_meme and not any(w in clean_query.lower() for w in ["news", "police", "crime", "incident", "court", "cctv"]):
-        search_term = f"{clean_query} news"
-    elif is_meme and "meme" not in clean_query.lower():
-        search_term = f"{clean_query} meme"
+    if is_meme:
+        search_term = clean_query if "meme" in clean_query.lower() else f"{clean_query} meme"
     else:
-        search_term = clean_query
+        # अगर क्वेरी छोटी है और 'news/rally' आदि नहीं है तो संदर्भ जोड़ें
+        words = clean_query.split()
+        if len(words) <= 2 and not any(w in clean_query.lower() for w in ["news", "rally", "speech", "police", "crime", "court", "bjp", "congress"]):
+            search_term = f"{clean_query} news"
+        else:
+            search_term = clean_query
 
     encoded = requests.utils.quote(search_term)
     url = f"https://www.bing.com/images/search?q={encoded}&first=1"
     try:
-        r = requests.get(url, headers=BROWSER_HEADERS, timeout=8)
+        r = requests.get(url, headers=BROWSER_HEADERS, timeout=6)
         if r.status_code == 200:
             text = html.unescape(r.text)
             murls = re.findall(r'"murl":"(https?://[^"]+)"', text)
@@ -118,7 +121,7 @@ def search_web_real_images(query: str, is_meme: bool = False, max_results: int =
 
     try:
         from ddgs import DDGS
-        with DDGS(timeout=10) as ddgs:
+        with DDGS(timeout=6) as ddgs:
             results = list(ddgs.images(clean_query, max_results=max_results))
             raw_urls = [r.get("image") for r in results if r.get("image")]
             if not is_meme:
@@ -230,16 +233,16 @@ def download_and_verify_image(img_url: str, dest_path: str, min_width: int = 380
 
 def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list[str]:
     """
-    एक खबर के लिए 10 से 15 असली तस्वीरें व मीम्स डाउनलोड करना:
+    एक खबर के लिए 10 से 15 असली तस्वीरें व 2-3 मीम्स डाउनलोड करना:
     - 100% ENGLISH SEARCH QUERIES ONLY
     - चंक-दर-चंक विजुअल सिंक (जो बोला जा रहा है वही इमेज)
-    - डायनामिक ट्रेंडिंग मीम डाउनलोडिंग (no hardcoding)
+    - आउटपुट फोल्डर: out/story_XX/news real image & out/story_XX/meems image
+    - फ़ॉरवर्ड स्लैश (/) पाथ ताकि Linux / Kaggle / Remotion में 100% काम करे
     """
     story_num = story.get("story_number", 1)
     original_img_url = story.get("real_image_url")
     chunks = story.get("chunks", [])
 
-    # प्रत्येक खबर के लिए out/ में व्यवस्थित फोल्डर संरचना (news real image, meems image)
     story_dir_name = f"story_{story_num:02d}"
     story_dir = os.path.join(OUT_DIR, story_dir_name)
     news_dir = os.path.join(story_dir, "news real image")
@@ -247,16 +250,19 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list
     os.makedirs(news_dir, exist_ok=True)
     os.makedirs(meems_dir, exist_ok=True)
 
-    downloaded_assets = []
+    downloaded_real_images = []
+    downloaded_memes = []
     seen_urls = set()
 
-    # 1. मूल न्यूज़ आर्टिकल की पहली ओरिजिनल फोटो (स्मार्ट वॉटरमार्क क्रॉप्ड)
+    # 1. यदि मूल न्यूज़ आर्टिकल की पहली ओरिजिनल फोटो उपलब्ध है
     primary_filename = f"news_img_{story_num}_01.jpg"
     primary_path = os.path.join(news_dir, primary_filename)
     root_primary_path = os.path.join(story_dir, primary_filename)
+    rel_primary = f"out/{story_dir_name}/news real image/{primary_filename}"
+
     if original_img_url and original_img_url.startswith("http"):
         if download_and_verify_image(original_img_url, primary_path):
-            downloaded_assets.append(f"out/{story_dir_name}/news real image/{primary_filename}")
+            downloaded_real_images.append(rel_primary)
             seen_urls.add(original_img_url)
             try:
                 import shutil
@@ -264,62 +270,129 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list
             except Exception:
                 pass
 
-    # 2. चंक-दर-चंक सर्च क्वेरीज़ (100% ENGLISH SEARCH QUERIES)
-    chunk_queries = []
+    # 2. सर्च क्वेरीज़ तैयार करना (सरल, प्रभावी 2-4 शब्दों वाली क्वेरीज़)
+    real_queries = []
+    # चंक्स से कीवर्ड्स
     for c in chunks:
-        # अगर यह मीम रिएक्शन चंक है तो डायनामिक मीम सर्च
-        if c.get("visual_intent") == "MEME_REACTION" and c.get("meme_keyword_en"):
-            m_kw = c.get("meme_keyword_en")
-            chunk_queries.append({"query": m_kw, "is_meme": True, "chunk": c})
-        # असली न्यूज़ इमेज कीवर्ड्स (English)
         for kw in c.get("image_keywords_en", []):
             if kw and len(kw.strip()) > 3:
-                chunk_queries.append({"query": kw.strip(), "is_meme": False, "chunk": c})
+                clean_kw = kw.strip()
+                real_queries.append(clean_kw)
+                # यदि कीवर्ड बहुत लंबा है (>4 शब्द), तो छोटे 2-3 शब्दों के वेरिएंट्स भी बनाएं
+                words = clean_kw.split()
+                if len(words) > 4:
+                    real_queries.append(" ".join(words[:3]))
+                    real_queries.append(" ".join(words[-3:]))
 
-    # बैकअप स्टोरी-लेवल इंग्लिश कीवर्ड्स
     for skw in story.get("visual_keywords_en", []) or story.get("visual_keywords", []):
-        if skw and len(skw.strip()) > 3 and not any(q["query"] == skw.strip() for q in chunk_queries):
-            chunk_queries.append({"query": skw.strip(), "is_meme": False, "chunk": None})
+        if skw and len(skw.strip()) > 3:
+            real_queries.append(skw.strip())
 
-    # 3. सर्च इंजन से डाउनलोड और चंक मैपिंग
-    for q_item in chunk_queries:
-        if len(downloaded_assets) >= target_count:
+    # सामान्य बैकअप क्वेरीज़
+    headline = story.get("screen_headline", "")
+    entities = re.findall(r"[A-Za-z0-9]+", headline)
+    entity_str = " ".join(entities[:3]) if entities else "political rally crowd"
+    real_queries.extend([
+        f"{entity_str} speech",
+        f"{entity_str} crowd",
+        f"{entity_str} rally Bareilly",
+        "BJP rally stage speech India",
+        "BJP Bareilly rally crowd workers",
+        "JP Nadda speech BJP rally",
+        "Keshav Prasad Maurya UP speech",
+        "BJP workers public meeting UP",
+        "political rally crowd flags UP India"
+    ])
+
+    # विशिष्ट क्रम बनाए रखें और डुप्लिकेट्स हटाएं
+    dedup_queries = []
+    for q in real_queries:
+        q_norm = q.lower().strip()
+        if q_norm and q_norm not in [x.lower() for x in dedup_queries]:
+            dedup_queries.append(q.strip())
+
+    # 3. असली न्यूज़ फोटोज़ डाउनलोडिंग लूप (लक्ष्य: 10 से 14 तस्वीरें)
+    target_news = max(12, target_count)
+    for q in dedup_queries:
+        if len(downloaded_real_images) >= target_news:
             break
 
-        query = q_item["query"]
-        is_meme = q_item["is_meme"]
-        chunk_obj = q_item["chunk"]
+        candidate_urls = search_web_real_images(q, is_meme=False, max_results=12)
+        images_from_this_query = 0
 
-        candidate_urls = search_web_real_images(query, is_meme=is_meme, max_results=5)
         for u in candidate_urls:
+            if len(downloaded_real_images) >= target_news:
+                break
             if u in seen_urls:
                 continue
             seen_urls.add(u)
 
-            img_idx = len(downloaded_assets) + 1
-            if is_meme:
-                ext = ".png" if ".png" in u.lower() else ".jpg"
-                filename = f"meme_{story_num}_{img_idx:02d}{ext}"
-                dest_path = os.path.join(meems_dir, filename)
-                rel_path = f"out/{story_dir_name}/meems image/{filename}"
-            else:
-                filename = f"news_img_{story_num}_{img_idx:02d}.jpg"
-                dest_path = os.path.join(news_dir, filename)
-                rel_path = f"out/{story_dir_name}/news real image/{filename}"
+            img_idx = len(downloaded_real_images) + 1
+            filename = f"news_img_{story_num}_{img_idx:02d}.jpg"
+            dest_path = os.path.join(news_dir, filename)
+            rel_path = f"out/{story_dir_name}/news real image/{filename}"
 
-            # मीम के लिए न्यूनतम 260px और असली न्यूज़ के लिए 380px
-            min_w = 260 if is_meme else 380
-            min_h = 180 if is_meme else 220
+            if download_and_verify_image(u, dest_path, min_width=350, min_height=200, is_meme=False):
+                downloaded_real_images.append(rel_path)
+                images_from_this_query += 1
+                if img_idx == 1 and not os.path.exists(root_primary_path):
+                    try:
+                        import shutil
+                        shutil.copyfile(dest_path, root_primary_path)
+                    except Exception:
+                        pass
+                # प्रत्येक क्वेरी से अधिकतम 3 उच्च-गुणवत्ता वाली तस्वीरें
+                if images_from_this_query >= 3:
+                    break
 
-            if download_and_verify_image(u, dest_path, min_width=min_w, min_height=min_h, is_meme=is_meme):
-                downloaded_assets.append(rel_path)
-                if chunk_obj and not chunk_obj.get("local_visual_path"):
-                    chunk_obj["local_visual_path"] = rel_path
-                break  # हर क्वेरी से 1 बेस्ट इमेज लेकर अगली क्वेरी पर जाएँ
+        time.sleep(0.1)
 
-        time.sleep(0.15)
+    # 4. मीम डाउनलोडिंग (कम से कम 2-3 ट्रेंडिंग रिएक्शन मीम्स)
+    meme_queries = []
+    for c in chunks:
+        if c.get("visual_intent") == "MEME_REACTION" and c.get("meme_keyword_en"):
+            meme_queries.append(c.get("meme_keyword_en"))
+    meme_queries.extend([
+        "confused reaction meme transparent png",
+        "shocked face meme transparent png",
+        "thinking face meme transparent png",
+        "laughing reaction meme transparent png",
+    ])
 
-    return downloaded_assets
+    target_memes = 2
+    for mq in meme_queries:
+        if len(downloaded_memes) >= target_memes:
+            break
+        cand_memes = search_web_real_images(mq, is_meme=True, max_results=10)
+        for mu in cand_memes:
+            if len(downloaded_memes) >= target_memes:
+                break
+            if mu in seen_urls:
+                continue
+            seen_urls.add(mu)
+
+            m_idx = len(downloaded_memes) + 1
+            m_ext = ".png" if ".png" in mu.lower() else ".jpg"
+            m_filename = f"meme_{story_num}_{m_idx:02d}{m_ext}"
+            m_dest = os.path.join(meems_dir, m_filename)
+            m_rel = f"out/{story_dir_name}/meems image/{m_filename}"
+
+            if download_and_verify_image(mu, m_dest, min_width=200, min_height=150, is_meme=True):
+                downloaded_memes.append(m_rel)
+                break
+
+    # 5. चंक-टू-इमेज सटीक मैपिंग
+    meme_cursor = 0
+    real_cursor = 0
+    for c in chunks:
+        if c.get("visual_intent") == "MEME_REACTION" and downloaded_memes:
+            c["local_visual_path"] = downloaded_memes[meme_cursor % len(downloaded_memes)]
+            meme_cursor += 1
+        elif downloaded_real_images:
+            c["local_visual_path"] = downloaded_real_images[real_cursor % len(downloaded_real_images)]
+            real_cursor += 1
+
+    return downloaded_real_images
 
 
 def download_all_assets(max_stories: int = None, target_count: int = 12, force: bool = False):
@@ -359,25 +432,29 @@ def download_all_assets(max_stories: int = None, target_count: int = 12, force: 
 
         downloaded = fetch_10_to_15_images_for_story(story, target_count=target_count)
         if downloaded:
-            story["local_news_image"] = downloaded[0]
-            story["local_visual_asset"] = downloaded[0]
-            story["all_real_images"] = downloaded
+            norm_downloaded = [p.replace("\\", "/") for p in downloaded]
+            story["local_news_image"] = norm_downloaded[0]
+            story["local_visual_asset"] = norm_downloaded[0]
+            story["all_real_images"] = norm_downloaded
             story["image_attribution_tag"] = f"स्रोत: असली प्रेस कवरेज / {story.get('real_image_attribution', 'न्यूज़ डेस्क')}"
             updated = True
-            print(f"  🎉 खबर {num:02d} के लिए {len(downloaded)} असली तस्वीरें डाउनलोड व क्रॉप हुईं!")
+            print(f"  🎉 खबर {num:02d} के लिए {len(norm_downloaded)} असली तस्वीरें डाउनलोड व क्रॉप हुईं!")
         else:
             print(f"  ⚠️ कोई नई फोटो नहीं मिली।")
 
         # 100% सुरक्षा: सुनिश्चित करें कि कोई भी चंक गायब फाइल की ओर संकेत न करे
-        valid_local = story.get("all_real_images", [])
+        valid_local = [img.replace("\\", "/") for img in story.get("all_real_images", [])]
         fallback_img = valid_local[0] if valid_local else None
         for c in story.get("chunks", []):
             lvp = c.get("local_visual_path")
             if lvp:
-                full_lvp = os.path.join(BASE_DIR, lvp)
+                norm_lvp = lvp.replace("\\", "/")
+                full_lvp = os.path.join(BASE_DIR, *norm_lvp.split("/"))
                 if not os.path.exists(full_lvp):
                     c["local_visual_path"] = fallback_img
-                    updated = True
+                else:
+                    c["local_visual_path"] = norm_lvp
+                updated = True
 
         time.sleep(0.3)
 
