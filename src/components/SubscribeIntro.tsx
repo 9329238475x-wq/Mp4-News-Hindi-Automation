@@ -8,7 +8,7 @@
  */
 import React from "react";
 import {
-  Video,
+  OffthreadVideo,
   interpolate,
   useCurrentFrame,
   useVideoConfig,
@@ -63,7 +63,7 @@ export const SubscribeIntro: React.FC<SubscribeIntroProps> = ({
       }}
     >
       {/* ─── 1. FULLSCREEN 1080p SUBSCRIBE VIDEO (with audio) ─── */}
-      <Video
+      <OffthreadVideo
         src={assetPath("assets/Subscribe-video.mp4")}
         style={{
           width: "100%",

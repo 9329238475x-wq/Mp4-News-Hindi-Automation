@@ -26,6 +26,44 @@ const MIME_TYPES: Record<string, string> = {
 
 let serverInstance: http.Server | null = null;
 
+function findFile(reqPath: string): string | null {
+  const clean = reqPath.replace(/^[\\/]+/, "");
+  const candidateBases = [
+    path.resolve(ROOT_DIR, clean),
+    path.resolve(ROOT_DIR, "out", clean),
+    path.resolve(ROOT_DIR, "assets", clean),
+  ];
+
+  for (const baseP of candidateBases) {
+    if (fs.existsSync(baseP) && fs.statSync(baseP).isFile()) {
+      return baseP;
+    }
+  }
+
+  const candidateSubdirs = [
+    "news real image",
+    "news_real_image",
+    "news image",
+    "news_image",
+    "voice over",
+    "voice_over",
+    "meems image",
+    "meems_image",
+  ];
+
+  for (const baseP of candidateBases) {
+    const parsed = path.parse(baseP);
+    for (const sub of candidateSubdirs) {
+      const subP = path.join(parsed.dir, sub, parsed.base);
+      if (fs.existsSync(subP) && fs.statSync(subP).isFile()) {
+        return subP;
+      }
+    }
+  }
+
+  return null;
+}
+
 export const startLocalAssetServer = (): Promise<number> => {
   return new Promise((resolve) => {
     if (serverInstance) {
@@ -46,14 +84,8 @@ export const startLocalAssetServer = (): Promise<number> => {
       const parsedUrl = new URL(req.url || "/", `http://127.0.0.1:${PORT}`);
       let reqPath = decodeURIComponent(parsedUrl.pathname).replace(/^\/+/, "");
 
-      // Resolve full local path securely within ROOT_DIR
-      const fullPath = path.resolve(ROOT_DIR, reqPath);
-      if (!fullPath.startsWith(ROOT_DIR)) {
-        res.writeHead(403);
-        return res.end("Forbidden");
-      }
-
-      if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) {
+      const fullPath = findFile(reqPath);
+      if (!fullPath) {
         const ext = path.extname(reqPath).toLowerCase();
         if ([".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"].includes(ext)) {
           const TRANSPARENT_1X1_PNG = Buffer.from(

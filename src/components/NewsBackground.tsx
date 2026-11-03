@@ -3,7 +3,7 @@
  * Plays the user's authentic 'News-background.mp4' on a continuous seamless loop!
  */
 import React from "react";
-import { Loop, Video } from "remotion";
+import { Loop, OffthreadVideo } from "remotion";
 import { assetPath } from "../utils/assetHelper";
 
 export const NewsBackground: React.FC = () => {
@@ -25,9 +25,9 @@ export const NewsBackground: React.FC = () => {
           height: "100%",
         }}
       >
-        <Loop durationInFrames={301}>
-          <Video
-            src={assetPath("News-background.mp4")}
+        <Loop durationInFrames={300}>
+          <OffthreadVideo
+            src={assetPath("assets/News-background.mp4")}
             style={{
               width: "100%",
               height: "100%",

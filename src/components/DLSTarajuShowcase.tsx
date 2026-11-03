@@ -16,7 +16,7 @@
 import React from "react";
 import {
   Img,
-  Video,
+  OffthreadVideo,
   interpolate,
   spring,
   useCurrentFrame,
@@ -174,11 +174,10 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
         }}
       >
         {hasVideo ? (
-          <Video
+          <OffthreadVideo
             src={assetPath(videoSrc!)}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
             muted
-            loop
           />
         ) : (
           <Img
