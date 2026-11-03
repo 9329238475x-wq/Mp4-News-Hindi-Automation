@@ -27,7 +27,7 @@ jobs:
 
       - name: Install Cloud Dependencies
         run: |
-          pip install --upgrade kaggle requests
+          pip install --upgrade kaggle requests six certifi urllib3
 
       - name: Configure Kaggle API Credentials
         run: |
