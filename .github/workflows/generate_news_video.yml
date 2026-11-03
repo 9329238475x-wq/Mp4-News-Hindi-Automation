@@ -63,3 +63,4 @@ jobs:
             out/**/*.mp3
             out/**/script_*.txt
           retention-days: 14
+
