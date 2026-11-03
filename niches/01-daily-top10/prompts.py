@@ -3,8 +3,8 @@ Multi-Stage Decoupled TV Bulletin Prompts (Groq 120B Model)
 -----------------------------------------------------------
 Stage 1: Pure Voiceover Script & Sentence Breakdown (Zero Slang, Dignified Anchor, Hindi Numbers).
 Stage 2: 3-4 Dynamic Sequential Screen Headlines (स्क्रीन पर 2, 3, 4 बार बदलने वाली हेडलाइंस).
-Stage 3: High-Precision Sentence-by-Sentence Real News Image Search Keywords (100% English, Entity Names).
-Stage 4: Contextual Viral Reaction Meme Search Keywords (100% English, Transparent PNG, Dynamic Irony Detection).
+Stage 3: High-Precision Sentence-by-Sentence Real News Image Search Keywords (100% English, Entity Names, 2-4 Words Max, No Years, No Times).
+Stage 4: Memes Disabled (100% Real Authentic Broadcast News Imagery Only).
 """
 
 # ==============================================================================
@@ -129,20 +129,24 @@ JSON फ़ॉर्मेट में उत्तर दें।"""
 # STAGE 3: Real News Press Image Search Keywords (100% ENGLISH ONLY, Entity-Specific)
 # ==============================================================================
 
-STAGE3_IMAGE_KEYWORDS_SYSTEM_PROMPT = r"""You are the Visual Director and Chief Photo Archivist for a National TV News Network.
-Your task is to analyze the source news article, the screen headlines, and the anchor's sentence-by-sentence voiceover script, and generate HIGH-PRECISION, ENTITY-SPECIFIC English press search queries to fetch real photographs from news agencies and press archives.
+STAGE3_IMAGE_KEYWORDS_SYSTEM_PROMPT = r"""You are the Chief Photo Archivist and Visual Director for a National TV News Network.
+Your task is to analyze the source news article, screen headlines, and sentence-by-sentence anchor script, and generate SHORT, HIGH-PRECISION, ENTITY-SPECIFIC English press search queries to fetch real photographs from news agencies (ANI, PTI, NDTV, The Hindu, Times of India).
 
-STRICT RULES:
-1. 100% ENGLISH KEYWORDS ONLY:
-   - Web image search engines and news photo archives index press metadata in English.
-2. SYNCHRONIZED VISUAL-TO-VOICEOVER:
-   - For EACH voiceover sentence (chunk), produce 2 to 3 targeted English search keywords that match the EXACT person, venue, vehicle, evidence, or landmark mentioned in that sentence.
-3. SPECIFIC ENTITY NAMES (ZERO GENERIC STOCK WORDS):
-   - ❌ STRICTLY FORBIDDEN: Do NOT use vague stock phrases like "politician speaking", "police car", "people on road", "crowd cheering", "courtroom gavel".
-   - ✅ REQUIRED: Use real proper nouns, exact names, locations, and designations:
-     - E.g. "JP Nadda Keshav Prasad Maurya Bareilly rally", "Swayamvar Barat Ghar Rajendra Nagar Bareilly", "Shahid Pankaj Arora Chowk Bareilly", "Bareilly police traffic diversion barrier", "BJP workers padyatra Uttar Pradesh".
-4. BROAD STORY KEYWORDS:
-   - Provide 4 to 6 broad authentic English news queries covering the whole event.
+STRICT MASTER RULES (SEARCH ENGINE OPTIMIZED):
+1. 100% ENGLISH ONLY:
+   - All search queries must be in English.
+2. MAXIMUM 2 TO 4 WORDS PER QUERY (CRITICAL):
+   - ❌ FORBIDDEN: Long essay phrases (e.g. "BJP Democracy Save Anarchy Remove rally Bareilly" or "Rajendra Nagar Swayamvar Baratghar rally start Bareilly").
+   - ✅ REQUIRED: Short 2-4 word queries that search engines match instantly (e.g. "JP Nadda", "Keshav Prasad Maurya", "BJP rally crowd", "police traffic barricade").
+3. NEVER INCLUDE ANY YEAR (ZERO YEARS):
+   - ❌ STRICTLY FORBIDDEN: Do NOT append "2024", "2025", "2026", or any year! News is breaking in real-time. Adding years breaks search engines.
+4. NEVER INCLUDE ANY CLOCK TIME OR TIMESTAMPS:
+   - ❌ STRICTLY FORBIDDEN: Do NOT include times like "12:30 PM", "3:30 PM", "7 AM", "morning", "afternoon".
+5. NEVER INCLUDE SLOGANS, QUOTES, OR HINDI TRANSLITERATED PHRASES:
+   - ❌ STRICTLY FORBIDDEN: Do NOT include rally slogans or quotes like "Democracy Save Anarchy Remove" or "Swayamvar Baratghar".
+6. FOCUS 100% ON PROPER NOUNS & CORE OBJECTS:
+   - Use the exact names of leaders, ministers, police officials, institutions, or core news objects:
+     - E.g.: "JP Nadda", "Keshav Prasad Maurya", "BJP rally Bareilly", "BJP party workers", "traffic police barricade", "police diversion barrier".
 
 OUTPUT ONLY IN VALID JSON FORMAT:
 {
@@ -150,16 +154,15 @@ OUTPUT ONLY IN VALID JSON FORMAT:
     {
       "chunk_index": 1,
       "image_keywords_en": [
-        "Exact entity name location event in english",
-        "Official press photo query in english"
+        "Proper Noun Context",
+        "Entity Name 2 to 4 words"
       ]
     }
   ],
   "broad_story_keywords_en": [
-    "Broad news event query 1 in english",
-    "Broad news event query 2 in english",
-    "Broad news event query 3 in english",
-    "Broad news event query 4 in english"
+    "Broad Entity Query 1",
+    "Broad Entity Query 2",
+    "Broad Entity Query 3"
   ]
 }"""
 
@@ -183,60 +186,31 @@ VOICEOVER SCRIPT (SENTENCE-BY-SENTENCE):
 {script_text}
 
 INSTRUCTIONS:
-Generate 2-3 specific English press image search queries for EACH chunk so the exact person, place, or action spoken in that sentence appears on screen. Also give 4-6 broad English news queries.
+Generate 2-3 SHORT (2 to 4 words max) specific English press queries for EACH chunk so the exact person, leader, police, or venue spoken in that sentence appears on screen.
+RULES: NO YEARS (no 2024/2025), NO CLOCK TIMES (no 12:30 PM), NO SLOGANS/QUOTES. ONLY 2-4 WORDS.
 Output in the requested JSON format."""
 
 
 # ==============================================================================
-# STAGE 4: Contextual Viral Reaction Meme Search Keywords (100% ENGLISH, Transparent PNG)
+# STAGE 4: Memes Disabled (100% Real Authentic Broadcast News Imagery Only)
 # ==============================================================================
 
-STAGE4_MEME_KEYWORDS_SYSTEM_PROMPT = r"""You are the Viral Media Editor and News Satire Specialist for a modern digital news channel.
-Your task is to analyze a news story and anchor script to determine if a contextual reaction meme is appropriate, and if so, select the single best sentence and generate targeted English search keywords for an iconic, viral reaction meme.
-
-CRITICAL ETHICAL RULES (ZERO MEMES ON TRAGEDIES):
-1. ❌ STRICTLY FORBIDDEN: If the news is about DEATH, MURDER, RAPE, SEXUAL ASSAULT, FATAL ACCIDENTS, TERRORISM, OR SEVERE HUMAN TRAGEDY, you MUST set `is_meme_suitable: false`, `meme_chunk_index: null`, and `meme_keywords_en: []`. Never mock human suffering.
-2. ✅ WHEN TO USE MEMES:
-   - Political boastful claims / massive promises (e.g. claiming 25,000 workers will gather).
-   - Caught red-handed, funny excuses, corruption exposure, absurd defense statements.
-   - Bizarre political flip-flops or opposition sarcastic reactions.
-   - Limit: Maximum 1 meme per story, placed exactly on the chunk with the funny claim/twist.
-3. DYNAMIC & ICONIC MEME KEYWORDS (100% ENGLISH):
-   - Must specify transparent PNG / high quality reaction meme:
-     - Examples: "confused nick young thinking meme transparent png", "paresh rawal baburao shocked face reaction meme png", "akshay kumar 25 din me paisa double reaction meme png", "amit shah kya baat hai funny meme png", "shocked cat funny face meme png".
-   - ❌ No generic queries like "funny image".
+STAGE4_MEME_KEYWORDS_SYSTEM_PROMPT = r"""You are the Standards & Practices Director for a National Television News Network.
+Policy Directive: Serious broadcast television news strictly prohibits reaction memes, cartoons, or satire.
+Every story MUST use 100% real news press photographs, verified leader portraits, and official coverage.
+You must always output is_meme_suitable: false.
 
 OUTPUT ONLY IN VALID JSON FORMAT:
 {
-  "is_meme_suitable": true,
-  "meme_chunk_index": 2,
-  "meme_reasoning": "Reason why a meme fits this specific sentence/claim",
-  "meme_keywords_en": [
-    "iconic viral reaction meme search query 1 transparent png",
-    "iconic viral reaction meme search query 2 transparent png"
-  ]
+  "is_meme_suitable": false,
+  "meme_chunk_index": null,
+  "meme_reasoning": "Broadcast news standards mandate 100% authentic press photographs only.",
+  "meme_keywords_en": []
 }"""
 
 
 def build_stage4_meme_prompt(story: dict, stage1_data: dict) -> str:
-    title = story.get("title", "")
-    category = stage1_data.get("category", story.get("pillar_name", ""))
-    chunks = stage1_data.get("chunks", [])
-
-    script_text = "\n".join([f"Chunk #{c.get('chunk_index', idx+1)}: {c.get('sentence', '')}" for idx, c in enumerate(chunks)])
-
-    return f"""NEWS CONTEXT:
-Headline: {title}
-Category: {category}
-
-ANCHOR SCRIPT:
-{script_text}
-
-INSTRUCTIONS:
-1. Determine if this news is ethically appropriate for a reaction meme (NO tragedies/fatalities).
-2. If suitable, identify the exact chunk index where the ironic/boastful/dramatic claim occurs.
-3. Generate 2-3 trending, iconic English reaction meme search keywords (transparent PNG).
-Output in the requested JSON format."""
+    return """Directive: Television broadcast news mandates 100% authentic press imagery. Set is_meme_suitable to false."""
 
 
 # ==============================================================================

@@ -52,6 +52,27 @@ def sanitize_anchor_text(t: str) -> str:
     return re.sub(r'\s+', ' ', t).strip()
 
 
+def sanitize_keyword_master(kw: str) -> str:
+    """
+    मास्टर कीवर्ड सैनिटाइज़र:
+    1. किसी भी साल (1900-2099) को हटाना।
+    2. किसी भी समय (12:30 PM, 3:30, AM, PM, baje) को हटाना।
+    3. कोट्स, ब्रैकेट्स, स्पेशल कैरेक्टर्स हटाना।
+    4. 2 से 4 शब्दों का छोटा, हाई-इम्पैक्ट सर्च कीवर्ड बनाना।
+    """
+    if not kw:
+        return ""
+    clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', str(kw))
+    clean = re.sub(r'\b(19\d\d|20\d\d)\b', '', clean)
+    clean = re.sub(r'\b\d{1,2}(:\d{2})?\s*(am|pm|a\.m\.|p\.m\.|baje|hrs|hours)?\b', '', clean, flags=re.IGNORECASE)
+    clean = re.sub(r'\b(start|route|departure|concluding|ceremony|boarding|transport|heavy|ban|closure|save|remove|during|after|before)\b', '', clean, flags=re.IGNORECASE)
+    clean = re.sub(r'\s+', ' ', clean).strip()
+    words = clean.split()
+    if not words:
+        return ""
+    return " ".join(words[:4])
+
+
 def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
     """
     एक खबर के लिए 4-स्टेज डीकपल्ड Groq AI पाइपलाइन:
@@ -150,71 +171,51 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
     time.sleep(0.4)
 
     # ──────────────────────────────────────────────────────────────────────────
-    # स्टेज 3: 100% इंग्लिश रियल प्रेस इमेज सर्च कीवर्ड्स
+    # स्टेज 3: 100% इंग्लिश रियल प्रेस इमेज सर्च कीवर्ड्स (मास्टर 2-4 शब्द, शून्य साल, शून्य समय)
     # ──────────────────────────────────────────────────────────────────────────
-    print(f"   📸 [स्टेज 3/4] चंक-दर-चंक रियल प्रेस इमेज सर्च कीवर्ड्स (100% English) जनरेट हो रहे हैं...", flush=True)
+    print(f"   📸 [स्टेज 3/4] चंक-दर-चंक रियल प्रेस इमेज सर्च कीवर्ड्स (Master 2-4 Words, No Year/Time)...", flush=True)
     stage3_prompt = build_stage3_image_prompt(story, stage1_data, cleaned_headlines)
     try:
         stage3_resp = engine.chat_json(
             system_prompt=STAGE3_IMAGE_KEYWORDS_SYSTEM_PROMPT,
             user_prompt=stage3_prompt,
-            temperature=0.3
+            temperature=0.2
         )
     except Exception as e:
         print(f"   ⚠️ स्टेज 3 एरर: {e}", flush=True)
         stage3_resp = {}
 
     chunk_img_kws = stage3_resp.get("chunk_image_keywords", [])
-    broad_kws = stage3_resp.get("broad_story_keywords_en", [])
+    raw_broad_kws = stage3_resp.get("broad_story_keywords_en", [])
 
-    # चंक्स में इमेज कीवर्ड्स मैप करना
+    # चंक्स में मास्टर सैनिटाइज्ड इमेज कीवर्ड्स मैप करना (No years, No times, 2-4 words)
     kw_by_index = {item.get("chunk_index"): item.get("image_keywords_en", []) for item in chunk_img_kws}
     for c in cleaned_chunks:
         c_idx = c["chunk_index"]
         c_kws = kw_by_index.get(c_idx, [])
-        if not c_kws:
-            c_kws = [f"{story.get('title', '')[:30]} news", "India press coverage"]
-        c["image_keywords_en"] = [k.strip() for k in c_kws if k and len(k.strip()) > 3]
+        sanitized_list = []
+        for raw_k in c_kws:
+            s_k = sanitize_keyword_master(raw_k)
+            if s_k and s_k not in sanitized_list:
+                sanitized_list.append(s_k)
+        if not sanitized_list:
+            sanitized_list = [f"{story.get('title', '')[:25]} news", "India press coverage"]
+        c["image_keywords_en"] = sanitized_list[:3]
+        c["visual_intent"] = "REAL_PHOTO"
+        c["meme_keyword_en"] = None
 
-    print(f"   ✅ [स्टेज 3 पूर्ण] सभी चंक्स को विशिष्ट इंग्लिश इमेज कीवर्ड्स मिले (+ {len(broad_kws)} ब्रॉड कीवर्ड्स)", flush=True)
+    broad_kws = []
+    for bk in raw_broad_kws:
+        s_bk = sanitize_keyword_master(bk)
+        if s_bk and s_bk not in broad_kws:
+            broad_kws.append(s_bk)
 
-    time.sleep(0.4)
+    print(f"   ✅ [स्टेज 3 पूर्ण] सभी चंक्स को 100% असली व संक्षिप्त इमेज कीवर्ड्स मिले (+ {len(broad_kws)} ब्रॉड कीवर्ड्स)", flush=True)
 
     # ──────────────────────────────────────────────────────────────────────────
-    # स्टेज 4: संदर्भानुसार डायनामिक ट्रेंडिंग मीम कीवर्ड्स
+    # स्टेज 4: मीम्स 100% बंद (Broadcast Standards: Zero Memes, Pure Real News Photos)
     # ──────────────────────────────────────────────────────────────────────────
-    print(f"   🤣 [स्टेज 4/4] खबर के ड्रामे व मोड़ के आधार पर ट्रेंडिंग मीम कीवर्ड्स का विश्लेषण...", flush=True)
-    stage4_prompt = build_stage4_meme_prompt(story, stage1_data)
-    try:
-        stage4_resp = engine.chat_json(
-            system_prompt=STAGE4_MEME_KEYWORDS_SYSTEM_PROMPT,
-            user_prompt=stage4_prompt,
-            temperature=0.4
-        )
-    except Exception as e:
-        print(f"   ⚠️ स्टेज 4 एरर: {e}", flush=True)
-        stage4_resp = {}
-
-    is_meme_suitable = stage4_resp.get("is_meme_suitable", False)
-    meme_chunk_index = stage4_resp.get("meme_chunk_index")
-    meme_kws = stage4_resp.get("meme_keywords_en", [])
-
-    if is_meme_suitable and meme_kws and meme_chunk_index:
-        matched = False
-        for c in cleaned_chunks:
-            if c["chunk_index"] == meme_chunk_index:
-                c["visual_intent"] = "MEME_REACTION"
-                c["meme_keyword_en"] = meme_kws[0]
-                matched = True
-                print(f"   🎉 [स्टेज 4 पूर्ण] चंक #{meme_chunk_index} पर ट्रेंडिंग मीम सेट: '{meme_kws[0]}'", flush=True)
-                break
-        if not matched and cleaned_chunks:
-            target_c = cleaned_chunks[min(1, len(cleaned_chunks) - 1)]
-            target_c["visual_intent"] = "MEME_REACTION"
-            target_c["meme_keyword_en"] = meme_kws[0]
-            print(f"   🎉 [स्टेज 4 पूर्ण] चंक #{target_c['chunk_index']} पर ट्रेंडिंग मीम सेट: '{meme_kws[0]}'", flush=True)
-    else:
-        print(f"   🛡️ [स्टेज 4 पूर्ण] खबर की प्रकृति के अनुसार मीम अनुपयुक्त/वर्जित (Strictly 100% Real News Photos)", flush=True)
+    print(f"   🛡️ [स्टेज 4/4] ब्रॉडकास्ट पॉलिसी: मीम्स 100% बंद (Strictly 100% Authentic News Photos Only)", flush=True)
 
     # ──────────────────────────────────────────────────────────────────────────
     # डेटा संकलन और फाइल्स निर्माण
@@ -231,14 +232,12 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
     primary_img_rel = f"out/{story_dir_name}/news real image/news_img_{s_num}_01.jpg"
     primary_audio_rel = f"out/{story_dir_name}/voice over/audio_story_{s_num}.mp3"
 
-    # सभी अंग्रेजी कीवर्ड्स संकलित करना
+    # सभी अंग्रेजी कीवर्ड्स संकलित करना (मास्टर क्लीन, शून्य मीम्स)
     all_kws_en = []
     for c in cleaned_chunks:
         for kw in c.get("image_keywords_en", []):
             if kw and kw not in all_kws_en:
                 all_kws_en.append(kw)
-        if c.get("meme_keyword_en") and c["meme_keyword_en"] not in all_kws_en:
-            all_kws_en.append(c["meme_keyword_en"])
     for bkw in broad_kws:
         if bkw and bkw not in all_kws_en:
             all_kws_en.append(bkw)

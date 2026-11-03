@@ -16,9 +16,9 @@
         "bullet_text": "भाजपा ने बरेली में शक्ति प्रदर्शन किया, **जेपी नड्डा** और **केशव प्रसाद मौर्य** भाग लेंगे",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "JP Nadda Bareilly rally 2024",
-          "Keshav Prasad Maurya Bareilly rally 2024",
-          "BJP \"Democracy Save, Anarchy Remove\" rally Bareilly"
+          "JP Nadda",
+          "Keshav Maurya",
+          "BJP rally Bareilly"
         ],
         "meme_keyword_en": null,
         "local_visual_path": "out/story_01/news real image/news_img_1_01.jpg"
@@ -29,9 +29,9 @@
         "bullet_text": "बारह बजकर तीस मिनट पर स्वयंवर बारातघर में जनसभा, फिर दो दशमलव एक पाँच किलोमीटर पदयात्रा",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "Rajendra Nagar Swayamvar Baratghar rally start Bareilly",
-          "Bareilly Swayamvar Baratghar crowd 12:30 PM",
-          "2.15 km march route Bareilly BJP rally"
+          "Rajendra Nagar venue",
+          "BJP padyatra",
+          "Keshav Maurya walk"
         ],
         "meme_keyword_en": null,
         "local_visual_path": "out/story_01/news real image/news_img_1_02.jpg"
@@ -40,14 +40,14 @@
         "chunk_index": 3,
         "sentence": "भाजपा का दावा है कि इस पदयात्रा में बरेली मंडल की सभी विधानसभाओं से पच्चीस हजार से अधिक कार्यकर्ता भाग लेंगे, और कार्यक्रम में सांसद, विधायक तथा जिलाध्यक्ष भी सम्मिलित होंगे।",
         "bullet_text": "पच्चीस हजार से अधिक कार्यकर्ता, सांसद‑विधायक‑जिलाध्यक्ष सहित भाग लेंगे",
-        "visual_intent": "MEME_REACTION",
+        "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "Bareilly BJP rally 25,000 workers participation",
-          "BJP MPs MLAs district presidents Bareilly rally",
-          "Keshav Maurya JP Nadda rally crowd Bareilly"
+          "BJP workers",
+          "UP legislators",
+          "BJP rally crowd"
         ],
-        "meme_keyword_en": "confused guy reaction meme transparent png",
-        "local_visual_path": "out/story_01/meems image/meme_1_01.jpg"
+        "meme_keyword_en": null,
+        "local_visual_path": "out/story_01/news real image/news_img_1_03.jpg"
       },
       {
         "chunk_index": 4,
@@ -55,12 +55,12 @@
         "bullet_text": "सात बजे से भारी वाहन प्रतिबंध, परसाखेड़ा रोड‑१, विल्वा पुल, लालपुर कट बंद",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "Parsakheda Road No.1 traffic diversion Bareilly 2024",
-          "Vilva Bridge heavy vehicle ban Bareilly rally",
-          "Lalpur Cut road closure Bareilly during BJP rally"
+          "traffic police barricade",
+          "road diversion police",
+          "Bareilly police barrier"
         ],
         "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/news_img_1_03.jpg"
+        "local_visual_path": "out/story_01/news real image/news_img_1_04.jpg"
       },
       {
         "chunk_index": 5,
@@ -68,12 +68,12 @@
         "bullet_text": "तीन बजकर तीस मिनट पर दिल्ली रवाना, विपक्ष को जवाब देने हेतु प्रदर्शन जारी",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "JP Nadda Keshav Prasad Maurya departure to Delhi Bareilly 3:30 PM",
-          "Bareilly BJP rally leaders boarding transport to Delhi",
-          "Bareilly rally concluding ceremony 3:30 PM 2024"
+          "JP Nadda Delhi",
+          "BJP rally conclusion",
+          "Opposition response Bareilly"
         ],
         "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/news_img_1_04.jpg"
+        "local_visual_path": "out/story_01/news real image/news_img_1_05.jpg"
       }
     ],
     "bulletin_points": [
@@ -92,52 +92,20 @@
     ],
     "voiceover_script": "बरेली में मंगलवार को भाजपा ने ‘लोकतंत्र बचाओ, अराजकता हटाओ’ शीर्षक से शक्ति प्रदर्शन आयोजित किया, जिसमें केंद्रीय स्वास्थ्य मंत्री जेपी नड्डा और उत्तर प्रदेश के डिप्टी सीएम केशव प्रसाद मौर्य शामिल होंगे। दोनों नेता दोपहर बारह बजकर तीस मिनट पर राजेंद्र नगर के स्वयंवर बारातघर में जनसभा में उपस्थित होंगे, उसके बाद लगभग दो दशमलव एक पाँच किलोमीटर लंबी पदयात्रा शुरू होगी। भाजपा का दावा है कि इस पदयात्रा में बरेली मंडल की सभी विधानसभाओं से पच्चीस हजार से अधिक कार्यकर्ता भाग लेंगे, और कार्यक्रम में सांसद, विधायक तथा जिलाध्यक्ष भी सम्मिलित होंगे। शहर में सुबह सात बजे से कार्यक्रम समाप्ति तक भारी वाहन प्रवेश पर प्रतिबंध रहेगा, परसाखेड़ा रोड नंबर एक, विल्वा पुल, लालपुर कट आदि मार्गों से भारी वाहन नहीं गुजरेंगे। जनसभा और पदयात्रा के तीन घंटे बाद, नेता दोपहर तीन बजकर तीस मिनट पर दिल्ली के लिए रवाना होंगे, जबकि विपक्ष को जवाब देने के उद्देश्य से यह प्रदर्शन जारी रहेगा।",
     "visual_keywords": [
-      "JP Nadda Bareilly rally 2024",
-      "Keshav Prasad Maurya Bareilly rally 2024",
-      "BJP \"Democracy Save, Anarchy Remove\" rally Bareilly",
-      "Rajendra Nagar Swayamvar Baratghar rally start Bareilly",
-      "Bareilly Swayamvar Baratghar crowd 12:30 PM",
-      "2.15 km march route Bareilly BJP rally",
-      "Bareilly BJP rally 25,000 workers participation",
-      "BJP MPs MLAs district presidents Bareilly rally",
-      "Keshav Maurya JP Nadda rally crowd Bareilly",
-      "confused guy reaction meme transparent png",
-      "Parsakheda Road No.1 traffic diversion Bareilly 2024",
-      "Vilva Bridge heavy vehicle ban Bareilly rally",
-      "Lalpur Cut road closure Bareilly during BJP rally",
-      "JP Nadda Keshav Prasad Maurya departure to Delhi Bareilly 3:30 PM",
-      "Bareilly BJP rally leaders boarding transport to Delhi",
-      "Bareilly rally concluding ceremony 3:30 PM 2024",
-      "Bareilly BJP rally JP Nadda Keshav Prasad Maurya 2024",
-      "\"Democracy Save, Anarchy Remove\" march Bareilly Uttar Pradesh",
-      "25,000 BJP workers gather Bareilly political rally",
-      "Heavy vehicle restrictions on Parsakheda Road, Vilva Bridge, Lalpur Cut Bareilly",
-      "Opposition response to Bareilly BJP power demonstration",
-      "Bareilly city traffic management during large political rally"
+      "BJP rally Bareilly",
+      "JP Nadda",
+      "Keshav Maurya",
+      "BJP rally crowd",
+      "BJP padyatra",
+      "traffic police barricade"
     ],
     "visual_keywords_en": [
-      "JP Nadda Bareilly rally 2024",
-      "Keshav Prasad Maurya Bareilly rally 2024",
-      "BJP \"Democracy Save, Anarchy Remove\" rally Bareilly",
-      "Rajendra Nagar Swayamvar Baratghar rally start Bareilly",
-      "Bareilly Swayamvar Baratghar crowd 12:30 PM",
-      "2.15 km march route Bareilly BJP rally",
-      "Bareilly BJP rally 25,000 workers participation",
-      "BJP MPs MLAs district presidents Bareilly rally",
-      "Keshav Maurya JP Nadda rally crowd Bareilly",
-      "confused guy reaction meme transparent png",
-      "Parsakheda Road No.1 traffic diversion Bareilly 2024",
-      "Vilva Bridge heavy vehicle ban Bareilly rally",
-      "Lalpur Cut road closure Bareilly during BJP rally",
-      "JP Nadda Keshav Prasad Maurya departure to Delhi Bareilly 3:30 PM",
-      "Bareilly BJP rally leaders boarding transport to Delhi",
-      "Bareilly rally concluding ceremony 3:30 PM 2024",
-      "Bareilly BJP rally JP Nadda Keshav Prasad Maurya 2024",
-      "\"Democracy Save, Anarchy Remove\" march Bareilly Uttar Pradesh",
-      "25,000 BJP workers gather Bareilly political rally",
-      "Heavy vehicle restrictions on Parsakheda Road, Vilva Bridge, Lalpur Cut Bareilly",
-      "Opposition response to Bareilly BJP power demonstration",
-      "Bareilly city traffic management during large political rally"
+      "BJP rally Bareilly",
+      "JP Nadda",
+      "Keshav Maurya",
+      "BJP rally crowd",
+      "BJP padyatra",
+      "traffic police barricade"
     ],
     "primary_source_index": 0,
     "real_image_url": "https://images.bhaskarassets.com/thumb/730x0/web2images/521/2026/11/02/gifmagic_site__41_1793629855006.gif",

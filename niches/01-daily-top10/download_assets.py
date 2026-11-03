@@ -93,53 +93,171 @@ COMMERCE_AND_SPAM_BLOCKLIST = [
     "sarthaks",
     "quora",
     "pinterest",
+    "cricket",
+    "cricketer",
+    "maharaj",
+    "ipl",
+    "match",
+    "gameplay",
+    "sport",
+    "khel",
+    "wicket",
+    "batsman",
+    "bowler",
+    "cricinfo",
+    "cricbuzz",
+    "stadium",
+    "jersey",
+    "pitch",
+]
+
+PRIORITY_NEWS_DOMAINS = [
+    "wikimedia",
+    "ndtv",
+    "thehindu",
+    "indiatoday",
+    "indianexpress",
+    "hindustantimes",
+    "amarujala",
+    "jagran",
+    "bhaskar",
+    "oneindia",
+    "asianetnews",
+    "etvbharat",
+    "patrika",
+    "navbharattimes",
+    "tribuneindia",
+    "deccanherald",
+    "freepressjournal",
+    "livemint",
+    "moneycontrol",
+    "zeenews",
+    "abplive",
+    "timesnownews",
+    "news18"
 ]
 
 
+def sanitize_keyword_master(kw: str) -> str:
+    """
+    मास्टर कीवर्ड सैनिटाइज़र:
+    1. किसी भी साल (1900-2099) को हटाना।
+    2. किसी भी समय (12:30 PM, 3:30, AM, PM, baje) को हटाना।
+    3. कोट्स, ब्रैकेट्स, स्पेशल कैरेक्टर्स हटाना।
+    4. 2 से 4 शब्दों का छोटा, हाई-इम्पैक्ट सर्च कीवर्ड बनाना।
+    """
+    if not kw:
+        return ""
+    clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', str(kw))
+    clean = re.sub(r'\b(19\d\d|20\d\d)\b', '', clean)
+    clean = re.sub(r'\b\d{1,2}(:\d{2})?\s*(am|pm|a\.m\.|p\.m\.|baje|hrs|hours)?\b', '', clean, flags=re.IGNORECASE)
+    clean = re.sub(r'\b(start|route|departure|concluding|ceremony|boarding|transport|heavy|ban|closure|save|remove|during|after|before|walk|walks|walking|run|running)\b', '', clean, flags=re.IGNORECASE)
+    if 'keshav' in clean.lower() and 'maurya' in clean.lower() and 'prasad' not in clean.lower():
+        clean = re.sub(r'keshav\s+maurya', 'Keshav Prasad Maurya BJP', clean, flags=re.IGNORECASE)
+    clean = re.sub(r'\s+', ' ', clean).strip()
+    words = clean.split()
+    if not words:
+        return ""
+    return " ".join(words[:4])
+
+
+def get_wikimedia_portrait(entity_name: str) -> str:
+    """विकिपीडिया व विकिमीडिया कॉमन्स से प्रमुख नेताओं, हस्तियों व संस्थानों की 100% आधिकारिक 4K तस्वीर प्राप्त करना"""
+    if not entity_name or len(entity_name.strip()) < 3:
+        return ""
+    clean_name = sanitize_keyword_master(entity_name)
+    try:
+        url = f"https://en.wikipedia.org/w/api.php?action=query&titles={requests.utils.quote(clean_name)}&prop=pageimages&format=json&pithumbsize=1280"
+        r = requests.get(url, headers={"User-Agent": "DLSNewsBroadcastBot/1.0"}, timeout=5).json()
+        pages = r.get("query", {}).get("pages", {})
+        for pid, pdata in pages.items():
+            thumb = pdata.get("thumbnail", {}).get("source")
+            if thumb and not any(bad in thumb.lower() for bad in ["flag", "symbol", "emblem", "icon", "map"]):
+                return thumb
+    except Exception:
+        pass
+    return ""
+
+
 def search_web_real_images(query: str, is_meme: bool = False, max_results: int = 15) -> list[str]:
-    """वेब से असली न्यूज़ व मीम तस्वीरों के डायरेक्ट लिंक खोजना (स्पैम व कॉमर्स फ़िल्टर्ड)"""
-    clean_query = query.strip()
-    if is_meme:
-        search_term = clean_query if "meme" in clean_query.lower() else f"{clean_query} meme"
-    else:
-        # अगर क्वेरी छोटी है और 'news/rally' आदि नहीं है तो संदर्भ जोड़ें
-        words = clean_query.split()
-        if len(words) <= 2 and not any(w in clean_query.lower() for w in ["news", "rally", "speech", "police", "crime", "court", "bjp", "congress"]):
-            search_term = f"{clean_query} news"
-        else:
-            search_term = clean_query
+    """
+    मल्टी-इंजन असली न्यूज़ फोटोज़ सर्च इंजन (Master Multi-Engine News Searcher):
+    1. विकिमीडिया कॉमन्स आधिकारिक पोर्ट्रेट्स (यदि कोई नेता/हस्ती है)
+    2. Bing Images Async इंजन (NDTV, The Hindu, OneIndia, Asianet आदि से 30+ HD प्रेस फोटोज़)
+    3. DuckDuckGo Images इंजन (सैनिटाइज्ड 2-4 शब्दों के साथ)
+    4. भारतीय न्यूज़ पोर्टल्स को शीर्ष प्राथमिकता व स्पैम फ़िल्टरिंग
+    """
+    clean_query = sanitize_keyword_master(query)
+    if not clean_query:
+        return []
 
-    encoded = requests.utils.quote(search_term)
-    url = f"https://www.bing.com/images/search?q={encoded}&first=1"
+    collected_urls = []
+
+    # 1. विकिमीडिया कॉमन्स पोर्ट्रेट चेक (नेताओं के आधिकारिक चित्र)
+    if not is_meme:
+        wiki_img = get_wikimedia_portrait(clean_query)
+        if wiki_img:
+            collected_urls.append(wiki_img)
+
+    # 2. Bing Images Async सर्च इंजन (JSON मेटाडेटा: Title + Page URL + Image URL सत्यापन)
+    encoded = requests.utils.quote(clean_query)
+    bing_async_url = f"https://www.bing.com/images/async?q={encoded}&first=0&count=35&mmasync=1"
     try:
-        r = requests.get(url, headers=BROWSER_HEADERS, timeout=6)
+        r = requests.get(bing_async_url, headers=BROWSER_HEADERS, timeout=8)
         if r.status_code == 200:
-            text = html.unescape(r.text)
-            murls = re.findall(r'"murl":"(https?://[^"]+)"', text)
-            if murls:
-                filtered = []
-                for u in murls:
-                    u_lower = u.lower()
-                    if not is_meme and any(bad in u_lower for bad in COMMERCE_AND_SPAM_BLOCKLIST):
+            matches = re.findall(r'm="([^"]+)"', r.text)
+            for m_raw in matches:
+                try:
+                    item_data = json.loads(html.unescape(m_raw))
+                    img_u = item_data.get("murl")
+                    p_u = item_data.get("purl", "").lower()
+                    title_t = item_data.get("t", "").lower()
+
+                    if not img_u or img_u in collected_urls:
                         continue
-                    filtered.append(u)
-                if filtered:
-                    return filtered[:max_results]
+
+                    # 100% सुरक्षा: इमेज URL, वेबपेज URL और शीर्षक तीनों पर स्पैम/स्पोर्ट्स फ़िल्टर
+                    combined_meta = f"{img_u.lower()} {p_u} {title_t}"
+                    if any(bad in combined_meta for bad in COMMERCE_AND_SPAM_BLOCKLIST):
+                        continue
+
+                    collected_urls.append(img_u)
+                except Exception:
+                    continue
     except Exception:
         pass
 
-    try:
-        from ddgs import DDGS
-        with DDGS(timeout=6) as ddgs:
-            results = list(ddgs.images(clean_query, max_results=max_results))
-            raw_urls = [r.get("image") for r in results if r.get("image")]
-            if not is_meme:
-                return [u for u in raw_urls if not any(bad in u.lower() for bad in COMMERCE_AND_SPAM_BLOCKLIST)][:max_results]
-            return raw_urls[:max_results]
-    except Exception:
-        pass
+    # 3. DuckDuckGo इमेज सर्च (बैकअप)
+    if len(collected_urls) < max_results:
+        try:
+            from ddgs import DDGS
+            with DDGS(timeout=6) as ddgs:
+                results = list(ddgs.images(clean_query, max_results=max_results))
+                for r in results:
+                    img_u = r.get("image")
+                    if img_u and img_u not in collected_urls:
+                        collected_urls.append(img_u)
+        except Exception:
+            pass
 
-    return []
+    # 4. स्पैम, ई-कॉमर्स व अप्रासंगिक सामग्री को फ़िल्टर करना
+    filtered = []
+    for u in collected_urls:
+        u_lower = u.lower()
+        if any(bad in u_lower for bad in COMMERCE_AND_SPAM_BLOCKLIST):
+            continue
+        filtered.append(u)
+
+    # 5. भारतीय प्रतिष्ठित न्यूज़ डोमेन्स को प्राथमिकता (Sorting)
+    def news_priority(u: str) -> int:
+        u_l = u.lower()
+        for p_idx, dom in enumerate(PRIORITY_NEWS_DOMAINS):
+            if dom in u_l:
+                return p_idx
+        return 999
+
+    filtered.sort(key=news_priority)
+    return filtered[:max_results]
 
 
 def crop_watermarks_smart(img: Image.Image, bottom_crop_ratio: float = 0.08, top_crop_ratio: float = 0.04) -> Image.Image:
@@ -279,39 +397,18 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list
             except Exception:
                 pass
 
-    # 2. सर्च क्वेरीज़ तैयार करना (सरल, प्रभावी 2-4 शब्दों वाली क्वेरीज़)
+    # 2. सर्च क्वेरीज़ तैयार करना (मास्टर सैनिटाइज्ड 2-4 शब्द, शून्य साल, शून्य समय)
     real_queries = []
-    # चंक्स से कीवर्ड्स
     for c in chunks:
         for kw in c.get("image_keywords_en", []):
-            if kw and len(kw.strip()) > 3:
-                clean_kw = kw.strip()
-                real_queries.append(clean_kw)
-                # यदि कीवर्ड बहुत लंबा है (>4 शब्द), तो छोटे 2-3 शब्दों के वेरिएंट्स भी बनाएं
-                words = clean_kw.split()
-                if len(words) > 4:
-                    real_queries.append(" ".join(words[:3]))
-                    real_queries.append(" ".join(words[-3:]))
+            s_kw = sanitize_keyword_master(kw)
+            if s_kw and s_kw not in real_queries:
+                real_queries.append(s_kw)
 
     for skw in story.get("visual_keywords_en", []) or story.get("visual_keywords", []):
-        if skw and len(skw.strip()) > 3:
-            real_queries.append(skw.strip())
-
-    # सामान्य बैकअप क्वेरीज़
-    headline = story.get("screen_headline", "")
-    entities = re.findall(r"[A-Za-z0-9]+", headline)
-    entity_str = " ".join(entities[:3]) if entities else "political rally crowd"
-    real_queries.extend([
-        f"{entity_str} speech",
-        f"{entity_str} crowd",
-        f"{entity_str} rally Bareilly",
-        "BJP rally stage speech India",
-        "BJP Bareilly rally crowd workers",
-        "JP Nadda speech BJP rally",
-        "Keshav Prasad Maurya UP speech",
-        "BJP workers public meeting UP",
-        "political rally crowd flags UP India"
-    ])
+        s_skw = sanitize_keyword_master(skw)
+        if s_skw and s_skw not in real_queries:
+            real_queries.append(s_skw)
 
     # विशिष्ट क्रम बनाए रखें और डुप्लिकेट्स हटाएं
     dedup_queries = []
@@ -320,7 +417,7 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list
         if q_norm and q_norm not in [x.lower() for x in dedup_queries]:
             dedup_queries.append(q.strip())
 
-    # 3. असली न्यूज़ फोटोज़ डाउनलोडिंग लूप (लक्ष्य: 10 से 14 तस्वीरें)
+    # 3. असली न्यूज़ फोटोज़ डाउनलोडिंग लूप (लक्ष्य: 10 से 14 असली तस्वीरें)
     target_news = max(12, target_count)
     for q in dedup_queries:
         if len(downloaded_real_images) >= target_news:
@@ -350,56 +447,18 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list
                         shutil.copyfile(dest_path, root_primary_path)
                     except Exception:
                         pass
-                # प्रत्येक क्वेरी से अधिकतम 3 उच्च-गुणवत्ता वाली तस्वीरें
                 if images_from_this_query >= 3:
                     break
 
         time.sleep(0.1)
 
-    # 4. मीम डाउनलोडिंग (कम से कम 2-3 ट्रेंडिंग रिएक्शन मीम्स)
-    meme_queries = []
-    for c in chunks:
-        if c.get("visual_intent") == "MEME_REACTION" and c.get("meme_keyword_en"):
-            meme_queries.append(c.get("meme_keyword_en"))
-    meme_queries.extend([
-        "confused reaction meme transparent png",
-        "shocked face meme transparent png",
-        "thinking face meme transparent png",
-        "laughing reaction meme transparent png",
-    ])
-
-    target_memes = 2
-    for mq in meme_queries:
-        if len(downloaded_memes) >= target_memes:
-            break
-        cand_memes = search_web_real_images(mq, is_meme=True, max_results=10)
-        for mu in cand_memes:
-            if len(downloaded_memes) >= target_memes:
-                break
-            if mu in seen_urls:
-                continue
-            seen_urls.add(mu)
-
-            m_idx = len(downloaded_memes) + 1
-            m_ext = ".png" if ".png" in mu.lower() else ".jpg"
-            m_filename = f"meme_{story_num}_{m_idx:02d}{m_ext}"
-            m_dest = os.path.join(meems_dir, m_filename)
-            m_rel = f"out/{story_dir_name}/meems image/{m_filename}"
-
-            if download_and_verify_image(mu, m_dest, min_width=200, min_height=150, is_meme=True):
-                downloaded_memes.append(m_rel)
-                break
-
-    # 5. चंक-टू-इमेज सटीक मैपिंग
-    meme_cursor = 0
-    real_cursor = 0
-    for c in chunks:
-        if c.get("visual_intent") == "MEME_REACTION" and downloaded_memes:
-            c["local_visual_path"] = downloaded_memes[meme_cursor % len(downloaded_memes)]
-            meme_cursor += 1
-        elif downloaded_real_images:
-            c["local_visual_path"] = downloaded_real_images[real_cursor % len(downloaded_real_images)]
-            real_cursor += 1
+    # 4. चंक-टू-इमेज 100% असली न्यूज़ फोटोज़ सटीक मैपिंग (मीम्स पूर्णतः बंद)
+    for idx, c in enumerate(chunks):
+        c["visual_intent"] = "REAL_PHOTO"
+        c["meme_keyword_en"] = None
+        if downloaded_real_images:
+            assigned_img = downloaded_real_images[idx % len(downloaded_real_images)]
+            c["local_visual_path"] = assigned_img
 
     return downloaded_real_images
 
