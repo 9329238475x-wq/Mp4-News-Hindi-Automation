@@ -194,7 +194,7 @@ def normalize_broadcast_audio(file_path: str):
     cmd = [
         "ffmpeg", "-y",
         "-i", file_path,
-        "-af", "loudnorm=I=-14:TP=-1.0:LRA=7",
+        "-af", "loudnorm=I=-11:TP=-0.5:LRA=5",
         "-ar", "48000",
         "-ac", "2",
         "-b:a", "192k",
