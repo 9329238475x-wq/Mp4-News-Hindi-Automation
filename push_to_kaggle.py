@@ -19,7 +19,7 @@ if hasattr(sys.stderr, "reconfigure"):
 ROOT = Path(__file__).resolve().parent
 
 print("=" * 65)
-print("🚀 [MP4 NEWS HINDI] KAGGLE GPU BROADCAST ENGINE TRIGGER")
+print("🚀 [MP4 NEWS HINDI] KAGGLE HIGH-PERFORMANCE CPU BROADCAST ENGINE TRIGGER")
 print("=" * 65)
 
 # 1. Configure Kaggle Credentials from env or file
@@ -51,7 +51,7 @@ api.authenticate()
 kernel_slug = "mp4-news-hindi-omnivoice-pipeline"
 kernel_id = f"{kaggle_user}/{kernel_slug}"
 
-print(f"🚀 Deploying kernel to Kaggle GPU ({kernel_id})...")
+print(f"🚀 Deploying kernel to Kaggle Multi-Core CPU ({kernel_id})...")
 try:
     push_res = api.kernels_push(str(ROOT))
     print(f"✓ Kernel push result: versionNumber={getattr(push_res, 'versionNumber', 'unknown')}")
@@ -59,9 +59,9 @@ except Exception as e:
     print(f"❌ Failed to push kernel via SDK: {e}")
     sys.exit(1)
 
-print("\n🎉 KERNEL TRIGGERED ON KAGGLE GPU!")
+print("\n🎉 KERNEL TRIGGERED ON KAGGLE MULTI-CORE CPU!")
 print(f"🔗 Live Progress: https://www.kaggle.com/code/{kernel_id}")
-print("\n⏳ Monitoring execution status (typically takes 3-5 minutes on GPU)...")
+print("\n⏳ Monitoring execution status (typically takes 3-5 minutes on Multi-Core CPU)...")
 
 # Poll until completion
 max_wait = 900  # 15 minutes max

@@ -81,8 +81,9 @@ def get_omnivoice_model():
     try:
         import torch
         if not torch.cuda.is_available():
-            print("  [TTS] CUDA/GPU not available, will use Edge-TTS.")
-            return None
+            threads = os.cpu_count() or 4
+            torch.set_num_threads(threads)
+            print(f"  [TTS] OmniVoice High-Performance CPU Mode enabled ({threads} PyTorch threads)", flush=True)
     except ImportError:
         print("  [TTS] PyTorch not installed, will use Edge-TTS.")
         return None
@@ -220,7 +221,7 @@ def synthesize_omnivoice(text: str, output_mp3_path: str) -> bool:
     import soundfile as sf
     import torch
 
-    print(f"  🎙️ [OmniVoice GPU] सिंथेसाइजिंग ({len(text.split())} शब्द, भाषा: Hindi)...", flush=True)
+    print(f"  🎙️ [OmniVoice] सिंथेसाइजिंग ({len(text.split())} शब्द, भाषा: Hindi)...", flush=True)
     t0 = time.time()
 
     # OmniVoice direct Hindi inference without voice clone (no ref_audio)
