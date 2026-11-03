@@ -182,6 +182,33 @@ def get_audio_duration_seconds(file_path: str) -> float:
         return 20.0
 
 
+def normalize_broadcast_audio(file_path: str):
+    """
+    मास्टर ब्रॉडकास्ट ऑडियो नॉर्मलाइजेशन (EBU R128 / YouTube Standard):
+    - वॉल्यूम को सुरक्षित रूप से +8dB से +10dB तक बढ़ाना (Mean Volume: ~-16dB, True Peak: -1.0dB)
+    - बिना किसी फेड या डिस्टॉर्शन के टीवी स्टूडियो जैसी साफ़, तेज़ और क्रिस्प आवाज़
+    """
+    if not os.path.exists(file_path) or os.path.getsize(file_path) < 5000:
+        return
+    norm_temp = file_path.replace(".mp3", "_loudnorm_temp.mp3")
+    cmd = [
+        "ffmpeg", "-y",
+        "-i", file_path,
+        "-af", "loudnorm=I=-14:TP=-1.0:LRA=7",
+        "-ar", "48000",
+        "-ac", "2",
+        "-b:a", "192k",
+        norm_temp
+    ]
+    try:
+        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if os.path.exists(norm_temp) and os.path.getsize(norm_temp) > 5000:
+            os.replace(norm_temp, file_path)
+            print(f"    🔊 [Audio Boost] ब्रॉडकास्ट लाउडनेस नॉर्मलाइज्ड (-14 LUFS Studio Grade)")
+    except Exception as e:
+        print(f"    ⚠️ loudnorm warning: {e}")
+
+
 def synthesize_omnivoice(text: str, output_mp3_path: str) -> bool:
     """OmniVoice GPU से बिना क्लोन के शुद्ध हिंदी ऑडियो तैयार करना"""
     ov_data = get_omnivoice_model()
@@ -289,7 +316,7 @@ async def generate_audio_for_story(story: dict, force: bool = False) -> tuple[st
             import edge_tts
             for attempt in range(1, 4):
                 try:
-                    comm = edge_tts.Communicate(clean_text, EDGE_VOICE, rate=EDGE_RATE)
+                    comm = edge_tts.Communicate(clean_text, EDGE_VOICE, rate=EDGE_RATE, volume="+50%")
                     await comm.save(output_path)
                     if os.path.exists(output_path) and os.path.getsize(output_path) > 5000:
                         break
@@ -299,8 +326,24 @@ async def generate_audio_for_story(story: dict, force: bool = False) -> tuple[st
         except ImportError:
             print("  ❌ Edge-TTS not installed!")
 
+    # ब्रॉडकास्ट लाउडनेस बूस्ट
+    normalize_broadcast_audio(output_path)
+
     dur = get_audio_duration_seconds(output_path)
-    print(f"  ✔ [खबर {story_num}] पूर्ण अवधि: {dur}s | {output_filename}")
+    audio_frames = int(round(dur * 30))
+    story["audio_duration"] = dur
+    # 1ms प्रिसिजन: 0 पैडिंग, वॉइस खत्म होते ही वीडियो ठीक उसी फ्रेम पर समाप्त
+    story["timing_specs"] = {
+        "fps": 30,
+        "pre_padding_frames": 0,
+        "audio_start_frame": 0,
+        "audio_duration_frames": audio_frames,
+        "post_padding_frames": 0,
+        "transition_frames": 0,
+        "total_story_frames": audio_frames,
+        "total_story_seconds": dur
+    }
+    print(f"  ✔ [खबर {story_num}] पूर्ण अवधि: {dur}s ({audio_frames} फ्रेम्स, 0s साइलेंस) | {output_filename}")
     return f"out/{story_dir_name}/voice over/{output_filename}", dur
 
 

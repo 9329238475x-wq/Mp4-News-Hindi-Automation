@@ -131,32 +131,24 @@ export const DLS_COLORS = TV_COLORS;
 
 export const DLS_TIMING = {
   fps: 30,
-  prePaddingSeconds: 0.5,
-  postPaddingSeconds: 1.2,
-  transitionSeconds: 0.5,
+  prePaddingSeconds: 0,
+  postPaddingSeconds: 0,
+  transitionSeconds: 0,
   defaultAudioSeconds: 20,
   introFrames: 93, // 3.10 seconds of Subscribe-video.mp4 (exclusively on first story)
 
-  get prePaddingFrames() { return Math.ceil(this.prePaddingSeconds * this.fps); },
-  get postPaddingFrames() { return Math.ceil(this.postPaddingSeconds * this.fps); },
-  get transitionFrames() { return Math.ceil(this.transitionSeconds * this.fps); },
+  get prePaddingFrames() { return 0; },
+  get postPaddingFrames() { return 0; },
+  get transitionFrames() { return 0; },
 } as const;
 
 export const getStoryDurationFrames = (
   story: DLSStory,
   isFirstStory: boolean = false
 ): number => {
-  let baseFrames = 0;
-  if (story.timing_specs && story.timing_specs.total_story_frames > 0) {
-    baseFrames = story.timing_specs.total_story_frames;
-  } else {
-    const durSeconds = story.audio_duration || DLS_TIMING.defaultAudioSeconds;
-    baseFrames =
-      DLS_TIMING.prePaddingFrames +
-      Math.ceil(durSeconds * DLS_TIMING.fps) +
-      DLS_TIMING.postPaddingFrames +
-      DLS_TIMING.transitionFrames;
-  }
+  // 1ms प्रिसिजन: ऑडियो खत्म होते ही वीडियो उसी फ्रेम पर समाप्त (Zero extra silence/dead air)
+  const durSeconds = story.audio_duration || DLS_TIMING.defaultAudioSeconds;
+  const baseFrames = Math.ceil(durSeconds * DLS_TIMING.fps);
   return isFirstStory ? baseFrames + DLS_TIMING.introFrames : baseFrames;
 };
 

@@ -118,11 +118,12 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
     expandProgress = 0;
   }
 
-  const audioStartFrame = 15; // 0.5s pre-padding
-  const transitionDuration = 30; // 1.0s broadcast bumper
+  const audioStartFrame = 0; // 0s pre-padding (voice starts immediately at frame 0)
+  const isSingleOrLast = !totalStories || totalStories === 1 || storyIndex === totalStories - 1;
+  const transitionDuration = isSingleOrLast ? 0 : 30; // 0s on single/last story so video finishes exactly with voice
   const transitionStartFrame = Math.max(0, durationInFrames - transitionDuration);
   const nextStoryNumber = (story.story_number || storyIndex + 1) + 1;
-  const isLastStory = totalStories > 1 && storyIndex === totalStories - 1;
+  const isLastStory = isSingleOrLast;
 
   // ─── DYNAMIC MEME TIMING CALCULATION (Weighted sentence mapping) ───
   const memeSegments: {
@@ -173,18 +174,18 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
         backgroundColor: "#02040a",
       }}
     >
-      {/* ─── 0. BACKGROUND MUSIC (Starts Frame 0, 15% Volume, Loops seamlessly every 30.8s) ─── */}
+      {/* ─── 0. BACKGROUND MUSIC (Soft 8% Volume, so voiceover is clear & dominant) ─── */}
       <Loop durationInFrames={924}>
         <Audio
           src={assetPath("background-Music.mp3")}
-          volume={0.15}
+          volume={0.08}
         />
       </Loop>
 
-      {/* ─── VOICEOVER AUDIO (Starts at frame 15) ─── */}
+      {/* ─── VOICEOVER AUDIO (Starts Frame 0, Boosted 130% Studio Volume) ─── */}
       <Sequence from={audioStartFrame} name={`Audio: Story ${story.story_number}`}>
         {story.local_audio_asset && (
-          <Audio src={assetPath(story.local_audio_asset)} />
+          <Audio src={assetPath(story.local_audio_asset)} volume={1.3} />
         )}
       </Sequence>
 

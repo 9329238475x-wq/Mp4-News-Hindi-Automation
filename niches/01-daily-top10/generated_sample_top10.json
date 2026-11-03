@@ -138,7 +138,7 @@
       }
     ],
     "videos": [],
-    "audio_duration": 66.62,
+    "audio_duration": 58.24,
     "all_real_images": [
       "out/story_01/news real image/news_img_1_01.jpg",
       "out/story_01/news real image/news_img_1_02.jpg",
@@ -2158,13 +2158,13 @@
     "verified_location": "जीरकपुर (पंजाब)",
     "timing_specs": {
       "fps": 30,
-      "pre_padding_frames": 15,
-      "audio_start_frame": 15,
-      "audio_duration_frames": 1999,
-      "post_padding_frames": 36,
-      "transition_frames": 15,
-      "total_story_frames": 2065,
-      "total_story_seconds": 68.83
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1747,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1747,
+      "total_story_seconds": 58.24
     }
   }
 ]

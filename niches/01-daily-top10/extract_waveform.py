@@ -126,23 +126,23 @@ def process_audio_waveforms_and_metadata():
         source_name = s.get("real_image_attribution", "न्यूज़ डेस्क")
         s["image_attribution_tag"] = f"स्रोत: {source_name} | घटनास्थल"
 
-        # प्री/पोस्ट पैडिंग टाइमिंग मैथमैटिक्स
+        # 1ms प्रिसिजन: 0 पैडिंग (वॉइस खत्म होते ही वीडियो ठीक उसी फ्रेम पर समाप्त)
         dur_sec = s.get("audio_duration", len(waveform) / FPS if waveform else 20.0)
         audio_frames = math.ceil(dur_sec * FPS)
-        pre_frames = 15   # 0.5s visual reveal
-        post_frames = 36  # 1.2s breathing pause
-        trans_frames = 15 # 0.5s crossfade
-        total_story_frames = pre_frames + audio_frames + post_frames + trans_frames
+        pre_frames = 0
+        post_frames = 0
+        trans_frames = 0
+        total_story_frames = audio_frames
 
         s["timing_specs"] = {
             "fps": FPS,
-            "pre_padding_frames": pre_frames,
-            "audio_start_frame": pre_frames,
+            "pre_padding_frames": 0,
+            "audio_start_frame": 0,
             "audio_duration_frames": audio_frames,
-            "post_padding_frames": post_frames,
-            "transition_frames": trans_frames,
+            "post_padding_frames": 0,
+            "transition_frames": 0,
             "total_story_frames": total_story_frames,
-            "total_story_seconds": round(total_story_frames / FPS, 2)
+            "total_story_seconds": dur_sec
         }
 
         print(f"  [#{num:02d}] 📍 {loc} | ऑडियो: {dur_sec}s ({len(waveform)} वेवफॉर्म पॉइंट्स) | कुल फ्रेम्स: {total_story_frames}")
