@@ -133,6 +133,14 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
     durationInFrames: number;
   }[] = [];
 
+  const chunkVisuals: {
+    chunkIndex: number;
+    startFrame: number;
+    endFrame: number;
+    imageSrc: string;
+    sentence?: string;
+  }[] = [];
+
   if (story.chunks && story.chunks.length > 0) {
     const chunks = story.chunks;
     const voStart = audioStartFrame;
@@ -143,9 +151,27 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
     );
 
     let cumulativeFrames = voStart;
-    chunks.forEach((chunk) => {
+    chunks.forEach((chunk, cIdx) => {
       const chars = Math.max(10, (chunk.sentence || "").trim().length);
       const chunkFrames = Math.floor((chars / totalChars) * voAvailableFrames);
+      const cStart = cumulativeFrames;
+      const cEnd =
+        cIdx === chunks.length - 1
+          ? transitionStartFrame
+          : cumulativeFrames + chunkFrames;
+
+      const imgSrc =
+        chunk.local_visual_path ||
+        allImages[cIdx % allImages.length] ||
+        allImages[0];
+
+      chunkVisuals.push({
+        chunkIndex: chunk.chunk_index || cIdx + 1,
+        startFrame: cStart,
+        endFrame: cEnd,
+        imageSrc: imgSrc,
+        sentence: chunk.sentence,
+      });
 
       if (chunk.visual_intent === "MEME_REACTION" && chunk.local_visual_path) {
         // High-impact punchy meme display: ~75 to 90 frames (~2.5 to 3.0s)
@@ -201,6 +227,7 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
       {/* ─── 3. DYNAMIC TARAJU MEDIA SHOWCASE (10-15 Images + Directional Transitions + Seesaw Expansion) ─── */}
       <DLSTarajuShowcase
         images={allImages}
+        chunkVisuals={chunkVisuals}
         videoSrc={videoAsset}
         attributionTag={(
           story.image_attribution_tag ||

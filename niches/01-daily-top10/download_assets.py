@@ -109,6 +109,23 @@ COMMERCE_AND_SPAM_BLOCKLIST = [
     "stadium",
     "jersey",
     "pitch",
+    "wedding",
+    "weddingwire",
+    "shaadi",
+    "matrimony",
+    "pixabay",
+    "unsplash",
+    "freepik",
+    "shutterstock",
+    "depositphotos",
+    "dreamstime",
+    "alamy",
+    "clipart",
+    "vector",
+    "stock",
+    "brazil",
+    "portuguese",
+    "whitehouse",
 ]
 
 PRIORITY_NEWS_DOMAINS = [
@@ -154,6 +171,16 @@ def sanitize_keyword_master(kw: str) -> str:
     clean = re.sub(r'\b(start|route|departure|concluding|ceremony|boarding|transport|heavy|ban|closure|save|remove|during|after|before|walk|walks|walking|run|running)\b', '', clean, flags=re.IGNORECASE)
     if 'keshav' in clean.lower() and 'maurya' in clean.lower() and 'prasad' not in clean.lower():
         clean = re.sub(r'keshav\s+maurya', 'Keshav Prasad Maurya BJP', clean, flags=re.IGNORECASE)
+
+    c_low = clean.lower()
+    # Anchor generic terms to India / UP context so foreign stock/police/weddings are 100% prevented
+    if any(p in c_low for p in ['police', 'barricade', 'barrier', 'traffic']) and not any(loc in c_low for loc in ['up', 'bareilly', 'india', 'delhi', 'lucknow']):
+        clean = f"UP Police {clean}"
+    elif any(leg in c_low for leg in ['legislator', 'legislators', 'mla', 'mlas']) and 'bjp' not in c_low:
+        clean = "UP BJP leaders MLAs"
+    elif any(ven in c_low for ven in ['venue', 'hall', 'swayamvar']) and 'rally' not in c_low:
+        clean = "BJP rally public stage Bareilly"
+
     clean = re.sub(r'\s+', ' ', clean).strip()
     words = clean.split()
     if not words:
@@ -333,8 +360,21 @@ def download_and_verify_image(img_url: str, dest_path: str, min_width: int = 380
                             img.save(dest_path, "JPEG", quality=92)
                             return True
                     else:
-                        if img.mode in ("RGBA", "P"):
+                        if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+                            bg = Image.new("RGB", img.size, (255, 255, 255))
+                            rgba = img.convert("RGBA")
+                            bg.paste(rgba, mask=rgba.split()[3])
+                            img = bg
+                        elif img.mode != "RGB":
                             img = img.convert("RGB")
+
+                        # Reject blank or solid color images (variance < 35)
+                        try:
+                            extrema = img.convert("L").getextrema()
+                            if extrema[1] - extrema[0] < 35:
+                                return False
+                        except Exception:
+                            pass
                         
                         # 🚫 सफेद बैकग्राउंड वाले डॉक्यूमेंट्स / होमवर्क शीट्स / टेक्स्टबुक्स को अस्वीकार करें
                         try:

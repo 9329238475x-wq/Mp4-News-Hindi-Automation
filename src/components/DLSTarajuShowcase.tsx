@@ -32,8 +32,17 @@ export type TransitionType =
   | "zoom-in"
   | "zoom-out";
 
+export interface ChunkVisual {
+  chunkIndex: number;
+  startFrame: number;
+  endFrame: number;
+  imageSrc: string;
+  sentence?: string;
+}
+
 interface DLSTarajuShowcaseProps {
   images: string[];
+  chunkVisuals?: ChunkVisual[];
   videoSrc?: string | null;
   attributionTag?: string;
   isExpanded: boolean;
@@ -42,6 +51,7 @@ interface DLSTarajuShowcaseProps {
 
 export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
   images = [],
+  chunkVisuals = [],
   videoSrc = null,
   attributionTag = "स्रोत: असली प्रेस कवरेज",
   isExpanded: _isExpanded,
@@ -72,19 +82,33 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
   const entranceX = interpolate(entranceSpring, [0, 1], [-1000, 0]);
   const entranceOpacity = interpolate(entranceSpring, [0, 1], [0, 1]);
 
-  // ─── 2. MULTI-IMAGE SEQUENCING & TRANSITION LOGIC ───
-  // Each image plays for ~80 frames (approx 2.6s) across the 1430-frame story
-  const imageInterval = 85;
-  const activeFrame = Math.max(0, frame - 165);
-  const currentImageIdx =
-    Math.floor(activeFrame / imageInterval) % imageList.length;
-  const currentImage = imageList[currentImageIdx];
+  // ─── 2. SPEECH-SYNCHRONIZED ACTIVE VISUAL LOGIC ───
+  // If chunkVisuals provided, accurately display the image matching what is being spoken!
+  let currentImage = imageList[0];
+  let activeTransitionFrame = 0;
+  let transitionSeed = 0;
 
-  // Next image for cross-layer transition
-  const frameInSlot = activeFrame % imageInterval;
+  if (chunkVisuals && chunkVisuals.length > 0) {
+    const activeVisual =
+      chunkVisuals.find((cv) => frame >= cv.startFrame && frame < cv.endFrame) ||
+      (frame < chunkVisuals[0].startFrame
+        ? chunkVisuals[0]
+        : chunkVisuals[chunkVisuals.length - 1]);
+
+    currentImage = activeVisual.imageSrc || currentImage;
+    activeTransitionFrame = Math.max(0, frame - activeVisual.startFrame);
+    transitionSeed = activeVisual.chunkIndex;
+  } else {
+    // Fallback timer cycling if no chunks passed
+    const imageInterval = 120;
+    const activeFrame = Math.max(0, frame - 165);
+    const idx = Math.floor(activeFrame / imageInterval) % imageList.length;
+    currentImage = imageList[idx];
+    activeTransitionFrame = activeFrame % imageInterval;
+    transitionSeed = idx;
+  }
 
   // Pattern of directional transitions as requested by user:
-  // "kabhi upar se aa rha ho to kabhi niche se aa rha ho wesa lgna chahiye"
   const transitionPatterns: TransitionType[] = [
     "slide-left",
     "zoom-in",
@@ -92,19 +116,13 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
     "slide-right",
     "zoom-out",
     "slide-bottom",
-    "slide-left",
-    "drop-top" as any,
-    "slide-right",
-    "slide-bottom",
-    "zoom-in",
-    "slide-left",
   ];
   const currentTransition =
-    transitionPatterns[currentImageIdx % transitionPatterns.length];
+    transitionPatterns[transitionSeed % transitionPatterns.length];
 
-  // In-slot transition spring (first 16 frames of each image)
+  // In-slot transition spring (first 18 frames of each new chunk)
   const transSpring = spring({
-    frame: frameInSlot,
+    frame: activeTransitionFrame,
     fps,
     config: { damping: 15, mass: 0.6, stiffness: 120 },
   });
@@ -123,14 +141,16 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
   } else if (currentTransition === "slide-bottom") {
     transY = interpolate(transSpring, [0, 1], [350, 0]);
   } else if (currentTransition === "zoom-out") {
-    transScale = interpolate(transSpring, [0, 1], [1.22, 1.05]);
+    transScale = interpolate(transSpring, [0, 1], [1.18, 1.04]);
   } else {
     // zoom-in (Ken Burns)
-    transScale = interpolate(transSpring, [0, 1], [1.0, 1.08]);
+    transScale = interpolate(transSpring, [0, 1], [1.0, 1.06]);
   }
 
   // Continuous subtle Ken Burns drift during the image display
-  const kenBurnsDrift = interpolate(frameInSlot, [0, imageInterval], [1.0, 1.05]);
+  const kenBurnsDrift = interpolate(activeTransitionFrame, [0, 300], [1.0, 1.04], {
+    extrapolateRight: "clamp",
+  });
   const finalScale = transScale * kenBurnsDrift;
 
   const hasVideo =
