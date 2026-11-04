@@ -72,8 +72,13 @@ while time.time() - start_time < max_wait:
     time.sleep(15)
     try:
         st_res = api.kernels_status(kernel_id)
-        current_status = str(st_res.get("status", "")).upper()
-        fail_msg = st_res.get("failureMessage")
+        if isinstance(st_res, dict):
+            raw_status = st_res.get("status", "")
+            fail_msg = st_res.get("failureMessage") or st_res.get("failure_message")
+        else:
+            raw_status = getattr(st_res, "status", "")
+            fail_msg = getattr(st_res, "failure_message", None) or getattr(st_res, "failureMessage", None)
+        current_status = str(raw_status).upper()
         elapsed = int(time.time() - start_time)
         print(f"[{elapsed:3d}s] Status: {current_status}")
 
