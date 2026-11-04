@@ -17,6 +17,7 @@ kaggle_out/
 .DS_Store
 
 # Temporary & Cache files
+kaggle_debug_output/
 __pycache__/
 *.pyc
 *.pyo

@@ -17,8 +17,8 @@ Config.setX264Preset("veryfast");
 Config.setDefaultPremountInSeconds(1);
 
 if (process.platform === "linux") {
-  // Linux headless Docker: disable OpenGL context overhead for 2D DOM compositions
-  Config.setChromiumOpenGlRenderer(null);
+  // Linux headless Docker: standard software ANGLE for CPU rendering
+  Config.setChromiumOpenGlRenderer("angle");
 } else {
   // Windows: Safe low-resource single-core mode to keep CPU cool
   Config.setChromiumOpenGlRenderer("angle");
