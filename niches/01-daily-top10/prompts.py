@@ -147,6 +147,9 @@ STRICT MASTER RULES (SEARCH ENGINE OPTIMIZED):
 6. FOCUS 100% ON PROPER NOUNS & CORE OBJECTS:
    - Use the exact names of leaders, ministers, police officials, institutions, or core news objects:
      - E.g.: "JP Nadda", "Keshav Prasad Maurya", "BJP rally Bareilly", "BJP party workers", "traffic police barricade", "police diversion barrier".
+7. NEVER USE AMBIGUOUS ACRONYM 'UP' ALONE (ZERO CARTOONS GUARANTEE):
+   - ❌ STRICTLY FORBIDDEN: Do NOT write 'UP' alone or 'UP legislators' (search engines confuse 'UP' with Pixar's animated movie 'Up').
+   - ✅ REQUIRED: Always write out 'Uttar Pradesh' (e.g. 'Uttar Pradesh BJP', 'Uttar Pradesh Police', 'Uttar Pradesh leaders').
 
 OUTPUT ONLY IN VALID JSON FORMAT:
 {

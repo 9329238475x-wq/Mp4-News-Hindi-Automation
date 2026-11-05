@@ -67,6 +67,26 @@ COMMERCE_AND_SPAM_BLOCKLIST = [
     "vector",
     "cartoon",
     "anime",
+    # Animation, Pixar, Disney & Movies Blocklist (Zero Cartoon Guarantee)
+    "pixar",
+    "disney",
+    "animation",
+    "animated",
+    "movie",
+    "film",
+    "cinema",
+    "trailer",
+    "fictional",
+    "imdb",
+    "rottentomatoes",
+    "comic",
+    "manga",
+    "toy",
+    "action-figure",
+    "nickelodeon",
+    "dreamworks",
+    "boxoffice",
+    "box-office",
     "product",
     "shampoo",
     "hair-fall",
@@ -169,17 +189,20 @@ def sanitize_keyword_master(kw: str) -> str:
     clean = re.sub(r'\b(19\d\d|20\d\d)\b', '', clean)
     clean = re.sub(r'\b\d{1,2}(:\d{2})?\s*(am|pm|a\.m\.|p\.m\.|baje|hrs|hours)?\b', '', clean, flags=re.IGNORECASE)
     clean = re.sub(r'\b(start|route|departure|concluding|ceremony|boarding|transport|heavy|ban|closure|save|remove|during|after|before|walk|walks|walking|run|running)\b', '', clean, flags=re.IGNORECASE)
+    # UP -> Uttar Pradesh Master Expansion (100% prevents Pixar Up movie match)
+    clean = re.sub(r'\bup\b', 'Uttar Pradesh', clean, flags=re.IGNORECASE)
+
     if 'keshav' in clean.lower() and 'maurya' in clean.lower() and 'prasad' not in clean.lower():
         clean = re.sub(r'keshav\s+maurya', 'Keshav Prasad Maurya BJP', clean, flags=re.IGNORECASE)
 
     c_low = clean.lower()
     # Anchor generic terms to India / UP context so foreign stock/police/weddings are 100% prevented
-    if any(p in c_low for p in ['police', 'barricade', 'barrier', 'traffic']) and not any(loc in c_low for loc in ['up', 'bareilly', 'india', 'delhi', 'lucknow']):
-        clean = f"UP Police {clean}"
+    if any(p in c_low for p in ['police', 'barricade', 'barrier', 'traffic']) and not any(loc in c_low for loc in ['uttar pradesh', 'bareilly', 'india', 'delhi', 'lucknow']):
+        clean = f"Uttar Pradesh Police {clean}"
     elif any(leg in c_low for leg in ['legislator', 'legislators', 'mla', 'mlas']) and 'bjp' not in c_low:
-        clean = "UP BJP leaders MLAs"
+        clean = "Uttar Pradesh BJP MLAs"
     elif any(ven in c_low for ven in ['venue', 'hall', 'swayamvar']) and 'rally' not in c_low:
-        clean = "BJP rally public stage Bareilly"
+        clean = "BJP rally Bareilly"
 
     clean = re.sub(r'\s+', ' ', clean).strip()
     words = clean.split()
@@ -193,14 +216,26 @@ def get_wikimedia_portrait(entity_name: str) -> str:
     if not entity_name or len(entity_name.strip()) < 3:
         return ""
     clean_name = sanitize_keyword_master(entity_name)
+    # Generic state names, parties or actions should never query Wikipedia portrait (prevents flags, coats of arms, films)
+    if clean_name.lower() in ["uttar pradesh", "india", "delhi", "bjp", "police", "traffic", "up", "rally"]:
+        return ""
     try:
-        url = f"https://en.wikipedia.org/w/api.php?action=query&titles={requests.utils.quote(clean_name)}&prop=pageimages&format=json&pithumbsize=1280"
+        url = f"https://en.wikipedia.org/w/api.php?action=query&titles={requests.utils.quote(clean_name)}&prop=pageimages|description&format=json&pithumbsize=1280"
         r = requests.get(url, headers={"User-Agent": "DLSNewsBroadcastBot/1.0"}, timeout=5).json()
         pages = r.get("query", {}).get("pages", {})
         for pid, pdata in pages.items():
+            if pid == "-1":
+                continue
+            title = pdata.get("title", "").lower()
+            desc = pdata.get("description", "").lower()
+            # If Wikipedia page is a movie, film, animated feature, fictional character, song: REJECT!
+            if any(bad in f"{title} {desc}" for bad in ["film", "movie", "animated", "animation", "fictional", "disney", "pixar", "album", "song", "series"]):
+                continue
             thumb = pdata.get("thumbnail", {}).get("source")
-            if thumb and not any(bad in thumb.lower() for bad in ["flag", "symbol", "emblem", "icon", "map"]):
-                return thumb
+            if thumb:
+                thumb_low = thumb.lower()
+                if not any(bad in thumb_low for bad in ["flag", "symbol", "emblem", "icon", "map"] + COMMERCE_AND_SPAM_BLOCKLIST):
+                    return thumb
     except Exception:
         pass
     return ""
@@ -262,6 +297,11 @@ def search_web_real_images(query: str, is_meme: bool = False, max_results: int =
                 results = list(ddgs.images(clean_query, max_results=max_results))
                 for r in results:
                     img_u = r.get("image")
+                    t_d = r.get("title", "").lower()
+                    u_d = str(img_u).lower()
+                    combined_d = f"{u_d} {t_d}"
+                    if any(bad in combined_d for bad in COMMERCE_AND_SPAM_BLOCKLIST):
+                        continue
                     if img_u and img_u not in collected_urls:
                         collected_urls.append(img_u)
         except Exception:
