@@ -70,6 +70,8 @@ export interface DLSStoryProps extends Record<string, unknown> {
   allHeadlines: string[];
   /** Global frame offset for continuous ticker and clock in segmented renders */
   globalStartFrame?: number;
+  /** Exact allocated frames for story content (excluding subscribe intro) */
+  mainDurationFrames?: number;
 }
 
 /* ── Full Bulletin Remotion Props ── */

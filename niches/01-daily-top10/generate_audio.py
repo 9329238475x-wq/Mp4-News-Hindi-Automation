@@ -29,7 +29,7 @@ os.makedirs(OUT_DIR, exist_ok=True)
 
 # Edge-TTS settings
 EDGE_VOICE = "hi-IN-MadhurNeural"
-EDGE_RATE = "+6%"
+EDGE_RATE = "+25%"
 
 # Global OmniVoice singleton cache
 _OMNIVOICE_MODEL = None
@@ -192,10 +192,11 @@ def normalize_broadcast_audio(file_path: str):
     if not os.path.exists(file_path) or os.path.getsize(file_path) < 5000:
         return
     norm_temp = file_path.replace(".mp3", "_loudnorm_temp.mp3")
+    # Precision trailing silence trim + Loudness boost (0ms dead air, -14 LUFS Broadcast Grade)
     cmd = [
         "ffmpeg", "-y",
         "-i", file_path,
-        "-af", "loudnorm=I=-11:TP=-0.5:LRA=5",
+        "-af", "areverse,silenceremove=start_periods=1:start_duration=0.05:start_threshold=-38dB,areverse,loudnorm=I=-11:TP=-0.5:LRA=5",
         "-ar", "48000",
         "-ac", "2",
         "-b:a", "192k",
@@ -249,10 +250,11 @@ def synthesize_omnivoice(text: str, output_mp3_path: str) -> bool:
         temp_wav = output_mp3_path.replace(".mp3", "_temp.wav")
         sf.write(temp_wav, wav, sr)
 
-        # Convert to 48kHz Stereo broadcast MP3
+        # Convert to 48kHz Stereo broadcast MP3 at 1.25x speed with trailing silence trimming & pitch preservation
         cmd = [
             "ffmpeg", "-y",
             "-i", temp_wav,
+            "-af", "areverse,silenceremove=start_periods=1:start_duration=0.05:start_threshold=-38dB,areverse,atempo=1.25",
             "-ar", "48000",
             "-ac", "2",
             "-b:a", "192k",

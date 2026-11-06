@@ -46,9 +46,12 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
   channelTagline,
   allHeadlines,
   globalStartFrame = 0,
+  mainDurationFrames,
 }) => {
   const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
+  const { fps, durationInFrames: compositionFrames } = useVideoConfig();
+  // 1ms प्रिसिजन: यदि पैरेंट ने सटीक स्टोरी फ्रेम्स दिए हैं, तो उसी का उपयोग करें (0 dead air)
+  const durationInFrames = mainDurationFrames ?? compositionFrames;
 
   // Identify meme assets so they NEVER display as normal news photos
   const memePaths = new Set(
@@ -345,6 +348,7 @@ export const DLSNewsStory: React.FC<DLSStoryProps> = ({
           channelTagline={channelTagline}
           allHeadlines={allHeadlines}
           globalStartFrame={globalStartFrame + introFrames}
+          mainDurationFrames={mainDuration}
         />
       </Sequence>
     </div>
