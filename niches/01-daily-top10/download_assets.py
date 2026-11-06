@@ -168,29 +168,27 @@ COMMERCE_AND_SPAM_BLOCKLIST = [
 ]
 
 PRIORITY_NEWS_DOMAINS = [
-    "wikimedia",
-    "ndtv",
-    "thehindu",
-    "indiatoday",
-    "indianexpress",
-    "hindustantimes",
+    "bjp.org",
     "amarujala",
     "jagran",
     "bhaskar",
+    "ndtv",
+    "thehindu",
+    "indianexpress",
+    "indiatoday",
+    "hindustantimes",
+    "abplive",
+    "news18",
+    "navbharattimes",
+    "patrika",
+    "etvbharat",
+    "zeenews",
     "oneindia",
     "asianetnews",
-    "etvbharat",
-    "patrika",
-    "navbharattimes",
     "tribuneindia",
     "deccanherald",
-    "freepressjournal",
     "livemint",
-    "moneycontrol",
-    "zeenews",
-    "abplive",
-    "timesnownews",
-    "news18"
+    "wikimedia",
 ]
 
 
@@ -263,10 +261,10 @@ def get_wikimedia_portrait(entity_name: str) -> str:
 def search_web_real_images(query: str, is_meme: bool = False, max_results: int = 15) -> list[str]:
     """
     मल्टी-इंजन असली न्यूज़ फोटोज़ सर्च इंजन (Master Multi-Engine News Searcher):
-    1. विकिमीडिया कॉमन्स आधिकारिक पोर्ट्रेट्स (यदि कोई नेता/हस्ती है)
-    2. Bing Images Async इंजन (NDTV, The Hindu, OneIndia, Asianet आदि से 30+ HD प्रेस फोटोज़)
-    3. DuckDuckGo Images इंजन (सैनिटाइज्ड 2-4 शब्दों के साथ)
-    4. भारतीय न्यूज़ पोर्टल्स को शीर्ष प्राथमिकता व स्पैम फ़िल्टरिंग
+    1. DuckDuckGo Images इंजन (PRIMARY #1): 100% असली न्यूज़ फोटोज़ व भारतीय संदर्भ (region='in-en')
+    2. विकिमीडिया कॉमन्स आधिकारिक पोर्ट्रेट्स (नेताओं के आधिकारिक 4K चित्र)
+    3. Bing Images Async इंजन (SECONDARY FALLBACK: केवल तभी जब DuckDuckGo कम रिजल्ट दे)
+    4. भारतीय न्यूज़ पोर्टल्स को शीर्ष प्राथमिकता व सख्त एंटी-गेमिंग/एंटी-कार्टून स्पैम फ़िल्टरिंग
     """
     clean_query = sanitize_keyword_master(query)
     if not clean_query:
@@ -274,45 +272,25 @@ def search_web_real_images(query: str, is_meme: bool = False, max_results: int =
 
     collected_urls = []
 
-    # 1. विकिमीडिया कॉमन्स पोर्ट्रेट चेक (नेताओं के आधिकारिक चित्र)
-    if not is_meme:
-        wiki_img = get_wikimedia_portrait(clean_query)
-        if wiki_img:
-            collected_urls.append(wiki_img)
-
-    # 2. Bing Images Async सर्च इंजन (JSON मेटाडेटा: Title + Page URL + Image URL सत्यापन)
-    encoded = requests.utils.quote(clean_query)
-    bing_async_url = f"https://www.bing.com/images/async?q={encoded}&first=0&count=35&mmasync=1"
+    # 1. DuckDuckGo इमेज सर्च (PRIMARY #1) - असली और सटीक न्यूज़ तस्वीरों का मुख्य स्रोत
     try:
-        r = requests.get(bing_async_url, headers=BROWSER_HEADERS, timeout=8)
-        if r.status_code == 200:
-            matches = re.findall(r'm="([^"]+)"', r.text)
-            for m_raw in matches:
-                try:
-                    item_data = json.loads(html.unescape(m_raw))
-                    img_u = item_data.get("murl")
-                    p_u = item_data.get("purl", "").lower()
-                    title_t = item_data.get("t", "").lower()
-
-                    if not img_u or img_u in collected_urls:
-                        continue
-
-                    # 100% सुरक्षा: इमेज URL, वेबपेज URL और शीर्षक तीनों पर स्पैम/स्पोर्ट्स फ़िल्टर
-                    combined_meta = f"{img_u.lower()} {p_u} {title_t}"
-                    if any(bad in combined_meta for bad in COMMERCE_AND_SPAM_BLOCKLIST):
-                        continue
-
-                    collected_urls.append(img_u)
-                except Exception:
+        from ddgs import DDGS
+        with DDGS(timeout=14) as ddgs:
+            results = list(ddgs.images(clean_query, region="in-en", safesearch="moderate", max_results=max_results))
+            for r in results:
+                img_u = r.get("image")
+                t_d = r.get("title", "").lower()
+                u_d = str(img_u).lower()
+                combined_d = f"{u_d} {t_d}"
+                if any(bad in combined_d for bad in COMMERCE_AND_SPAM_BLOCKLIST):
                     continue
+                if img_u and img_u not in collected_urls:
+                    collected_urls.append(img_u)
     except Exception:
-        pass
-
-    # 3. DuckDuckGo इमेज सर्च (बैकअप)
-    if len(collected_urls) < max_results:
+        # Global fallback query without region lock if in-en timed out
         try:
             from ddgs import DDGS
-            with DDGS(timeout=6) as ddgs:
+            with DDGS(timeout=10) as ddgs:
                 results = list(ddgs.images(clean_query, max_results=max_results))
                 for r in results:
                     img_u = r.get("image")
@@ -323,6 +301,43 @@ def search_web_real_images(query: str, is_meme: bool = False, max_results: int =
                         continue
                     if img_u and img_u not in collected_urls:
                         collected_urls.append(img_u)
+        except Exception:
+            pass
+
+    # 2. विकिमीडिया कॉमन्स पोर्ट्रेट चेक (नेताओं के आधिकारिक चित्र)
+    if not is_meme and len(collected_urls) < max_results:
+        wiki_img = get_wikimedia_portrait(clean_query)
+        if wiki_img and wiki_img not in collected_urls:
+            collected_urls.append(wiki_img)
+
+    # 3. Bing Images Async सर्च इंजन (SECONDARY FALLBACK - केवल तभी चलेगा जब DuckDuckGo से पर्याप्त तस्वीरें न मिलें)
+    if len(collected_urls) < 4:
+        encoded = requests.utils.quote(clean_query)
+        bing_async_url = f"https://www.bing.com/images/async?q={encoded}&first=0&count=25&mmasync=1"
+        try:
+            r = requests.get(bing_async_url, headers=BROWSER_HEADERS, timeout=8)
+            if r.status_code == 200:
+                matches = re.findall(r'm="([^"]+)"', r.text)
+                for m_raw in matches:
+                    try:
+                        item_data = json.loads(html.unescape(m_raw))
+                        img_u = item_data.get("murl")
+                        p_u = item_data.get("purl", "").lower()
+                        title_t = item_data.get("t", "").lower()
+
+                        if not img_u or img_u in collected_urls:
+                            continue
+
+                        # 100% सुरक्षा: इमेज URL, वेबपेज URL और शीर्षक तीनों पर स्पैम/स्पोर्ट्स/गेम फ़िल्टर
+                        combined_meta = f"{img_u.lower()} {p_u} {title_t}"
+                        if any(bad in combined_meta for bad in COMMERCE_AND_SPAM_BLOCKLIST):
+                            continue
+
+                        collected_urls.append(img_u)
+                        if len(collected_urls) >= max_results:
+                            break
+                    except Exception:
+                        continue
         except Exception:
             pass
 
