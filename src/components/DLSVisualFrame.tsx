@@ -104,27 +104,6 @@ export const DLSVisualFrame: React.FC<DLSVisualFrameProps> = ({
         }}
       />
 
-      {/* ─── Bottom Attribution Tag ─── */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 14,
-          left: 16,
-          background: "rgba(0, 0, 0, 0.78)",
-          backdropFilter: "blur(6px)",
-          border: "1px solid rgba(255, 255, 255, 0.25)",
-          padding: "5px 16px",
-          borderRadius: 6,
-          color: "#e2e8f0",
-          fontSize: 13,
-          fontWeight: 700,
-          fontFamily: "'Noto Sans Devanagari', sans-serif",
-          letterSpacing: "0.4px",
-          zIndex: 10,
-        }}
-      >
-        {attributionTag}
-      </div>
-    </div>
+          </div>
   );
 };

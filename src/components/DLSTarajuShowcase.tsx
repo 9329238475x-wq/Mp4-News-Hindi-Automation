@@ -224,27 +224,6 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
         }}
       />
 
-      {/* ─── Bottom Attribution Tag ─── */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 14,
-          left: 16,
-          background: "rgba(0, 0, 0, 0.8)",
-          backdropFilter: "blur(8px)",
-          border: "1px solid rgba(255, 255, 255, 0.3)",
-          padding: "5px 16px",
-          borderRadius: 6,
-          color: "#ffffff",
-          fontSize: 13,
-          fontWeight: 800,
-          fontFamily: "'Noto Sans Devanagari', sans-serif",
-          letterSpacing: "0.5px",
-          zIndex: 10,
-        }}
-      >
-        {attributionTag}
-      </div>
-    </div>
+          </div>
   );
 };

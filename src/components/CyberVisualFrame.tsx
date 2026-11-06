@@ -119,28 +119,7 @@ export const CyberVisualFrame: React.FC<CyberVisualFrameProps> = ({
         </span>
       </div>
 
-      {/* ─── BOTTOM-LEFT ATTRIBUTION BADGE ─── */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 14,
-          left: 14,
-          background: "rgba(0, 0, 0, 0.78)",
-          backdropFilter: "blur(6px)",
-          border: "1px solid rgba(255, 255, 255, 0.2)",
-          padding: "4px 12px",
-          borderRadius: 4,
-          color: "#e2e8f0",
-          fontSize: 12,
-          fontWeight: 700,
-          fontFamily: "'Noto Sans Devanagari', sans-serif",
-          zIndex: 10,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.6)",
-        }}
-      >
-        {attributionTag}
-      </div>
-
+      
       {/* ─── NEON CYAN CORNER BRACKETS: ┌ ┐ └ ┘ ─── */}
       {/* Top-Left Bracket */}
       <div
