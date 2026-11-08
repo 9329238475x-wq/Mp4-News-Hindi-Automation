@@ -605,28 +605,20 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list
 
         time.sleep(0.5)
 
-    # 3.5 गारंटीड फॉलबैक: यदि क्लाउड IP रेट-लिमिट या वेब सर्च से पर्याप्त तस्वीरें न मिलें,
-    # तो pre-bundled प्रामाणिक प्रेस फोटोज़ (assets/sample_story_01_images/) से स्वतः पूरा करना
-    sample_assets_dir = os.path.join(BASE_DIR, "assets", "sample_story_01_images")
-    if os.path.exists(sample_assets_dir) and len(downloaded_real_images) < target_news:
-        sample_imgs = sorted([f for f in os.listdir(sample_assets_dir) if f.lower().endswith((".jpg", ".png", ".jpeg"))])
-        for sf in sample_imgs:
-            if len(downloaded_real_images) >= target_news:
-                break
-            src_sf = os.path.join(sample_assets_dir, sf)
+    # 3.5 यदि अतिरिक्त तस्वीरों की आवश्यकता हो, तो मूल न्यूज़ आर्टिकल से निकाले गए चित्रों का उपयोग
+    for extra_img in story.get("images", []):
+        if len(downloaded_real_images) >= target_news:
+            break
+        u = extra_img.get("url") if isinstance(extra_img, dict) else str(extra_img)
+        if u and u not in seen_urls and u.startswith("http"):
+            seen_urls.add(u)
             img_idx = len(downloaded_real_images) + 1
             filename = f"news_img_{story_num}_{img_idx:02d}.jpg"
             dest_path = os.path.join(news_dir, filename)
             rel_path = f"out/{story_dir_name}/news real image/{filename}"
-            if not os.path.exists(dest_path):
-                import shutil
-                shutil.copyfile(src_sf, dest_path)
-            if rel_path not in downloaded_real_images:
+            if download_and_verify_image(u, dest_path, min_width=300, min_height=180, is_meme=False):
                 downloaded_real_images.append(rel_path)
-            if not os.path.exists(root_primary_path):
-                import shutil
-                shutil.copyfile(dest_path, root_primary_path)
-        print(f"  🛡️ [Guaranteed Fallback] Ensured {len(downloaded_real_images)} authentic news photos for story {story_num}!")
+                print(f"  📸 [Article Media] Loaded authentic image from source: {u[:60]}...")
 
     # 4. चंक-टू-इमेज 100% असली न्यूज़ फोटोज़ सटीक मैपिंग (मीम्स पूर्णतः बंद)
     for idx, c in enumerate(chunks):
