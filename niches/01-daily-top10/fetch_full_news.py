@@ -26,7 +26,10 @@ import urllib.request
 import urllib.parse
 import xml.etree.ElementTree as ET
 import requests
-import trafilatura
+try:
+    import trafilatura
+except ImportError:
+    trafilatura = None
 import feedparser
 from bs4 import BeautifulSoup
 from PIL import Image
