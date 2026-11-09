@@ -99,11 +99,15 @@ out_dir = ROOT / "out"
 out_dir.mkdir(parents=True, exist_ok=True)
 print("\n📥 Fetching output files from Kaggle...")
 
-try:
-    files, _ = api.kernels_output(kernel_id, path=str(out_dir), force=True, quiet=False)
-    print(f"✓ Downloaded {len(files) if files else 0} output files to {out_dir}")
-except Exception as e:
-    print(f"Notice during download: {e}")
+for attempt in range(1, 4):
+    try:
+        files, _ = api.kernels_output(kernel_id, path=str(out_dir), force=True, quiet=False)
+        print(f"✓ Downloaded {len(files) if files else 0} output files to {out_dir}")
+        break
+    except Exception as e:
+        print(f"Notice during download (attempt {attempt}/3): {e}")
+        if attempt < 3:
+            time.sleep(10)
 
 # If output zip exists, unpack it into out_dir
 zip_files = list(out_dir.glob("*.zip"))
