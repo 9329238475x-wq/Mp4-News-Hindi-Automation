@@ -208,11 +208,16 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
     );
   }
 
-  const hasVideo =
-    typeof videoSrc === "string" &&
-    videoSrc.length > 0 &&
-    (videoSrc.toLowerCase().endsWith(".mp4") ||
-      videoSrc.toLowerCase().endsWith(".webm"));
+  // 🎬 Support both direct videoSrc and chunk-level video/animated GIF loops (.mp4, .webm)
+  const isMediaVideo = (path: string | undefined | null) => {
+    if (!path || typeof path !== "string") return false;
+    const lower = path.toLowerCase();
+    return lower.endsWith(".mp4") || lower.endsWith(".webm");
+  };
+
+  const activeMediaIsVideo = isMediaVideo(currentImage) || isMediaVideo(videoSrc);
+  const activeVideoUrl = isMediaVideo(currentImage) ? currentImage : videoSrc;
+  const hasVideo = activeMediaIsVideo;
 
   return (
     <div
@@ -248,11 +253,12 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
           willChange: "transform, opacity",
         }}
       >
-        {hasVideo ? (
+        {activeMediaIsVideo && activeVideoUrl ? (
           <OffthreadVideo
-            src={assetPath(videoSrc!)}
+            src={assetPath(activeVideoUrl)}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
             muted
+            loop
           />
         ) : (
           <Img

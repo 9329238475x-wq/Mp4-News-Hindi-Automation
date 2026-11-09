@@ -95,3 +95,4 @@ def save_story_folder_metadata(story: dict, out_dir: str):
             sf.write("\n".join(lines) + "\n")
     except Exception as e:
         print(f"    ⚠️ [Metadata] script_{s_num}.txt save error: {e}")
+

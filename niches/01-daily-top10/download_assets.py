@@ -514,14 +514,12 @@ def download_and_verify_image(img_url: str, dest_path: str, min_width: int = 380
 
 def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list[str]:
     """
-    एक खबर के लिए 10 से 15 असली तस्वीरें व 2-3 मीम्स डाउनलोड करना:
-    - 100% ENGLISH SEARCH QUERIES ONLY
-    - चंक-दर-चंक विजुअल सिंक (जो बोला जा रहा है वही इमेज)
-    - आउटपुट फोल्डर: out/story_XX/news real image & out/story_XX/meems image
-    - फ़ॉरवर्ड स्लैश (/) पाथ ताकि Linux / Kaggle / Remotion में 100% काम करे
+    एक खबर के लिए प्रामाणिक तस्वीरें व एनिमेटेड GIFs जुटाना:
+    1. सर्वोच्च प्राथमिकता #1: मूल समाचार आर्टिकल (Dainik Bhaskar आदि) से निकाली गई 100% असली तस्वीरें व GIFs!
+    2. द्वितीय प्राथमिकता #2: Groq AI कीवर्ड्स के आधार पर Pexels API से विशुद्ध 100% भारतीय संदर्भ (Indian Context) तस्वीरें!
+    3. शून्य DuckDuckGo, शून्य विदेशी तस्वीरें, शून्य कार्टून्स!
     """
     story_num = story.get("story_number", 1)
-    original_img_url = story.get("real_image_url")
     chunks = story.get("chunks", [])
 
     story_dir_name = f"story_{story_num:02d}"
@@ -532,96 +530,97 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list
     os.makedirs(meems_dir, exist_ok=True)
 
     downloaded_real_images = []
-    downloaded_memes = []
     seen_urls = set()
+    root_primary_path = os.path.join(story_dir, f"news_img_{story_num}_01.jpg")
 
-    # 1. यदि मूल न्यूज़ आर्टिकल की पहली ओरिजिनल फोटो उपलब्ध है
-    primary_filename = f"news_img_{story_num}_01.jpg"
-    primary_path = os.path.join(news_dir, primary_filename)
-    root_primary_path = os.path.join(story_dir, primary_filename)
-    rel_primary = f"out/{story_dir_name}/news real image/{primary_filename}"
+    # ──────────────────────────────────────────────────────────────────────────
+    # 1. सर्वोच्च प्राथमिकता: मूल समाचार आर्टिकल (Dainik Bhaskar आदि) के सभी असली फोटोज़ व एनिमेटेड GIFs
+    # ──────────────────────────────────────────────────────────────────────────
+    article_media = story.get("images", [])
+    for m in article_media:
+        if isinstance(m, dict):
+            loc_path = m.get("local_path")
+            m_url = m.get("url")
+            # यदि फाइल पहले से लोकल डिस्क पर मौजूद है (fetch_full_news.py द्वारा सेव)
+            if loc_path:
+                full_loc = os.path.join(BASE_DIR, *loc_path.replace("\\", "/").split("/"))
+                if os.path.exists(full_loc) and loc_path not in downloaded_real_images:
+                    downloaded_real_images.append(loc_path.replace("\\", "/"))
+                    if m_url: seen_urls.add(m_url)
+                    continue
 
-    if original_img_url and original_img_url.startswith("http"):
-        if download_and_verify_image(original_img_url, primary_path):
-            downloaded_real_images.append(rel_primary)
-            seen_urls.add(original_img_url)
-            try:
-                import shutil
-                shutil.copyfile(primary_path, root_primary_path)
-            except Exception:
-                pass
+            # यदि URL से डाउनलोड करने की आवश्यकता हो
+            if m_url and m_url.startswith("http") and m_url not in seen_urls:
+                seen_urls.add(m_url)
+                img_idx = len(downloaded_real_images) + 1
+                fn = f"news_img_{story_num}_{img_idx:02d}.jpg"
+                dp = os.path.join(news_dir, fn)
+                rel_p = f"out/{story_dir_name}/news real image/{fn}"
+                if download_and_verify_image(m_url, dp, min_width=250, min_height=150, is_meme=False):
+                    downloaded_real_images.append(rel_p)
 
-    # 2. सर्च क्वेरीज़ तैयार करना (मास्टर सैनिटाइज्ड 2-4 शब्द, शून्य साल, शून्य समय)
-    real_queries = []
-    for c in chunks:
-        for kw in c.get("image_keywords_en", []):
-            s_kw = sanitize_keyword_master(kw)
-            if s_kw and s_kw not in real_queries:
-                real_queries.append(s_kw)
+    if downloaded_real_images:
+        print(f"  📰 [आर्टिकल मीडिया] मूल खबर से {len(downloaded_real_images)} असली तस्वीरें/GIFs लोड की गईं!")
 
-    for skw in story.get("visual_keywords_en", []) or story.get("visual_keywords", []):
-        s_skw = sanitize_keyword_master(skw)
-        if s_skw and s_skw not in real_queries:
-            real_queries.append(s_skw)
-
-    # विशिष्ट क्रम बनाए रखें और डुप्लिकेट्स हटाएं
-    dedup_queries = []
-    for q in real_queries:
-        q_norm = q.lower().strip()
-        if q_norm and q_norm not in [x.lower() for x in dedup_queries]:
-            dedup_queries.append(q.strip())
-
-    # 3. असली न्यूज़ फोटोज़ डाउनलोडिंग लूप (लक्ष्य: 10 से 14 असली तस्वीरें)
+    # ──────────────────────────────────────────────────────────────────────────
+    # 2. द्वितीय प्राथमिकता: Groq AI कीवर्ड्स से Pexels API (विशुद्ध 100% भारतीय संदर्भ, HD Landscape)
+    # ──────────────────────────────────────────────────────────────────────────
     target_news = max(12, target_count)
-    for q in dedup_queries:
-        if len(downloaded_real_images) >= target_news:
-            break
+    if len(downloaded_real_images) < target_news:
+        real_queries = []
+        for c in chunks:
+            for kw in c.get("image_keywords_en", []):
+                s_kw = sanitize_keyword_master(kw)
+                if s_kw and s_kw not in real_queries:
+                    real_queries.append(s_kw)
 
-        candidate_urls = search_web_real_images(q, is_meme=False, max_results=12)
-        images_from_this_query = 0
+        for skw in story.get("visual_keywords_en", []) or story.get("visual_keywords", []):
+            s_skw = sanitize_keyword_master(skw)
+            if s_skw and s_skw not in real_queries:
+                real_queries.append(s_skw)
 
-        for u in candidate_urls:
+        dedup_queries = []
+        for q in real_queries:
+            q_norm = q.lower().strip()
+            if q_norm and q_norm not in [x.lower() for x in dedup_queries]:
+                dedup_queries.append(q.strip())
+
+        for q in dedup_queries:
             if len(downloaded_real_images) >= target_news:
                 break
-            if u in seen_urls:
-                continue
-            seen_urls.add(u)
 
-            img_idx = len(downloaded_real_images) + 1
-            filename = f"news_img_{story_num}_{img_idx:02d}.jpg"
-            dest_path = os.path.join(news_dir, filename)
-            rel_path = f"out/{story_dir_name}/news real image/{filename}"
+            candidate_urls = search_pexels_indian_images(q, max_results=8)
+            images_from_query = 0
 
-            if download_and_verify_image(u, dest_path, min_width=350, min_height=200, is_meme=False):
-                downloaded_real_images.append(rel_path)
-                images_from_this_query += 1
-                if img_idx == 1 and not os.path.exists(root_primary_path):
-                    try:
-                        import shutil
-                        shutil.copyfile(dest_path, root_primary_path)
-                    except Exception:
-                        pass
-                if images_from_this_query >= 3:
+            for u in candidate_urls:
+                if len(downloaded_real_images) >= target_news:
                     break
+                if u in seen_urls:
+                    continue
+                seen_urls.add(u)
 
-        time.sleep(0.5)
+                img_idx = len(downloaded_real_images) + 1
+                filename = f"news_img_{story_num}_{img_idx:02d}.jpg"
+                dest_path = os.path.join(news_dir, filename)
+                rel_path = f"out/{story_dir_name}/news real image/{filename}"
 
-    # 3.5 यदि अतिरिक्त तस्वीरों की आवश्यकता हो, तो मूल न्यूज़ आर्टिकल से निकाले गए चित्रों का उपयोग
-    for extra_img in story.get("images", []):
-        if len(downloaded_real_images) >= target_news:
-            break
-        u = extra_img.get("url") if isinstance(extra_img, dict) else str(extra_img)
-        if u and u not in seen_urls and u.startswith("http"):
-            seen_urls.add(u)
-            img_idx = len(downloaded_real_images) + 1
-            filename = f"news_img_{story_num}_{img_idx:02d}.jpg"
-            dest_path = os.path.join(news_dir, filename)
-            rel_path = f"out/{story_dir_name}/news real image/{filename}"
-            if download_and_verify_image(u, dest_path, min_width=300, min_height=180, is_meme=False):
-                downloaded_real_images.append(rel_path)
-                print(f"  📸 [Article Media] Loaded authentic image from source: {u[:60]}...")
+                if download_and_verify_image(u, dest_path, min_width=350, min_height=200, is_meme=False):
+                    downloaded_real_images.append(rel_path)
+                    images_from_query += 1
+                    if img_idx == 1 and not os.path.exists(root_primary_path):
+                        try:
+                            import shutil
+                            shutil.copyfile(dest_path, root_primary_path)
+                        except Exception:
+                            pass
+                    if images_from_query >= 2:
+                        break
 
-    # 4. चंक-टू-इमेज 100% असली न्यूज़ फोटोज़ सटीक मैपिंग (मीम्स पूर्णतः बंद)
+            time.sleep(0.3)
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # 3. सभी असली तस्वीरों व GIFs को चंक्स में समान रूप से वितरित करना (ताकि हर तस्वीर प्ले हो)
+    # ──────────────────────────────────────────────────────────────────────────
     for idx, c in enumerate(chunks):
         c["visual_intent"] = "REAL_PHOTO"
         c["meme_keyword_en"] = None

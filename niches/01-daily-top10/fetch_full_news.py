@@ -50,16 +50,19 @@ ASSETS_DIR = os.path.abspath(os.path.join(CURR_DIR, "..", "..", "assets"))
 os.makedirs(OUT_DIR, exist_ok=True)
 os.makedirs(ASSETS_DIR, exist_ok=True)
 
-# 7 मुख्य पिलर्स और उनके विविध शीर्ष राष्ट्रीय व अंतरराष्ट्रीय लाइव सोर्सेस (BBC, Bhaskar, ABP, Zee, Google News, Amar Ujala)
+# 🚫 सख्त ब्लॉकलिस्ट: अमर उजाला को 100% ब्लॉक किया गया है (यूजर निर्देश: अमर उजाला में खराब/कम तस्वीरें होती हैं)
+BLOCKED_NEWS_DOMAINS = ["amarujala.com", "amarujala"]
+
+# 7 मुख्य पिलर्स और शीर्ष भारतीय न्यूज़ सोर्सेस (दैनिक भास्कर, जागरण, बीबीसी, एबीपी, ज़ी न्यूज़ - फोटो व GIF युक्त)
 MASTER_7_PILLARS = [
     {
         "id": "crime",
         "name": "🔥 क्राइम, एनकाउंटर & माफिया",
         "feeds": [
-            ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
+            ("दैनिक भास्कर क्राइम", "https://www.bhaskar.com/rss-v1--category-4589.xml"),
+            ("दैनिक जागरण क्राइम", "https://rss.jagran.com/rss/news/crime.xml"),
             ("बीबीसी हिंदी", "https://feeds.bbci.co.uk/hindi/rss.xml"),
-            ("एबीपी न्यूज़", "https://www.abplive.com/home/feed"),
-            ("अमर उजाला क्राइम", "https://www.amarujala.com/rss/crime.xml")
+            ("एबीपी न्यूज़", "https://www.abplive.com/home/feed")
         ],
         "keywords": ["हत्या", "मर्डर", "एनकाउंटर", "गोलीबारी", "गैंगस्टर", "गिरफ्तार", "शूटर", "वारदात", "चोरी", "लूट", "हमला", "चाकू", "बदमाश", "पुलिस", "अपहरण", "लाश", "शव", "क्राइम", "बंदी"]
     },
@@ -67,10 +70,10 @@ MASTER_7_PILLARS = [
         "id": "crisis",
         "name": "⚠️ हादसे, आपदाएं & जन-समस्याएं",
         "feeds": [
-            ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
+            ("दैनिक भास्कर राष्ट्रीय", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
+            ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
             ("बीबीसी हिंदी", "https://feeds.bbci.co.uk/hindi/rss.xml"),
-            ("गूगल न्यूज़ भारत", "https://news.google.com/rss/headlines/section/topic/NATION?hl=hi&gl=IN&ceid=IN:hi"),
-            ("अमर उजाला देश & जन-हलचल", "https://www.amarujala.com/rss/india-news.xml")
+            ("गूगल न्यूज़ भारत", "https://news.google.com/rss/headlines/section/topic/NATION?hl=hi&gl=IN&ceid=IN:hi")
         ],
         "keywords": ["हादसा", "चक्रवात", "बारिश", "ट्रेन", "आंधी", "अलर्ट", "स्कूल", "राहत", "तूफान", "जाम", "परेशान", "टक्कर", "आग", "सिलेंडर", "बिजली", "सड़क", "घायल", "अस्पताल", "धमाका"]
     },
@@ -78,10 +81,11 @@ MASTER_7_PILLARS = [
         "id": "court",
         "name": "⚖️ कोर्ट-कचहरी & सुप्रीम कोर्ट फैसले",
         "feeds": [
+            ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
+            ("दैनिक जागरण", "https://rss.jagran.com/rss/news/national.xml"),
             ("एबीपी न्यूज़", "https://www.abplive.com/home/feed"),
             ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml"),
-            ("गूगल न्यूज़ हिंदी", "https://news.google.com/rss?hl=hi&gl=IN&ceid=IN:hi"),
-            ("अमर उजाला ब्रेकिंग", "https://www.amarujala.com/rss/breaking-news.xml")
+            ("गूगल न्यूज़ हिंदी", "https://news.google.com/rss?hl=hi&gl=IN&ceid=IN:hi")
         ],
         "keywords": ["सुप्रीम कोर्ट", "हाई कोर्ट", "अदालत", "फैसला", "याचिका", "फटकार", "जमानत", "सजा", "वकील", "आदेश", "एससी", "सीजेआई", "कोर्ट", "सुनवाई", "जज", "निर्देश", "दोषी"]
     },
@@ -91,8 +95,8 @@ MASTER_7_PILLARS = [
         "feeds": [
             ("बीबीसी हिंदी", "https://feeds.bbci.co.uk/hindi/rss.xml"),
             ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
-            ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml"),
-            ("अमर उजाला देश", "https://www.amarujala.com/rss/india-news.xml")
+            ("दैनिक जागरण", "https://rss.jagran.com/rss/news/national.xml"),
+            ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml")
         ],
         "keywords": ["सुरक्षा", "सेना", "आतंकी", "छापा", "बॉर्डर", "ऑपरेशन", "जवान", "हमला", "हथियार", "कब्जा", "एनआईए", "सीबीआई", "जासूसी", "मुठभेड़", "सैनिक", "कमांडो", "घुसपैठ", "खुफिया"]
     },
@@ -100,9 +104,9 @@ MASTER_7_PILLARS = [
         "id": "corruption",
         "name": "⚡ भ्रष्टाचार, घूसखोरी ट्रैप & खुलासे",
         "feeds": [
-            ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
-            ("एबीपी न्यूज़", "https://www.abplive.com/home/feed"),
-            ("अमर उजाला क्राइम", "https://www.amarujala.com/rss/crime.xml")
+            ("दैनिक भास्कर क्राइम", "https://www.bhaskar.com/rss-v1--category-4589.xml"),
+            ("दैनिक जागरण", "https://rss.jagran.com/rss/news/crime.xml"),
+            ("एबीपी न्यूज़", "https://www.abplive.com/home/feed")
         ],
         "keywords": ["घूस", "रिश्वत", "विजिलेंस", "घोटाला", "गड़बड़ी", "भ्रष्टाचार", "पर्दाफाश", "रंगे हाथ", "ट्रैप", "ईडी", "आय से अधिक", "फर्जी", "धोखाधड़ी", "सीज", "छापेमारी", "करोड़ों"]
     },
@@ -112,9 +116,9 @@ MASTER_7_PILLARS = [
         "feeds": [
             ("बीबीसी हिंदी", "https://feeds.bbci.co.uk/hindi/rss.xml"),
             ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
+            ("दैनिक जागरण", "https://rss.jagran.com/rss/news/national.xml"),
             ("एबीपी न्यूज़", "https://www.abplive.com/home/feed"),
-            ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml"),
-            ("गूगल न्यूज़ हिंदी", "https://news.google.com/rss?hl=hi&gl=IN&ceid=IN:hi")
+            ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml")
         ],
         "keywords": ["बयान", "विवाद", "हंगामा", "विपक्ष", "सरकार", "राहुल", "मोदी", "प्रदर्शन", "नोटिस", "विरोध", "चुनौती", "चुनाव", "मंत्री", "इस्तीफा", "तकरार", "संसद", "नेता", "पार्टी", "चैलेंज"]
     },
@@ -125,7 +129,7 @@ MASTER_7_PILLARS = [
             ("गूगल न्यूज़ हिंदी", "https://news.google.com/rss?hl=hi&gl=IN&ceid=IN:hi"),
             ("बीबीसी हिंदी", "https://feeds.bbci.co.uk/hindi/rss.xml"),
             ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
-            ("अमर उजाला देश", "https://www.amarujala.com/rss/india-news.xml")
+            ("दैनिक जागरण", "https://rss.jagran.com/rss/news/national.xml")
         ],
         "keywords": ["अनोखा", "रहस्य", "अजीब", "चमत्कार", "खुदाई", "अद्भुत", "हैरान", "पंडाल", "प्राचीन", "अजूबा", "दुर्लभ", "रहस्यमयी", "चौंकाने", "विचित्र", "खजाना", "मंदिर", "गुफा", "अनोखी"]
     }
@@ -331,18 +335,60 @@ def extract_and_download_story_media(story_index: int, article_url: str) -> dict
                 "url": link_tag["href"]
             })
 
-    # 4. इमेज डाउनलोड करना और सत्यापन (PIL से JPG में सुरक्षित सेव)
+    # 4. असली न्यूज़ फोटोज़ व एनिमेटेड GIFs डाउनलोड करना (15 तक प्रामाणिक मीडिया फाइल्स)
     downloaded_images = []
     img_counter = 1
 
     for img_url in candidate_img_urls:
-        if img_counter > 5:
+        if img_counter > 15:
             break
         try:
-            r_img = requests.get(img_url, headers=HEADERS, timeout=10)
+            r_img = requests.get(img_url, headers=HEADERS, timeout=12)
             if r_img.status_code != 200 or len(r_img.content) < 5000:
                 continue
 
+            content_type = r_img.headers.get("Content-Type", "").lower()
+            is_gif = img_url.lower().endswith(".gif") or "image/gif" in content_type or ".gif" in img_url.lower()
+
+            if is_gif:
+                # 🎬 दैनिक भास्कर / अन्य स्रोतों से प्राप्त एनिमेटेड GIF
+                gif_filename = f"news_gif_{story_index}_{img_counter:02d}.gif"
+                gif_local_path = os.path.join(story_dir, gif_filename)
+                with open(gif_local_path, "wb") as gf:
+                    gf.write(r_img.content)
+
+                # Remotion में स्मूथ फ्रेम-बाई-फ्रेम प्ले करने हेतु ffmpeg से लूपिंग MP4 में कन्वर्ट
+                mp4_filename = f"news_gif_{story_index}_{img_counter:02d}.mp4"
+                mp4_local_path = os.path.join(story_dir, mp4_filename)
+                rel_mp4_path = f"out/story_{story_index:02d}/news real image/{mp4_filename}"
+                rel_gif_path = f"out/story_{story_index:02d}/news real image/{gif_filename}"
+
+                converted = False
+                try:
+                    cmd = ["ffmpeg", "-y", "-i", gif_local_path, "-movflags", "faststart", "-pix_fmt", "yuv420p", "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2", mp4_local_path]
+                    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+                    if os.path.exists(mp4_local_path) and os.path.getsize(mp4_local_path) > 1000:
+                        converted = True
+                except Exception as conv_e:
+                    print(f"      ⚠️ GIF to MP4 रूपांतरण त्रुटि: {conv_e}", flush=True)
+
+                chosen_rel = rel_mp4_path if converted else rel_gif_path
+                chosen_fn = mp4_filename if converted else gif_filename
+                print(f"      🎬 [Animated GIF] प्रामाणिक न्यूज़ GIF सक्रिय: {chosen_fn}", flush=True)
+
+                downloaded_images.append({
+                    "index": img_counter,
+                    "local_path": chosen_rel,
+                    "public_path": chosen_rel,
+                    "filename": chosen_fn,
+                    "is_animated": True,
+                    "is_video": converted,
+                    "url": img_url
+                })
+                img_counter += 1
+                continue
+
+            # सामान्य समाचार तस्वीर (JPG/PNG/WEBP)
             pil_img = Image.open(BytesIO(r_img.content))
             w, h = pil_img.size
 
@@ -352,7 +398,7 @@ def extract_and_download_story_media(story_index: int, article_url: str) -> dict
             if pil_img.mode != "RGB":
                 pil_img = pil_img.convert("RGB")
 
-            filename = f"image_{img_counter:02d}.jpg"
+            filename = f"news_img_{story_index}_{img_counter:02d}.jpg"
             local_save_path = os.path.join(story_dir, filename)
             pil_img.save(local_save_path, "JPEG", quality=95)
 
@@ -361,7 +407,6 @@ def extract_and_download_story_media(story_index: int, article_url: str) -> dict
 
             public_rel_path = rel_path
             if img_counter == 1:
-                # Primary story image in root and news real image
                 out_story_dir = os.path.join(OUT_DIR, f"story_{story_index:02d}")
                 public_save_path = os.path.join(out_story_dir, f"news_img_{story_index}_01.jpg")
                 pil_img.save(public_save_path, "JPEG", quality=95)
@@ -373,6 +418,8 @@ def extract_and_download_story_media(story_index: int, article_url: str) -> dict
                 "filename": filename,
                 "resolution": f"{w}x{h}",
                 "size_kb": file_size_kb,
+                "is_animated": False,
+                "is_video": False,
                 "url": img_url
             })
             img_counter += 1
@@ -452,6 +499,10 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                 pub_date = it["pubDate"] if isinstance(it, dict) else (it.find("pubDate").text.strip() if it.find("pubDate") is not None else "")
 
                 if not title or title in seen_titles or link in seen_urls:
+                    continue
+
+                # 🚫 अमर उजाला को 100% ब्लॉक करें
+                if any(bad_dom in link.lower() for bad_dom in BLOCKED_NEWS_DOMAINS):
                     continue
 
                 # 1. क्या शीर्षक पिलर के कीवर्ड्स से मेल खाता है?
@@ -588,10 +639,10 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
         backup_feeds = [
             ("बीबीसी हिंदी", "https://feeds.bbci.co.uk/hindi/rss.xml"),
             ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
+            ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
             ("एबीपी न्यूज़", "https://www.abplive.com/home/feed"),
             ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml"),
-            ("गूगल न्यूज़ हिंदी", "https://news.google.com/rss?hl=hi&gl=IN&ceid=IN:hi"),
-            ("अमर उजाला ब्रेकिंग", "https://www.amarujala.com/rss/breaking-news.xml")
+            ("गूगल न्यूज़ हिंदी", "https://news.google.com/rss?hl=hi&gl=IN&ceid=IN:hi")
         ]
         for f_label, f_url in backup_feeds:
             if len(verified_stories) >= target_count:
