@@ -18,9 +18,9 @@ if hasattr(sys.stderr, "reconfigure"):
 
 ROOT = Path(__file__).resolve().parent
 
-print("=" * 65)
-print("🚀 [MP4 NEWS HINDI] KAGGLE HIGH-PERFORMANCE CPU BROADCAST ENGINE TRIGGER")
-print("=" * 65)
+print("=" * 65, flush=True)
+print("🚀 [MP4 NEWS HINDI] KAGGLE HIGH-PERFORMANCE BROADCAST ENGINE TRIGGER", flush=True)
+print("=" * 65, flush=True)
 
 # 1. Configure Kaggle Credentials from env or file
 kaggle_user = os.environ.get("KAGGLE_USERNAME", "")
@@ -41,7 +41,7 @@ if kaggle_user and kaggle_key:
     kaggle_dir.mkdir(parents=True, exist_ok=True)
     with open(kaggle_json, "w", encoding="utf-8") as f:
         json.dump({"username": kaggle_user, "key": kaggle_key}, f)
-    print(f"✓ Kaggle authenticated as: {kaggle_user}")
+    print(f"✓ Kaggle authenticated as: {kaggle_user}", flush=True)
 
 # Initialize Kaggle API
 from kaggle.api.kaggle_api_extended import KaggleApi
@@ -51,17 +51,17 @@ api.authenticate()
 kernel_slug = "mp4-news-hindi-omnivoice-pipeline"
 kernel_id = f"{kaggle_user}/{kernel_slug}"
 
-print(f"🚀 Deploying kernel to Kaggle Multi-Core CPU ({kernel_id})...")
+print(f"🚀 Deploying kernel to Kaggle ({kernel_id})...", flush=True)
 try:
     push_res = api.kernels_push(str(ROOT))
-    print(f"✓ Kernel push result: versionNumber={getattr(push_res, 'versionNumber', 'unknown')}")
+    print(f"✓ Kernel push result: versionNumber={getattr(push_res, 'versionNumber', 'unknown')}", flush=True)
 except Exception as e:
-    print(f"❌ Failed to push kernel via SDK: {e}")
+    print(f"❌ Failed to push kernel via SDK: {e}", flush=True)
     sys.exit(1)
 
-print("\n🎉 KERNEL TRIGGERED ON KAGGLE MULTI-CORE CPU!")
-print(f"🔗 Live Progress: https://www.kaggle.com/code/{kernel_id}")
-print("\n⏳ Monitoring execution status (typically takes 3-5 minutes on Multi-Core CPU)...")
+print("\n🎉 KERNEL TRIGGERED ON KAGGLE!", flush=True)
+print(f"🔗 Live Progress: https://www.kaggle.com/code/{kernel_id}", flush=True)
+print("\n⏳ Monitoring execution status...", flush=True)
 
 # Poll until completion
 max_wait = 900  # 15 minutes max
@@ -80,53 +80,53 @@ while time.time() - start_time < max_wait:
             fail_msg = getattr(st_res, "failure_message", None) or getattr(st_res, "failureMessage", None)
         current_status = str(raw_status).upper()
         elapsed = int(time.time() - start_time)
-        print(f"[{elapsed:3d}s] Status: {current_status}")
+        print(f"[{elapsed:3d}s] Status: {current_status}", flush=True)
 
         if "COMPLETE" in current_status:
-            print("\n✅ KAGGLE GPU PIPELINE COMPLETED SUCCESSFULLY!")
+            print("\n✅ KAGGLE PIPELINE COMPLETED SUCCESSFULLY!", flush=True)
             break
         elif "ERROR" in current_status or fail_msg:
-            print(f"\n⚠️ Kernel ended with ERROR: {fail_msg}")
+            print(f"\n⚠️ Kernel ended with ERROR: {fail_msg}", flush=True)
             break
         elif "CANCEL" in current_status:
-            print("\n⚠️ Kernel execution was CANCELLED.")
+            print("\n⚠️ Kernel execution was CANCELLED.", flush=True)
             break
     except Exception as e:
-        print(f"  [Notice] Status check retry: {e}")
+        print(f"  [Notice] Status check retry: {e}", flush=True)
 
 # Download output artifacts
 out_dir = ROOT / "out"
 out_dir.mkdir(parents=True, exist_ok=True)
-print("\n📥 Fetching output files from Kaggle...")
+print("\n📥 Fetching output files from Kaggle...", flush=True)
 
 for attempt in range(1, 4):
     try:
         files, _ = api.kernels_output(kernel_id, path=str(out_dir), force=True, quiet=False)
-        print(f"✓ Downloaded {len(files) if files else 0} output files to {out_dir}")
+        print(f"✓ Downloaded {len(files) if files else 0} output files to {out_dir}", flush=True)
         break
     except Exception as e:
-        print(f"Notice during download (attempt {attempt}/3): {e}")
+        print(f"Notice during download (attempt {attempt}/3): {e}", flush=True)
         if attempt < 3:
             time.sleep(10)
 
 # If output zip exists, unpack it into out_dir
 zip_files = list(out_dir.glob("*.zip"))
 for z in zip_files:
-    print(f"📦 Extracting archive: {z.name}...")
+    print(f"📦 Extracting archive: {z.name}...", flush=True)
     try:
         with zipfile.ZipFile(z, "r") as zf:
             zf.extractall(out_dir)
-        print(f"✓ Extracted {z.name}")
+        print(f"✓ Extracted {z.name}", flush=True)
     except Exception as e:
-        print(f"Extract error: {e}")
+        print(f"Extract error: {e}", flush=True)
 
 # Check for rendered video
 mp4_files = list(out_dir.rglob("*.mp4"))
 if mp4_files:
     for mp4 in mp4_files:
-        print(f"\n🎬 RENDERED BROADCAST VIDEO: {mp4}")
-        print(f"📊 Size: {mp4.stat().st_size / (1024*1024):.2f} MB")
+        print(f"\n🎬 RENDERED BROADCAST VIDEO: {mp4}", flush=True)
+        print(f"📊 Size: {mp4.stat().st_size / (1024*1024):.2f} MB", flush=True)
 else:
-    print("\nℹ️ No .mp4 found directly. Listing downloaded files:")
+    print("\nℹ️ No .mp4 found directly. Listing downloaded files:", flush=True)
     for f in out_dir.iterdir():
-        print(f" - {f.name} ({f.stat().st_size} bytes)")
+        print(f" - {f.name} ({f.stat().st_size} bytes)", flush=True)
