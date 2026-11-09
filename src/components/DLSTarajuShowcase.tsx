@@ -87,6 +87,7 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
   let currentImage = imageList[0];
   let activeTransitionFrame = 0;
   let transitionSeed = 0;
+  let activeChunkDuration = 120;
 
   if (chunkVisuals && chunkVisuals.length > 0) {
     const activeVisual =
@@ -98,6 +99,7 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
     currentImage = activeVisual.imageSrc || currentImage;
     activeTransitionFrame = Math.max(0, frame - activeVisual.startFrame);
     transitionSeed = activeVisual.chunkIndex;
+    activeChunkDuration = Math.max(30, activeVisual.endFrame - activeVisual.startFrame);
   } else {
     // Fallback timer cycling if no chunks passed
     const imageInterval = 120;
@@ -106,52 +108,105 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
     currentImage = imageList[idx];
     activeTransitionFrame = activeFrame % imageInterval;
     transitionSeed = idx;
+    activeChunkDuration = imageInterval;
   }
 
-  // Pattern of directional transitions as requested by user:
+  // Pattern of directional transitions & prominent zoom effects (Broadcast Quality):
   const transitionPatterns: TransitionType[] = [
+    "zoom-in",
     "slide-left",
+    "zoom-out",
+    "slide-right",
     "zoom-in",
     "slide-top",
-    "slide-right",
     "zoom-out",
     "slide-bottom",
   ];
   const currentTransition =
     transitionPatterns[transitionSeed % transitionPatterns.length];
 
-  // In-slot transition spring (first 18 frames of each new chunk)
+  // In-slot transition spring (smooth entrance for each new chunk)
   const transSpring = spring({
     frame: activeTransitionFrame,
     fps,
-    config: { damping: 15, mass: 0.6, stiffness: 120 },
+    config: { damping: 16, mass: 0.6, stiffness: 110 },
   });
 
   let transX = 0;
   let transY = 0;
-  let transScale = 1;
-  let transOpacity = interpolate(transSpring, [0, 1], [0.3, 1]);
-
-  if (currentTransition === "slide-left") {
-    transX = interpolate(transSpring, [0, 1], [-450, 0]);
-  } else if (currentTransition === "slide-right") {
-    transX = interpolate(transSpring, [0, 1], [450, 0]);
-  } else if (currentTransition === "slide-top") {
-    transY = interpolate(transSpring, [0, 1], [-350, 0]);
-  } else if (currentTransition === "slide-bottom") {
-    transY = interpolate(transSpring, [0, 1], [350, 0]);
-  } else if (currentTransition === "zoom-out") {
-    transScale = interpolate(transSpring, [0, 1], [1.18, 1.04]);
-  } else {
-    // zoom-in (Ken Burns)
-    transScale = interpolate(transSpring, [0, 1], [1.0, 1.06]);
-  }
-
-  // Continuous subtle Ken Burns drift during the image display
-  const kenBurnsDrift = interpolate(activeTransitionFrame, [0, 300], [1.0, 1.04], {
+  let driftX = 0;
+  let driftY = 0;
+  let finalScale = 1.0;
+  let transOpacity = interpolate(transSpring, [0, 1], [0.35, 1], {
     extrapolateRight: "clamp",
   });
-  const finalScale = transScale * kenBurnsDrift;
+
+  if (currentTransition === "zoom-in") {
+    // 🔍 DYNAMIC BROADCAST ZOOM-IN (1.02 -> 1.28):
+    // Highly visible, dramatic push-in across the full duration of the spoken chunk
+    finalScale = interpolate(
+      activeTransitionFrame,
+      [0, activeChunkDuration],
+      [1.02, 1.28],
+      { extrapolateRight: "clamp" }
+    );
+    // Subtle organic camera push drift
+    driftX = interpolate(activeTransitionFrame, [0, activeChunkDuration], [0, transitionSeed % 2 === 0 ? 10 : -10], { extrapolateRight: "clamp" });
+    driftY = interpolate(activeTransitionFrame, [0, activeChunkDuration], [0, -8], { extrapolateRight: "clamp" });
+
+  } else if (currentTransition === "zoom-out") {
+    // 🔍 DYNAMIC BROADCAST ZOOM-OUT (1.30 -> 1.05):
+    // Starts tight and smoothly pulls out to reveal the full news event scene
+    finalScale = interpolate(
+      activeTransitionFrame,
+      [0, activeChunkDuration],
+      [1.30, 1.05],
+      { extrapolateRight: "clamp" }
+    );
+    // Subtle organic camera pull drift
+    driftX = interpolate(activeTransitionFrame, [0, activeChunkDuration], [transitionSeed % 2 === 0 ? -10 : 10, 0], { extrapolateRight: "clamp" });
+    driftY = interpolate(activeTransitionFrame, [0, activeChunkDuration], [-8, 0], { extrapolateRight: "clamp" });
+
+  } else if (currentTransition === "slide-left") {
+    transX = interpolate(transSpring, [0, 1], [-450, 0]);
+    // Dynamic broadcast zoom-in while sliding
+    finalScale = interpolate(
+      activeTransitionFrame,
+      [0, activeChunkDuration],
+      [1.05, 1.25],
+      { extrapolateRight: "clamp" }
+    );
+
+  } else if (currentTransition === "slide-right") {
+    transX = interpolate(transSpring, [0, 1], [450, 0]);
+    // Dynamic broadcast zoom-out while sliding
+    finalScale = interpolate(
+      activeTransitionFrame,
+      [0, activeChunkDuration],
+      [1.26, 1.06],
+      { extrapolateRight: "clamp" }
+    );
+
+  } else if (currentTransition === "slide-top") {
+    transY = interpolate(transSpring, [0, 1], [-350, 0]);
+    // Dynamic broadcast zoom-in while sliding from top
+    finalScale = interpolate(
+      activeTransitionFrame,
+      [0, activeChunkDuration],
+      [1.04, 1.24],
+      { extrapolateRight: "clamp" }
+    );
+
+  } else if (currentTransition === "slide-bottom") {
+    transY = interpolate(transSpring, [0, 1], [350, 0]);
+    // Dynamic broadcast zoom-out while sliding from bottom
+    finalScale = interpolate(
+      activeTransitionFrame,
+      [0, activeChunkDuration],
+      [1.25, 1.05],
+      { extrapolateRight: "clamp" }
+    );
+  }
 
   const hasVideo =
     typeof videoSrc === "string" &&
@@ -187,7 +242,7 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
           width: "100%",
           height: "100%",
           overflow: "hidden",
-          transform: `translateX(${hasVideo ? 0 : transX}px) translateY(${hasVideo ? 0 : transY}px) scale(${hasVideo ? 1.0 : finalScale})`,
+          transform: `translateX(${hasVideo ? 0 : transX + driftX}px) translateY(${hasVideo ? 0 : transY + driftY}px) scale(${hasVideo ? 1.0 : finalScale})`,
           opacity: hasVideo ? 1.0 : transOpacity,
           transformOrigin: "center center",
           willChange: "transform, opacity",
@@ -207,7 +262,7 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
               height: "100%",
               objectFit: "cover",
               objectPosition: "center center",
-              transform: "scale(1.03)", // ✂️ Safe framing without over-cropping faces or heads!
+              // Clean framing: finalScale controls dynamic broadcast zoom
             }}
           />
         )}
