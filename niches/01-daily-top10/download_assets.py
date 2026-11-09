@@ -708,6 +708,25 @@ def download_all_assets(max_stories: int = None, target_count: int = 12, force: 
 
         # डाउनलोड की गई तस्वीरों और मैपिंग के साथ story_XX_data.json व script_XX.txt अपडेट करें
         save_story_folder_metadata(story, OUT_DIR)
+
+        # 🔥 सनसनी YouTube Thumbnail ऑटो-जेनेरेट करें (1280x720)
+        try:
+            from generate_thumbnail import generate_sensational_thumbnail
+            thumb_out = os.path.join(OUT_DIR, f"story_{num:02d}", f"thumbnail_{num:02d}.jpg")
+            thumb_photo = fallback_img or (norm_downloaded[0] if downloaded else "")
+            if thumb_photo:
+                full_thumb_photo = os.path.join(BASE_DIR, *thumb_photo.split("/"))
+                hl_text = story.get("screen_headline") or story.get("original_title") or headline
+                generate_sensational_thumbnail(
+                    headline=hl_text,
+                    photo_path=full_thumb_photo,
+                    out_path=thumb_out,
+                    category=story.get("category", "क्राइम"),
+                )
+                story["thumbnail_path"] = f"out/story_{num:02d}/thumbnail_{num:02d}.jpg"
+                updated = True
+        except Exception as th_err:
+            print(f"  ⚠️ Thumbnail generation skipped: {th_err}")
         time.sleep(0.3)
 
     if updated:
