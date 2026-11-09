@@ -271,17 +271,62 @@ def synthesize_omnivoice(text: str, output_mp3_path: str) -> bool:
         return False
 
 
+def load_script_from_file(script_path: str) -> str:
+    """script_XX.txt फाइल से वॉइसओवर स्क्रिप्ट सुरक्षित व सटीक रूप से निकालना"""
+    if not os.path.exists(script_path):
+        return ""
+    try:
+        with open(script_path, "r", encoding="utf-8") as sf:
+            content = sf.read().strip()
+        if not content:
+            return ""
+
+        markers = [
+            "वॉइसओवर स्क्रिप्ट:",
+            "एंकर वॉइसओवर स्क्रिप्ट (EDGE-TTS READY):",
+            "एंकर वॉइसओवर स्क्रिप्ट:",
+            "वॉइसओवर:",
+            "VOICEOVER SCRIPT:",
+            "VOICEOVER:"
+        ]
+        extracted = None
+        for m in markers:
+            if m in content:
+                parts = content.split(m, 1)
+                text_part = parts[1].strip()
+                # अगली हेडिंग या सेक्शन से पहले का टेक्स्ट लें
+                for stop_marker in [
+                    "चंक-दर-चंक विवरण",
+                    "चंक-दर-चंक",
+                    "CHUNKS & VISUAL KEYWORDS",
+                    "═" * 5,
+                    "-" * 10,
+                    "स्क्रीन पर बदलने वाली",
+                    "मुख्य स्क्रीन हेडलाइन",
+                    "शीर्षक:"
+                ]:
+                    if stop_marker in text_part:
+                        text_part = text_part.split(stop_marker, 1)[0].strip()
+                if text_part:
+                    extracted = text_part
+                    break
+
+        if extracted:
+            return extracted.strip()
+
+        # यदि कोई मानक मार्कर नहीं है, और फाइल में कोई हेडर नहीं है (डायरेक्ट यूजर द्वारा लिखी प्लेन स्क्रिप्ट)
+        if not ("शीर्षक:" in content or "मुख्य स्क्रीन हेडलाइन:" in content or "श्रेणी:" in content):
+            return content.strip()
+
+        return ""
+    except Exception as e:
+        print(f"    ⚠️ [स्क्रिप्ट रीडर] फाइल पढ़ने में त्रुटि: {e}")
+        return ""
+
+
 async def generate_audio_for_story(story: dict, force: bool = False) -> tuple[str, float]:
-    """एक खबर के लिए ऑडियो जनरेट करना (OmniVoice GPU या Edge-TTS फॉलबैक)"""
+    """एक खबर के लिए ऑडियो जनरेट करना (स्क्रिप्ट फाइल को प्राथमिक स्रोत मानकर OmniVoice GPU या Edge-TTS से)"""
     story_num = story.get("story_number", 1)
-    script = story.get("voiceover_script", "").strip()
-
-    if not script:
-        hl = story.get("screen_headline", "")
-        bp = "। ".join(story.get("bullet_points", []))
-        script = f"{hl}। {bp}"
-
-    clean_text = script.replace("**", "").replace("*", "").replace('"', '').strip()
 
     story_dir_name = f"story_{story_num:02d}"
     story_dir = os.path.join(OUT_DIR, story_dir_name)
@@ -291,15 +336,34 @@ async def generate_audio_for_story(story: dict, force: bool = False) -> tuple[st
 
     script_filename = f"script_{story_num}.txt"
     script_path = os.path.join(story_dir, script_filename)
-    try:
-        with open(script_path, "w", encoding="utf-8") as sf:
-            sf.write(f"शीर्षक: {story.get('screen_headline', '')}\n")
-            sf.write(f"श्रेणी: {story.get('category', 'न्यूज़')}\n")
-            sf.write("═" * 50 + "\n\n")
-            sf.write("वॉइसओवर स्क्रिप्ट:\n")
-            sf.write(clean_text + "\n")
-    except Exception as e:
-        print(f"    ⚠️ स्क्रिप्ट फाइल सेव एरर: {e}")
+
+    # 1. प्राथमिक स्रोत (PRIORITY 1): सीधे out/story_XX/script_XX.txt फाइल से पढ़ें!
+    script_from_file = load_script_from_file(script_path)
+    if script_from_file:
+        clean_text = script_from_file.replace("**", "").replace("*", "").replace('"', '').strip()
+        print(f"  📄 [खबर {story_num}] 'out/{story_dir_name}/{script_filename}' से वॉइसओवर स्क्रिप्ट लोड की गई ({len(clean_text.split())} शब्द)")
+        # JSON डेटा को भी इस फाइल की स्क्रिप्ट से सिंक करें ताकि दोनों 100% मैच रहें
+        story["voiceover_script"] = clean_text
+    else:
+        # प्राथमिक स्रोत 2: यदि फाइल मौजूद न हो तो story डिक्शनरी से लें और फाइल बनाएं
+        script = story.get("voiceover_script", "").strip()
+        if not script:
+            hl = story.get("screen_headline", "")
+            bp = "। ".join(story.get("bullet_points", []))
+            script = f"{hl}। {bp}"
+
+        clean_text = script.replace("**", "").replace("*", "").replace('"', '').strip()
+
+        try:
+            with open(script_path, "w", encoding="utf-8") as sf:
+                sf.write(f"शीर्षक: {story.get('screen_headline', '')}\n")
+                sf.write(f"श्रेणी: {story.get('category', 'न्यूज़')}\n")
+                sf.write("═" * 50 + "\n\n")
+                sf.write("वॉइसओवर स्क्रिप्ट:\n")
+                sf.write(clean_text + "\n")
+            print(f"  📝 [खबर {story_num}] 'out/{story_dir_name}/{script_filename}' स्क्रिप्ट फाइल सेव की गई")
+        except Exception as e:
+            print(f"    ⚠️ स्क्रिप्ट फाइल सेव एरर: {e}")
 
     output_filename = f"audio_story_{story_num}.mp3"
     output_path = os.path.join(voice_dir, output_filename)
