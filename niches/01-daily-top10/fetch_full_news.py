@@ -340,7 +340,7 @@ def extract_and_download_story_media(story_index: int, article_url: str) -> dict
     img_counter = 1
 
     for img_url in candidate_img_urls:
-        if img_counter > 15:
+        if img_counter > 50:
             break
         try:
             r_img = requests.get(img_url, headers=HEADERS, timeout=12)

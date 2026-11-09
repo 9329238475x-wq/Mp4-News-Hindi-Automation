@@ -154,6 +154,9 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
     );
 
     let cumulativeFrames = voStart;
+    let globalImgIdx = 0;
+    const totalImages = allImages.length;
+
     chunks.forEach((chunk, cIdx) => {
       const chars = Math.max(10, (chunk.sentence || "").trim().length);
       const chunkFrames = Math.floor((chars / totalChars) * voAvailableFrames);
@@ -163,18 +166,42 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
           ? transitionStartFrame
           : cumulativeFrames + chunkFrames;
 
-      const imgSrc =
-        chunk.local_visual_path ||
-        allImages[cIdx % allImages.length] ||
-        allImages[0];
+      const chunkDur = cEnd - cStart;
 
-      chunkVisuals.push({
-        chunkIndex: chunk.chunk_index || cIdx + 1,
-        startFrame: cStart,
-        endFrame: cEnd,
-        imageSrc: imgSrc,
-        sentence: chunk.sentence,
-      });
+      // Determine how many images to show in this chunk
+      // e.g. if 24 images across 6 chunks, ~4 images per chunk
+      // Minimum duration per image is 45 frames (~1.5s) to guarantee crisp viewer visibility
+      const remainingChunks = chunks.length - cIdx;
+      const remainingImages = Math.max(1, totalImages - globalImgIdx);
+      const targetImagesForThisChunk = Math.max(
+        1,
+        Math.ceil(remainingImages / remainingChunks)
+      );
+      const maxPossibleSlots = Math.max(1, Math.floor(chunkDur / 45));
+      const numSlots = Math.min(targetImagesForThisChunk, maxPossibleSlots);
+
+      const slotDuration = Math.floor(chunkDur / numSlots);
+
+      for (let s = 0; s < numSlots; s++) {
+        const slotStart = cStart + s * slotDuration;
+        const slotEnd =
+          s === numSlots - 1 ? cEnd : slotStart + slotDuration;
+
+        const currentSlotImage =
+          allImages[globalImgIdx % totalImages] ||
+          chunk.local_visual_path ||
+          allImages[0];
+
+        chunkVisuals.push({
+          chunkIndex: globalImgIdx + 1,
+          startFrame: slotStart,
+          endFrame: slotEnd,
+          imageSrc: currentSlotImage,
+          sentence: chunk.sentence,
+        });
+
+        globalImgIdx++;
+      }
 
       if (chunk.visual_intent === "MEME_REACTION" && chunk.local_visual_path) {
         // High-impact punchy meme display: ~75 to 90 frames (~2.5 to 3.0s)

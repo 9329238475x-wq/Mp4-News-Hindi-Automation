@@ -512,12 +512,13 @@ def download_and_verify_image(img_url: str, dest_path: str, min_width: int = 380
     return False
 
 
-def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list[str]:
+def fetch_10_to_15_images_for_story(story: dict, target_count: int = 24) -> list[str]:
     """
-    एक खबर के लिए प्रामाणिक तस्वीरें व एनिमेटेड GIFs जुटाना:
-    1. सर्वोच्च प्राथमिकता #1: मूल समाचार आर्टिकल (Dainik Bhaskar आदि) से निकाली गई 100% असली तस्वीरें व GIFs!
-    2. द्वितीय प्राथमिकता #2: Groq AI कीवर्ड्स के आधार पर Pexels API से विशुद्ध 100% भारतीय संदर्भ (Indian Context) तस्वीरें!
-    3. शून्य DuckDuckGo, शून्य विदेशी तस्वीरें, शून्य कार्टून्स!
+    एक खबर के लिए प्रामाणिक तस्वीरें व एनिमेटेड GIFs जुटाना (अनलिमिटेड व मिक्स्ड):
+    1. मूल समाचार आर्टिकल (Dainik Bhaskar आदि) से सभी 100% असली तस्वीरें व GIFs लोड करना।
+    2. Groq AI कीवर्ड्स से Pexels API द्वारा 100% भारतीय संदर्भ (HD Landscape) तस्वीरें लोड करना।
+    3. MIX / INTERLEAVE: असली आर्टिकल तस्वीरें/GIFs और Pexels तस्वीरें क्रमबद्ध रूप से बारी-बारी (Real -> Pexels -> Real -> Pexels) मिक्स होंगी!
+    4. कोई 15-फोटो की बंदिश नहीं (20-30+ तस्वीरें होने पर भी सभी स्क्रीन पर रोटेट होंगी)।
     """
     story_num = story.get("story_number", 1)
     chunks = story.get("chunks", [])
@@ -529,106 +530,119 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list
     os.makedirs(news_dir, exist_ok=True)
     os.makedirs(meems_dir, exist_ok=True)
 
-    downloaded_real_images = []
+    article_media_paths = []
+    pexels_media_paths = []
     seen_urls = set()
     root_primary_path = os.path.join(story_dir, f"news_img_{story_num}_01.jpg")
 
     # ──────────────────────────────────────────────────────────────────────────
-    # 1. सर्वोच्च प्राथमिकता: मूल समाचार आर्टिकल (Dainik Bhaskar आदि) के सभी असली फोटोज़ व एनिमेटेड GIFs
+    # 1. मूल समाचार आर्टिकल (Dainik Bhaskar आदि) के सभी असली फोटोज़ व एनिमेटेड GIFs
     # ──────────────────────────────────────────────────────────────────────────
     article_media = story.get("images", [])
     for m in article_media:
         if isinstance(m, dict):
             loc_path = m.get("local_path")
             m_url = m.get("url")
-            # यदि फाइल पहले से लोकल डिस्क पर मौजूद है (fetch_full_news.py द्वारा सेव)
             if loc_path:
                 full_loc = os.path.join(BASE_DIR, *loc_path.replace("\\", "/").split("/"))
-                if os.path.exists(full_loc) and loc_path not in downloaded_real_images:
-                    downloaded_real_images.append(loc_path.replace("\\", "/"))
+                if os.path.exists(full_loc) and loc_path not in article_media_paths:
+                    article_media_paths.append(loc_path.replace("\\", "/"))
                     if m_url: seen_urls.add(m_url)
                     continue
 
-            # यदि URL से डाउनलोड करने की आवश्यकता हो
             if m_url and m_url.startswith("http") and m_url not in seen_urls:
                 seen_urls.add(m_url)
-                img_idx = len(downloaded_real_images) + 1
-                fn = f"news_img_{story_num}_{img_idx:02d}.jpg"
+                img_idx = len(article_media_paths) + 1
+                fn = f"article_media_{story_num}_{img_idx:02d}.jpg"
                 dp = os.path.join(news_dir, fn)
                 rel_p = f"out/{story_dir_name}/news real image/{fn}"
                 if download_and_verify_image(m_url, dp, min_width=250, min_height=150, is_meme=False):
-                    downloaded_real_images.append(rel_p)
+                    article_media_paths.append(rel_p)
 
-    if downloaded_real_images:
-        print(f"  📰 [आर्टिकल मीडिया] मूल खबर से {len(downloaded_real_images)} असली तस्वीरें/GIFs लोड की गईं!")
+    if article_media_paths:
+        print(f"  📰 [आर्टिकल मीडिया] मूल खबर से {len(article_media_paths)} असली तस्वीरें/GIFs लोड हुईं!")
 
     # ──────────────────────────────────────────────────────────────────────────
-    # 2. द्वितीय प्राथमिकता: Groq AI कीवर्ड्स से Pexels API (विशुद्ध 100% भारतीय संदर्भ, HD Landscape)
+    # 2. Pexels API (विशुद्ध 100% भारतीय संदर्भ, HD Landscape फोटोज़)
     # ──────────────────────────────────────────────────────────────────────────
-    target_news = max(12, target_count)
-    if len(downloaded_real_images) < target_news:
-        real_queries = []
-        for c in chunks:
-            for kw in c.get("image_keywords_en", []):
-                s_kw = sanitize_keyword_master(kw)
-                if s_kw and s_kw not in real_queries:
-                    real_queries.append(s_kw)
+    real_queries = []
+    for c in chunks:
+        for kw in c.get("image_keywords_en", []):
+            s_kw = sanitize_keyword_master(kw)
+            if s_kw and s_kw not in real_queries:
+                real_queries.append(s_kw)
 
-        for skw in story.get("visual_keywords_en", []) or story.get("visual_keywords", []):
-            s_skw = sanitize_keyword_master(skw)
-            if s_skw and s_skw not in real_queries:
-                real_queries.append(s_skw)
+    for skw in story.get("visual_keywords_en", []) or story.get("visual_keywords", []):
+        s_skw = sanitize_keyword_master(skw)
+        if s_skw and s_skw not in real_queries:
+            real_queries.append(s_skw)
 
-        dedup_queries = []
-        for q in real_queries:
-            q_norm = q.lower().strip()
-            if q_norm and q_norm not in [x.lower() for x in dedup_queries]:
-                dedup_queries.append(q.strip())
+    dedup_queries = []
+    for q in real_queries:
+        q_norm = q.lower().strip()
+        if q_norm and q_norm not in [x.lower() for x in dedup_queries]:
+            dedup_queries.append(q.strip())
 
-        for q in dedup_queries:
-            if len(downloaded_real_images) >= target_news:
-                break
+    for q in dedup_queries:
+        candidate_urls = search_pexels_indian_images(q, max_results=8)
+        images_from_query = 0
 
-            candidate_urls = search_pexels_indian_images(q, max_results=8)
-            images_from_query = 0
+        for u in candidate_urls:
+            if u in seen_urls:
+                continue
+            seen_urls.add(u)
 
-            for u in candidate_urls:
-                if len(downloaded_real_images) >= target_news:
+            img_idx = len(pexels_media_paths) + 1
+            filename = f"pexels_img_{story_num}_{img_idx:02d}.jpg"
+            dest_path = os.path.join(news_dir, filename)
+            rel_path = f"out/{story_dir_name}/news real image/{filename}"
+
+            if download_and_verify_image(u, dest_path, min_width=350, min_height=200, is_meme=False):
+                pexels_media_paths.append(rel_path)
+                images_from_query += 1
+                if images_from_query >= 2:
                     break
-                if u in seen_urls:
-                    continue
-                seen_urls.add(u)
 
-                img_idx = len(downloaded_real_images) + 1
-                filename = f"news_img_{story_num}_{img_idx:02d}.jpg"
-                dest_path = os.path.join(news_dir, filename)
-                rel_path = f"out/{story_dir_name}/news real image/{filename}"
+        time.sleep(0.3)
 
-                if download_and_verify_image(u, dest_path, min_width=350, min_height=200, is_meme=False):
-                    downloaded_real_images.append(rel_path)
-                    images_from_query += 1
-                    if img_idx == 1 and not os.path.exists(root_primary_path):
-                        try:
-                            import shutil
-                            shutil.copyfile(dest_path, root_primary_path)
-                        except Exception:
-                            pass
-                    if images_from_query >= 2:
-                        break
-
-            time.sleep(0.3)
+    if pexels_media_paths:
+        print(f"  📸 [Pexels India] कीवर्ड्स से {len(pexels_media_paths)} भारतीय HD तस्वीरें लोड हुईं!")
 
     # ──────────────────────────────────────────────────────────────────────────
-    # 3. सभी असली तस्वीरों व GIFs को चंक्स में समान रूप से वितरित करना (ताकि हर तस्वीर प्ले हो)
+    # 3. INTERLEAVE / MIX: असली तस्वीरें/GIFs और Pexels तस्वीरें बारी-बारी से मिक्स होंगी
+    #    (Real -> Pexels -> Real -> Pexels...) ताकि पूरी खबर में दोनों का संतुलित प्रवाह रहे!
     # ──────────────────────────────────────────────────────────────────────────
+    mixed_images = []
+    max_count = max(len(article_media_paths), len(pexels_media_paths))
+    for i in range(max_count):
+        if i < len(article_media_paths):
+            mixed_images.append(article_media_paths[i])
+        if i < len(pexels_media_paths):
+            mixed_images.append(pexels_media_paths[i])
+
+    # यदि किसी एक स्रोत से कोई तस्वीर न मिली हो तो उपलब्ध लिस्ट का इस्तेमाल
+    if not mixed_images:
+        mixed_images = article_media_paths or pexels_media_paths
+
+    # प्राइमरी कवर फोटो के रूप में पहली तस्वीर को रूट में कॉपी करना
+    if mixed_images and not os.path.exists(root_primary_path):
+        try:
+            first_full = os.path.join(BASE_DIR, *mixed_images[0].split("/"))
+            if os.path.exists(first_full) and not first_full.lower().endswith(".mp4"):
+                import shutil
+                shutil.copyfile(first_full, root_primary_path)
+        except Exception:
+            pass
+
+    # सभी चंक्स में मिक्स्ड तस्वीरों को समान रूप से मैप करना
     for idx, c in enumerate(chunks):
         c["visual_intent"] = "REAL_PHOTO"
         c["meme_keyword_en"] = None
-        if downloaded_real_images:
-            assigned_img = downloaded_real_images[idx % len(downloaded_real_images)]
-            c["local_visual_path"] = assigned_img
+        if mixed_images:
+            c["local_visual_path"] = mixed_images[idx % len(mixed_images)]
 
-    return downloaded_real_images
+    print(f"  🔀 [मिक्स्ड मीडिया स्ट्रीम] कुल {len(mixed_images)} तस्वीरें/GIFs (Real + Pexels) तैयार!")
+    return mixed_images
 
 
 def download_all_assets(max_stories: int = None, target_count: int = 12, force: bool = False):
