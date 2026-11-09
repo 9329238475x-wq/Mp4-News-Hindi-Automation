@@ -20,6 +20,7 @@ import requests
 from io import BytesIO
 from PIL import Image
 from dotenv import load_dotenv
+from story_metadata_helper import save_story_folder_metadata
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -692,6 +693,8 @@ def download_all_assets(max_stories: int = None, target_count: int = 12, force: 
                     c["local_visual_path"] = norm_lvp
                 updated = True
 
+        # डाउनलोड की गई तस्वीरों और मैपिंग के साथ story_XX_data.json व script_XX.txt अपडेट करें
+        save_story_folder_metadata(story, OUT_DIR)
         time.sleep(0.3)
 
     if updated:

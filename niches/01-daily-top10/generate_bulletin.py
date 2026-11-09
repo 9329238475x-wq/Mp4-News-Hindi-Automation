@@ -24,6 +24,7 @@ if hasattr(sys.stderr, "reconfigure"):
 
 load_dotenv()
 
+from story_metadata_helper import save_story_folder_metadata
 from groq_engine import GroqEngine
 from prompts import (
     STAGE1_SCRIPT_SYSTEM_PROMPT,
@@ -247,26 +248,8 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
     # मुख्य स्क्रीन हेडलाइन (पहली हेडलाइन)
     primary_headline = cleaned_headlines[0] if cleaned_headlines else screen_hl
 
-    # स्क्रिप्ट फाइल सेव करना: out/story_XX/script_XX.txt
-    script_txt_path = os.path.join(story_dir, f"script_{s_num}.txt")
-    with open(script_txt_path, "w", encoding="utf-8") as sf:
-        sf.write(f"मुख्य स्क्रीन हेडलाइन: {primary_headline}\n")
-        sf.write(f"श्रेणी: {stage1_data['category']}\n")
-        sf.write("═" * 60 + "\n\n")
-        sf.write("स्क्रीन पर बदलने वाली हेडलाइंस (CHANGING SCREEN HEADLINES):\n")
-        for h_i, h_text in enumerate(cleaned_headlines, 1):
-            sf.write(f"[{h_i}] {h_text}\n")
-        sf.write("\n" + "═" * 60 + "\n\n")
-        sf.write("एंकर वॉइसओवर स्क्रिप्ट (EDGE-TTS READY):\n")
-        sf.write(clean_voiceover + "\n\n")
-        sf.write("चंक-दर-चंक विवरण (CHUNKS & VISUAL KEYWORDS):\n")
-        for c in cleaned_chunks:
-            intent = "🤣 [MEME REACTION]" if c.get("visual_intent") == "MEME_REACTION" else "📸 [REAL PHOTO]"
-            sf.write(f"[{c['chunk_index']}] {intent} {c['sentence']}\n")
-            if c.get("image_keywords_en"):
-                sf.write(f"    🔎 Image Query (EN): {', '.join(c['image_keywords_en'])}\n")
-            if c.get("meme_keyword_en"):
-                sf.write(f"    🎭 Meme Query (EN): {c['meme_keyword_en']}\n")
+    # संपूर्ण मेटाडेटा और विस्तृत स्क्रिप्ट सेव करना: out/story_XX/
+    # (story_XX_data.json और script_XX.txt को एक साथ सुरक्षित रूप से लिखना)
 
     merged_story = {
         "story_number": s_num,
@@ -292,6 +275,8 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
         "images": story.get("images", []),
         "videos": story.get("videos", [])
     }
+    # प्रत्येक खबर के फोल्डर (out/story_XX/) में संपूर्ण JSON डेटा व विस्तृत स्क्रिप्ट सेव करें
+    save_story_folder_metadata(merged_story, OUT_DIR)
     return merged_story
 
 

@@ -355,13 +355,9 @@ async def generate_audio_for_story(story: dict, force: bool = False) -> tuple[st
         clean_text = script.replace("**", "").replace("*", "").replace('"', '').strip()
 
         try:
-            with open(script_path, "w", encoding="utf-8") as sf:
-                sf.write(f"शीर्षक: {story.get('screen_headline', '')}\n")
-                sf.write(f"श्रेणी: {story.get('category', 'न्यूज़')}\n")
-                sf.write("═" * 50 + "\n\n")
-                sf.write("वॉइसओवर स्क्रिप्ट:\n")
-                sf.write(clean_text + "\n")
-            print(f"  📝 [खबर {story_num}] 'out/{story_dir_name}/{script_filename}' स्क्रिप्ट फाइल सेव की गई")
+            story["voiceover_script"] = clean_text
+            save_story_folder_metadata(story, OUT_DIR)
+            print(f"  📝 [खबर {story_num}] 'out/{story_dir_name}/{script_filename}' व मेटाडेटा फाइल सेव की गई")
         except Exception as e:
             print(f"    ⚠️ स्क्रिप्ट फाइल सेव एरर: {e}")
 
@@ -410,6 +406,7 @@ async def generate_audio_for_story(story: dict, force: bool = False) -> tuple[st
         "total_story_frames": audio_frames,
         "total_story_seconds": dur
     }
+    save_story_folder_metadata(story, OUT_DIR)
     print(f"  ✔ [खबर {story_num}] पूर्ण अवधि: {dur}s ({audio_frames} फ्रेम्स, 0s साइलेंस) | {output_filename}")
     return f"out/{story_dir_name}/voice over/{output_filename}", dur
 
