@@ -307,30 +307,46 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
         </Sequence>
       )}
 
-      {/* ─── 5.8 SUICIDE PREVENTION COMPLIANCE TICKER (YouTube / Meta Policy Safe) ─── */}
+      {/* ─── 5.8 SUICIDE PREVENTION COMPLIANCE TICKER (YouTube / Meta Policy Safe - Zero Emojis, High Mobile Readability) ─── */}
       {isSuicideStory && (
         <div
           style={{
             position: 'absolute',
-            bottom: 104,
-            left: 40,
-            right: 40,
-            height: 40,
-            backgroundColor: 'rgba(180, 20, 20, 0.94)',
-            borderRadius: 8,
-            border: '1px solid rgba(255, 200, 200, 0.6)',
+            bottom: 108,
+            left: 36,
+            right: 36,
+            height: 54,
+            backgroundColor: '#ba1414',
+            borderRadius: 10,
+            border: '2px solid rgba(255, 230, 230, 0.85)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 85,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.6)',
+            boxShadow: '0 6px 24px rgba(0, 0, 0, 0.7)',
             color: '#ffffff',
-            fontSize: 18,
-            fontWeight: 700,
-            letterSpacing: '0.5px',
+            letterSpacing: '0.6px',
+            fontFamily: "'Noto Sans Devanagari', 'Segoe UI', sans-serif",
           }}
         >
-          🚨 मानसिक स्वास्थ्य हेल्पलाइन: Tele-MANAS (14416) | KIRAN (1800-599-0019)
+          <span
+            style={{
+              backgroundColor: '#ffffff',
+              color: '#b81212',
+              padding: '3px 14px',
+              borderRadius: 6,
+              fontWeight: 900,
+              fontSize: 22,
+              marginRight: 16,
+              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)',
+              display: 'inline-block',
+            }}
+          >
+            मदद
+          </span>
+          <span style={{ fontSize: 26, fontWeight: 800 }}>
+            मानसिक स्वास्थ्य हेल्पलाइन: Tele-MANAS (14416) | KIRAN (1800-599-0019)
+          </span>
         </div>
       )}
 

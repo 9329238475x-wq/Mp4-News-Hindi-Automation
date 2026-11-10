@@ -164,6 +164,11 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
     }
   }
 
+  phaseText = phaseText
+    .replace(/\bट्रेन आगे\b/g, "ट्रेन के आगे")
+    .replace(/\bगोली धमकी\b/g, "गोली मारने की धमकी")
+    .replace(/\bडिसिपी\b/g, "डीसीपी");
+
   // ─── 4. LIVE TYPEWRITER / TELEPRINTER ANIMATION (Exact 2.0s = 60 Frames) ───
   const typingDurationFrames = 60; // 2.0 seconds at 30 fps
   const graphemes = getHindiGraphemes(phaseText);

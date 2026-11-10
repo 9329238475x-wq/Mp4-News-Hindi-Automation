@@ -26,8 +26,14 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({
 
   // Build the ticker text with separators
   const cta = `${channelName} को सब्सक्राइब करें और हर खबर पर रखें सीधी नज़र`;
-  const headlinesList =
-    headlines.length > 0 ? headlines : ["देश की हर बड़ी और ताज़ा खबर पर नज़र"];
+  const cleanTickerText = (h: string) =>
+    h
+      .replace(/\bट्रेन आगे\b/g, "ट्रेन के आगे")
+      .replace(/\bगोली धमकी\b/g, "गोली मारने की धमकी")
+      .replace(/\bडिसिपी\b/g, "डीसीपी");
+
+  const rawList = headlines.length > 0 ? headlines : ["देश की हर बड़ी और ताज़ा खबर पर नज़र"];
+  const headlinesList = rawList.map(cleanTickerText);
   const formattedItems = [...headlinesList, cta];
 
   // Continuous linear scroll: approx 2.8 pixels per frame
