@@ -25,6 +25,7 @@ if hasattr(sys.stderr, "reconfigure"):
 load_dotenv()
 
 from story_metadata_helper import save_story_folder_metadata
+from text_repair_helper import repair_hindi_tts_text, sanitize_headline_safety
 from groq_engine import GroqEngine
 from prompts import (
     STAGE1_SCRIPT_SYSTEM_PROMPT,
@@ -65,19 +66,54 @@ def sanitize_keyword_master(kw: str) -> str:
     1. किसी भी साल (1900-2099) को हटाना।
     2. किसी भी समय (12:30 PM, 3:30, AM, PM, baje) को हटाना।
     3. कोट्स, ब्रैकेट्स, स्पेशल कैरेक्टर्स हटाना।
-    4. 2 से 4 शब्दों का छोटा, हाई-इम्पैक्ट सर्च कीवर्ड बनाना।
+    4. 2 से 6 शब्दों का छोटा, हाई-इम्पैक्ट सर्च कीवर्ड बनाना।
     """
     if not kw:
         return ""
     clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', str(kw))
     clean = re.sub(r'\b(19\d\d|20\d\d)\b', '', clean)
     clean = re.sub(r'\b\d{1,2}(:\d{2})?\s*(am|pm|a\.m\.|p\.m\.|baje|hrs|hours)?\b', '', clean, flags=re.IGNORECASE)
-    clean = re.sub(r'\b(start|route|departure|concluding|ceremony|boarding|transport|heavy|ban|closure|save|remove|during|after|before)\b', '', clean, flags=re.IGNORECASE)
+    clean = re.sub(r'\b(start|route|departure|concluding|ceremony|boarding|transport|heavy|ban|closure|save|remove|during|after|before|walk|walks|walking|run|running)\b', '', clean, flags=re.IGNORECASE)
+    clean = re.sub(r'\bup\b', 'Uttar Pradesh', clean, flags=re.IGNORECASE)
+
+    if 'keshav' in clean.lower() and 'maurya' in clean.lower() and 'prasad' not in clean.lower():
+        clean = re.sub(r'keshav\s+maurya', 'Keshav Prasad Maurya BJP', clean, flags=re.IGNORECASE)
+
+    c_low = clean.lower()
+
+    if 'shahdara' in c_low and 'lucknow' not in c_low:
+        clean = 'Shahdara police outpost Lucknow Para'
+        c_low = clean.lower()
+
+    if any(w in c_low for w in ['neha', 'sapna', 'pooja', 'priya', 'woman', 'girl', 'female', 'lady', 'victim', 'accused']):
+        clean = 'Police investigation file photo Uttar Pradesh'
+        c_low = clean.lower()
+    elif any(w in c_low for w in ['threat', 'abuse', 'suicide', 'scandal']):
+        clean = 'Uttar Pradesh Police logo official'
+        c_low = clean.lower()
+    elif any(w in c_low for w in ['home', 'family', 'house', 'outpost']) and 'shahdara' not in c_low:
+        clean = 'Thakurganj Lucknow police station building'
+        c_low = clean.lower()
+    elif any(w in c_low for w in ['train', 'railway', 'track', 'tracks']):
+        clean = 'Indian Railways tracks generic Lucknow'
+        c_low = clean.lower()
+    elif any(w in c_low for w in ['dcp', 'acp', 'jitendra', 'srivastava', 'officer', 'press']):
+        clean = 'Lucknow Police press conference Jitendra Srivastava'
+        c_low = clean.lower()
+
+    if any(p in c_low for p in ['chowki', 'thana', 'outpost', 'barricade', 'station']) and not any(loc in c_low for loc in ['uttar pradesh', 'bareilly', 'india', 'delhi', 'lucknow']):
+        clean = f"Lucknow Police {clean}"
+    elif any(leg in c_low for leg in ['legislator', 'legislators', 'mla', 'mlas']) and 'bjp' not in c_low:
+        clean = "Uttar Pradesh BJP MLAs"
+
     clean = re.sub(r'\s+', ' ', clean).strip()
     words = clean.split()
     if not words:
         return ""
-    return " ".join(words[:4])
+    result = " ".join(words[:6])
+    if result.endswith(" Uttar"):
+        result += " Pradesh"
+    return result
 
 
 def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
@@ -110,7 +146,7 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
         print(f"   ⚠️ स्टेज 1 एरर: {e}", flush=True)
         stage1_resp = {}
 
-    screen_hl = sanitize_anchor_text(stage1_resp.get("screen_headline", title[:50])).replace("**", "").replace("*", "")
+    screen_hl = sanitize_headline_safety(sanitize_anchor_text(stage1_resp.get("screen_headline", title[:50]))).replace("**", "").replace("*", "")
     raw_chunks = stage1_resp.get("chunks", [])
 
     if not raw_chunks:
@@ -125,8 +161,8 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
     cleaned_chunks = []
     bulletin_points = []
     for idx, c in enumerate(raw_chunks, 1):
-        s_clean = sanitize_anchor_text(c.get("sentence", ""))
-        b_clean = sanitize_anchor_text(c.get("bullet_text", s_clean))
+        s_clean = repair_hindi_tts_text(sanitize_anchor_text(c.get("sentence", "")))
+        b_clean = repair_hindi_tts_text(sanitize_anchor_text(c.get("bullet_text", s_clean)))
         cleaned_chunks.append({
             "chunk_index": idx,
             "sentence": s_clean,
@@ -169,9 +205,10 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
         for bp in bulletin_points[:3]:
             raw_headlines.append(bp)
 
-    cleaned_headlines = [sanitize_anchor_text(h).replace("**", "").replace("*", "") for h in raw_headlines if h]
+    cleaned_headlines = [sanitize_headline_safety(h).replace("**", "").replace("*", "") for h in raw_headlines if h]
     if len(cleaned_headlines) < 3:
         cleaned_headlines.append(screen_hl)
+    cleaned_headlines = [sanitize_headline_safety(h) for h in cleaned_headlines]
 
     print(f"   ✅ [स्टेज 2 पूर्ण] {len(cleaned_headlines)} स्क्रीन हेडलाइंस तैयार!", flush=True)
     for h_idx, h in enumerate(cleaned_headlines, 1):
@@ -251,10 +288,10 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
         if bkw and bkw not in all_kws_en:
             all_kws_en.append(bkw)
 
-    clean_voiceover = " ".join([c["sentence"].replace("**", "").replace("*", "") for c in cleaned_chunks])
+    clean_voiceover = repair_hindi_tts_text(" ".join([c["sentence"].replace("**", "").replace("*", "") for c in cleaned_chunks]))
 
     # मुख्य स्क्रीन हेडलाइन (पहली हेडलाइन)
-    primary_headline = cleaned_headlines[0] if cleaned_headlines else screen_hl
+    primary_headline = sanitize_headline_safety(cleaned_headlines[0] if cleaned_headlines else screen_hl)
 
     # संपूर्ण मेटाडेटा और विस्तृत स्क्रिप्ट सेव करना: out/story_XX/
     # (story_XX_data.json और script_XX.txt को एक साथ सुरक्षित रूप से लिखना)

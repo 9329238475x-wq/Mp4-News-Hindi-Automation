@@ -15,6 +15,7 @@ import asyncio
 import subprocess
 from typing import Tuple, Optional, Any
 from story_metadata_helper import save_story_folder_metadata
+from text_repair_helper import repair_hindi_tts_text
 
 # Windows / Linux UTF-8 encoding support
 if hasattr(sys.stdout, "reconfigure"):
@@ -342,6 +343,7 @@ async def generate_audio_for_story(story: dict, force: bool = False) -> tuple[st
     script_from_file = load_script_from_file(script_path)
     if script_from_file:
         clean_text = script_from_file.replace("**", "").replace("*", "").replace('"', '').strip()
+        clean_text = repair_hindi_tts_text(clean_text)
         print(f"  📄 [खबर {story_num}] 'out/{story_dir_name}/{script_filename}' से वॉइसओवर स्क्रिप्ट लोड की गई ({len(clean_text.split())} शब्द)")
         # JSON डेटा को भी इस फाइल की स्क्रिप्ट से सिंक करें ताकि दोनों 100% मैच रहें
         story["voiceover_script"] = clean_text
@@ -354,6 +356,7 @@ async def generate_audio_for_story(story: dict, force: bool = False) -> tuple[st
             script = f"{hl}। {bp}"
 
         clean_text = script.replace("**", "").replace("*", "").replace('"', '').strip()
+        clean_text = repair_hindi_tts_text(clean_text)
 
         try:
             story["voiceover_script"] = clean_text

@@ -36,6 +36,9 @@ STAGE1_SCRIPT_SYSTEM_PROMPT = r"""तुम एक राष्ट्रीय �
 8. 🆘 सुसाइड स्टोरी फ्लैग (SUICIDE HELPLINE FLAG):
    - यदि खबर में आत्महत्या या जान देने की घटना है, तो JSON में "is_suicide_story": true अनिवार्य रूप से दें।
 9. ✅ 5 स्पष्ट, प्रभावशाली वाक्यों (Chunks) में बांटो और मुख्य नामों को **बोल्ड** करें।
+10. 🔤 पूर्ण और शुद्ध शब्द (ZERO TRUNCATED WORDS / COMPLETE VERBS):
+   - कभी भी कटे हुए शब्द या अकेली मात्राएं न छोड़ें (जैसे 'तैी' नहीं, हमेशा 'तैयारी'; 'ी मौत' नहीं, हमेशा 'अपनी मौत')।
+   - वाक्य की क्रियाएं पूरी लिखें (जैसे 'मामले की जांच सौंपी गई' न कि केवल 'मामले की सौंपी गई')।
 
 आउटपुट केवल और केवल निम्नलिखित JSON फ़ॉर्मेट में दें:
 {
@@ -113,6 +116,7 @@ STAGE2_HEADLINES_SYSTEM_PROMPT = r"""तुम एक राष्ट्री�
 3. 🛡️ फैक्ट सुरक्षा (Zero Fact Inversion): पीड़ित और आरोपी के रोल कभी न बदलें (मृतक को झूठा आरोप लगाने वाला न बनाएं)।
 4. ✍️ शुद्ध व्याकरण: अधूरी या टूटी हेडलाइन न बनाएं ('गोली धमकी दी' के बजाय 'गोली मारने की धमकी दी')।
 5. कोई विशेष चिन्ह (No Markdown): किसी भी हेडलाइन में ** या * या # का प्रयोग न करें।
+6. ⚖️ तथ्यात्मक संतुलन (BALANCED HEADLINE): हेडलाइन में मुख्य घटना को दबाकर केवल 'गाली-गलौज की शिकायत' न बनाएं, बल्कि संतुलित व गंभीर रखें (जैसे 'लखनऊ: 6 वीडियो बनाकर ड्राइवर ने की खुदकुशी, पुलिस पर आरोप' या 'ड्राइवर की संदिग्ध मौत, पुलिस पर प्रताड़ना का आरोप')।
 
 आउटपुट केवल और केवल निम्नलिखित JSON फ़ॉर्मेट में दें:
 {
@@ -162,6 +166,9 @@ STRICT MASTER RULES:
    4. Official Public Officers (with rank): e.g. "Lucknow Police press conference Jitendra Srivastava"
    5. Official Investigation Archive: e.g. "Police investigation file photo Uttar Pradesh"
 4. 2 TO 4 WORDS MAX: Short, direct English terms that search engines match instantly.
+5. 📍 MANDATORY CITY/LOCATION ANCHOR FOR LOCAL POLICE / OUTPOSTS:
+   - When referencing a police outpost, thana, or chowki, ALWAYS append the city name (e.g. 'Shahdara police outpost Lucknow Para', 'Thakurganj Lucknow police station building') to strictly avoid matching other states (like Delhi Police).
+6. 🚫 NO TRUNCATION: Never truncate state or compound names (e.g. write 'Uttar Pradesh', NEVER cut off to just 'Uttar').
 
 OUTPUT ONLY IN VALID JSON FORMAT:
 {

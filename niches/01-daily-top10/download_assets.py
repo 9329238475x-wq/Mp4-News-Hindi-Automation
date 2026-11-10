@@ -240,14 +240,20 @@ def sanitize_keyword_master(kw: str) -> str:
         clean = re.sub(r'keshav\s+maurya', 'Keshav Prasad Maurya BJP', clean, flags=re.IGNORECASE)
 
     c_low = clean.lower()
-    # PRIVACY & DEFAMATION SHIELD: 5 Approved Broadcast Archetypes
+
+    # 1. विशिष्ट लोकेशन एंकरिंग: 'Shahdara' के साथ लखनऊ जोड़ना (ताकि दिल्ली पुलिस न आए)
+    if 'shahdara' in c_low and 'lucknow' not in c_low:
+        clean = 'Shahdara police outpost Lucknow Para'
+        c_low = clean.lower()
+
+    # 2. PRIVACY & DEFAMATION SHIELD: 5 Approved Broadcast Archetypes
     if any(w in c_low for w in ['neha', 'sapna', 'pooja', 'priya', 'woman', 'girl', 'female', 'lady', 'victim', 'accused']):
         clean = 'Police investigation file photo Uttar Pradesh'
         c_low = clean.lower()
     elif any(w in c_low for w in ['threat', 'abuse', 'suicide', 'scandal']):
         clean = 'Uttar Pradesh Police logo official'
         c_low = clean.lower()
-    elif any(w in c_low for w in ['home', 'family', 'house', 'outpost']):
+    elif any(w in c_low for w in ['home', 'family', 'house', 'outpost']) and 'shahdara' not in c_low:
         clean = 'Thakurganj Lucknow police station building'
         c_low = clean.lower()
     elif any(w in c_low for w in ['train', 'railway', 'track', 'tracks']):
@@ -256,9 +262,10 @@ def sanitize_keyword_master(kw: str) -> str:
     elif any(w in c_low for w in ['dcp', 'acp', 'jitendra', 'srivastava', 'officer', 'press']):
         clean = 'Lucknow Police press conference Jitendra Srivastava'
         c_low = clean.lower()
-    # Anchor generic terms to India / UP context so foreign stock/police/weddings are 100% prevented
-    if any(p in c_low for p in ['police', 'barricade', 'barrier', 'traffic']) and not any(loc in c_low for loc in ['uttar pradesh', 'bareilly', 'india', 'delhi', 'lucknow']):
-        clean = f"Uttar Pradesh Police {clean}"
+
+    # 3. स्थानीय पुलिस व थानों को लखनऊ / यूपी संदर्भ से जोड़ना
+    if any(p in c_low for p in ['chowki', 'thana', 'outpost', 'barricade', 'station']) and not any(loc in c_low for loc in ['uttar pradesh', 'bareilly', 'india', 'delhi', 'lucknow']):
+        clean = f"Lucknow Police {clean}"
     elif any(leg in c_low for leg in ['legislator', 'legislators', 'mla', 'mlas']) and 'bjp' not in c_low:
         clean = "Uttar Pradesh BJP MLAs"
     elif any(ven in c_low for ven in ['venue', 'hall', 'swayamvar']) and 'rally' not in c_low:
@@ -268,7 +275,11 @@ def sanitize_keyword_master(kw: str) -> str:
     words = clean.split()
     if not words:
         return ""
-    return " ".join(words[:4])
+    # 4. 6 शब्दों तक अनुमति दें ताकि 'Police investigation file photo Uttar Pradesh' न कटे
+    result = " ".join(words[:6])
+    if result.endswith(" Uttar"):
+        result += " Pradesh"
+    return result
 
 
 def get_wikimedia_portrait(entity_name: str) -> str:
@@ -685,7 +696,9 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                             if len(scraped_pool) >= 4:
                                 break
 
-    print(f"  📸 [Pool A - Authentic News Media] {len(scraped_pool)} असली समाचार तस्वीरें/GIFs उपलब्ध (साभार: '{credit_source}')")
+    # 🛑 हार्ड कैप: प्रति खबर अधिकतम 4 असली मीडिया फाइल्स (नो ओवरफ्लो)
+    scraped_pool = scraped_pool[:4]
+    print(f"  📸 [Pool A - Authentic News Media] {len(scraped_pool)} प्रामाणिक समाचार तस्वीरें/GIFs चयनित (साभार: '{credit_source}')")
 
     # ─────────────────────────────────────────────────────────────────
     # 2. POOL B: DuckDuckGo संदर्भ तस्वीरें (1 KEYWORD = 1 CONTEXT IMAGE)
@@ -702,6 +715,8 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
     seen_urls = set()
 
     for k_idx, kw in enumerate(all_kws, 1):
+        if len(context_pool) >= 4:
+            break
         clean_kw = sanitize_keyword_master(kw)
         if not clean_kw:
             continue
@@ -812,7 +827,7 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
 
     for item in scraped_pool + context_pool:
         p = item["path"]
-        if p not in unique_all_images:
+        if p not in unique_all_images and len(unique_all_images) < 8:
             unique_all_images.append(p)
 
     if primary_choice and not os.path.exists(root_primary_path):
