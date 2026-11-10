@@ -1,201 +1,138 @@
 [
   {
     "story_number": 1,
-    "category": "क्राइम",
-    "screen_headline": "बरेली के पैगा गांव में वृद्धा की गला दबाकर हत्या",
+    "category": "क्राइम व कानून",
+    "is_suicide_story": false,
+    "screen_headline": "स्पेन ओविएदो में बैग विस्फोट से पुलिस अधिकारी की मौत",
     "screen_headlines": [
-      "बरेली के पैगा गांव में वृद्धा की गला दबाकर हत्या",
-      "नत्थो देवी, 75 वर्षीया, घर में मृत पाई गई",
-      "संपत्ति विवाद को हत्या का संभावित कारण माना गया",
-      "पुलिस ने साक्ष्य एकत्र, पोस्टमॉर्टम रिपोर्ट का इंतजार"
+      "स्पेन ओविएदो में बैग विस्फोट से पुलिस अधिकारी की मौत",
+      "एक अन्य अधिकारी घायल, महिला को गोली, खोज जारी",
+      "डॉग यूनिट और बम निरोधक दल ने संभाली स्थिति",
+      "पुलिस ने संवेदना व्यक्त की, सुरक्षा उपायों को सुदृढ़ किया"
     ],
     "chunks": [
       {
         "chunk_index": 1,
-        "sentence": "बरेली के भोजीपुरा थाना क्षेत्र के पैगा गांव में पिचहत्तर वर्षीया **नत्थो देवी** की गला दबाकर हत्या की पुष्टि हुई।",
-        "bullet_text": "**नत्थो देवी** की गला दबाकर हत्या, पैगा गांव, बरेली",
+        "sentence": "ओविएदो के उत्तर भाग में मंगलवार सुबह एक संदिग्ध बैग के विस्फोट से पुलिस अधिकारी **हुआन होसे** की मृत्यु हो गई।",
+        "bullet_text": "**हुआन होसे** की मौत, बैग विस्फोट से हुई।",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "Naththo Devi",
-          "Pega village",
-          "Bhojipura police"
+          "Huan Hose Oviedo"
         ],
-        "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
-        "is_scraped_news": true,
-        "credit_source": "अमर उजाला"
+        "meme_keyword_en": null
       },
       {
         "chunk_index": 2,
-        "sentence": "शनिवार दोपहर एक बजे उनके घर में जमीन पर उनका शव मिला, जिसमें मुंह में कपड़ा ठूंसा हुआ पाया गया।",
-        "bullet_text": "शव शनिवार दोपहर एक बजे घर में मिला, मुंह में कपड़ा ठूंसा",
+        "sentence": "विस्फोट के समय पुलिस की डॉग यूनिट और बम निरोधक दस्ते के अधिकारी घटनास्थल पर मौजूद थे।",
+        "bullet_text": "डॉग यूनिट व बम निरोधक दल ने जांच के दौरान विस्फोट देखा।",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "Naththo Devi house",
-          "crime scene Uttar Pradesh"
+          "Oviedo bomb squad"
         ],
-        "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/context_img_1_01.jpg",
-        "is_scraped_news": false,
-        "credit_source": null
+        "meme_keyword_en": null
       },
       {
         "chunk_index": 3,
-        "sentence": "वृद्धा के पास दस बीघा जमीन और एक मकान था, और संपत्ति विवाद को हत्या का संभावित कारण माना जा रहा है।",
-        "bullet_text": "दस बीघा जमीन, एक मकान, संपत्ति विवाद संभावित कारण",
+        "sentence": "विस्फोट में एक अन्य पुलिस अधिकारी घायल हो गया और एक महिला को गोली लगी, दोनों को अस्पताल में भर्ती कराया गया।",
+        "bullet_text": "एक अधिकारी व एक महिला दोनों को चोटें आईं, उपचार के लिए अस्पताल में भर्ती।",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "Naththo Devi property",
-          "Uttar Pradesh land dispute"
+          "Oviedo police casualty"
         ],
-        "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/scraped_news_img_1_02.jpg",
-        "is_scraped_news": true,
-        "credit_source": "अमर उजाला"
+        "meme_keyword_en": null
       },
       {
         "chunk_index": 4,
-        "sentence": "स्थानीय पुलिस ने स्थल से साक्ष्य एकत्र कर शव को पोस्टमॉर्टम के लिए भेजा, और एसपी **संतोष कुमार** ने कहा कि कोई सगा संबंधी नहीं है, जांच बारीकी से चल रही है।",
-        "bullet_text": "पुलिस ने साक्ष्य एकत्र, शव पोस्टमॉर्टम, एसपी **संतोष कुमार** ने जांच की पुष्टि",
+        "sentence": "पुलिस प्रवक्ता **पेद्रो अगुआदो** ने बताया कि संदिग्ध हमलावर अभी भी फरार है और खोज जारी है।",
+        "bullet_text": "**पेद्रो अगुआदो** ने कहा, हमलावर अभी भी फरार, खोज जारी।",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "Santosh Kumar SP",
-          "Uttar Pradesh Police"
+          "Pedro Aguado Oviedo"
         ],
-        "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/context_img_1_02.jpg",
-        "is_scraped_news": false,
-        "credit_source": null
+        "meme_keyword_en": null
       },
       {
         "chunk_index": 5,
-        "sentence": "पोस्टमॉर्टम रिपोर्ट आने पर हत्या के कारण का निर्धारण होगा, और पुलिस ने सभी संभावित संदिग्धों की पूछताछ जारी रखी है।",
-        "bullet_text": "पोस्टमॉर्टम रिपोर्ट से कारण पता चलेगा, पूछताछ जारी",
+        "sentence": "पुलिस ने घटना के बाद प्रभावित परिवारों के प्रति संवेदना व्यक्त की और सुरक्षा उपायों को सुदृढ़ करने का आश्वासन दिया।",
+        "bullet_text": "परिवारों को संवेदना, सुरक्षा उपायों को सुदृढ़ करने का वादा।",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "Naththo Devi postmortem",
-          "Uttar Pradesh forensic"
+          "Oviedo police statement"
         ],
-        "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
-        "is_scraped_news": true,
-        "credit_source": "अमर उजाला"
+        "meme_keyword_en": null
       }
     ],
     "bulletin_points": [
-      "**नत्थो देवी** की गला दबाकर हत्या, पैगा गांव, बरेली",
-      "शव शनिवार दोपहर एक बजे घर में मिला, मुंह में कपड़ा ठूंसा",
-      "दस बीघा जमीन, एक मकान, संपत्ति विवाद संभावित कारण",
-      "पुलिस ने साक्ष्य एकत्र, शव पोस्टमॉर्टम, एसपी **संतोष कुमार** ने जांच की पुष्टि",
-      "पोस्टमॉर्टम रिपोर्ट से कारण पता चलेगा, पूछताछ जारी"
+      "**हुआन होसे** की मौत, बैग विस्फोट से हुई।",
+      "डॉग यूनिट व बम निरोधक दल ने जांच के दौरान विस्फोट देखा।",
+      "एक अधिकारी व एक महिला दोनों को चोटें आईं, उपचार के लिए अस्पताल में भर्ती।",
+      "**पेद्रो अगुआदो** ने कहा, हमलावर अभी भी फरार, खोज जारी।",
+      "परिवारों को संवेदना, सुरक्षा उपायों को सुदृढ़ करने का वादा।"
     ],
     "bullet_points": [
-      "नत्थो देवी की गला दबाकर हत्या, पैगा गांव, बरेली",
-      "शव शनिवार दोपहर एक बजे घर में मिला, मुंह में कपड़ा ठूंसा",
-      "दस बीघा जमीन, एक मकान, संपत्ति विवाद संभावित कारण",
-      "पुलिस ने साक्ष्य एकत्र, शव पोस्टमॉर्टम, एसपी संतोष कुमार ने जांच की पुष्टि",
-      "पोस्टमॉर्टम रिपोर्ट से कारण पता चलेगा, पूछताछ जारी"
+      "हुआन होसे की मौत, बैग विस्फोट से हुई।",
+      "डॉग यूनिट व बम निरोधक दल ने जांच के दौरान विस्फोट देखा।",
+      "एक अधिकारी व एक महिला दोनों को चोटें आईं, उपचार के लिए अस्पताल में भर्ती।",
+      "पेद्रो अगुआदो ने कहा, हमलावर अभी भी फरार, खोज जारी।",
+      "परिवारों को संवेदना, सुरक्षा उपायों को सुदृढ़ करने का वादा।"
     ],
-    "voiceover_script": "बरेली के भोजीपुरा थाना क्षेत्र के पैगा गांव में पिचहत्तर वर्षीया नत्थो देवी की गला दबाकर हत्या की पुष्टि हुई। शनिवार दोपहर एक बजे उनके घर में जमीन पर उनका शव मिला, जिसमें मुंह में कपड़ा ठूंसा हुआ पाया गया। वृद्धा के पास दस बीघा जमीन और एक मकान था, और संपत्ति विवाद को हत्या का संभावित कारण माना जा रहा है। स्थानीय पुलिस ने स्थल से साक्ष्य एकत्र कर शव को पोस्टमॉर्टम के लिए भेजा, और एसपी संतोष कुमार ने कहा कि कोई सगा संबंधी नहीं है, जांच बारीकी से चल रही है। पोस्टमॉर्टम रिपोर्ट आने पर हत्या के कारण का निर्धारण होगा, और पुलिस ने सभी संभावित संदिग्धों की पूछताछ जारी रखी है।",
+    "voiceover_script": "ओविएदो के उत्तर भाग में मंगलवार सुबह एक संदिग्ध बैग के विस्फोट से पुलिस अधिकारी हुआन होसे की मृत्यु हो गई। विस्फोट के समय पुलिस की डॉग यूनिट और बम निरोधक दस्ते के अधिकारी घटनास्थल पर मौजूद थे। विस्फोट में एक अन्य पुलिस अधिकारी घायल हो गया और एक महिला को गोली लगी, दोनों को अस्पताल में भर्ती कराया गया। पुलिस प्रवक्ता पेद्रो अगुआदो ने बताया कि संदिग्ध हमलावर अभी भी फरार है और खोज जारी है। पुलिस ने घटना के बाद प्रभावित परिवारों के प्रति संवेदना व्यक्त की और सुरक्षा उपायों को सुदृढ़ करने का आश्वासन दिया।",
     "visual_keywords": [
-      "Naththo Devi",
-      "Pega village",
-      "Bhojipura police",
-      "Naththo Devi house",
-      "crime scene Uttar Pradesh",
-      "Naththo Devi property",
-      "Uttar Pradesh land dispute",
-      "Santosh Kumar SP",
-      "Uttar Pradesh Police",
-      "Naththo Devi postmortem",
-      "Uttar Pradesh forensic",
-      "Uttar Pradesh murder",
-      "property dispute homicide",
-      "Uttar Pradesh police investigation"
+      "Huan Hose Oviedo",
+      "Oviedo bomb squad",
+      "Oviedo police casualty",
+      "Pedro Aguado Oviedo",
+      "Oviedo police statement",
+      "Oviedo police investigation",
+      "Spain bomb disposal"
     ],
     "visual_keywords_en": [
-      "Naththo Devi",
-      "Pega village",
-      "Bhojipura police",
-      "Naththo Devi house",
-      "crime scene Uttar Pradesh",
-      "Naththo Devi property",
-      "Uttar Pradesh land dispute",
-      "Santosh Kumar SP",
-      "Uttar Pradesh Police",
-      "Naththo Devi postmortem",
-      "Uttar Pradesh forensic",
-      "Uttar Pradesh murder",
-      "property dispute homicide",
-      "Uttar Pradesh police investigation"
+      "Huan Hose Oviedo",
+      "Oviedo bomb squad",
+      "Oviedo police casualty",
+      "Pedro Aguado Oviedo",
+      "Oviedo police statement",
+      "Oviedo police investigation",
+      "Spain bomb disposal"
     ],
     "primary_source_index": 0,
-    "real_image_url": "https://staticimg.amarujala.com/assets/images/2026/10/26/crime-demo_271c730ee22261c161011f3ca519ba2a.jpeg?w=1200&dpr=1.0",
-    "real_image_attribution": "अमर उजाला क्राइम",
-    "original_title": "बरेली: निसंतान वृद्धा की गला दबाकर हत्या, मुंह में ठूंसा हुआ था कपड़ा, पुलिस जांच में जुटी",
+    "real_image_url": "https://ichef.bbci.co.uk/ace/standard/480/cpsprodpb/c2fe/live/661f0a70-dcf3-11f1-93e1-3b657b665bcf.png",
+    "real_image_attribution": "बीबीसी हिंदी",
+    "original_title": "स्पेन: बैग में धमाके से पुलिस अधिकारी की मौत, एक अन्य घायल",
     "local_news_image": "out/story_01/news real image/scraped_news_img_1_01.jpg",
     "local_visual_asset": "out/story_01/news real image/scraped_news_img_1_01.jpg",
     "local_audio_asset": "out/story_01/voice over/audio_story_1.mp3",
-    "article_url": "https://www.amarujala.com/uttar-pradesh/bareilly/crime/childless-elderly-woman-strangled-to-death-in-bareilly-2026-11-08",
-    "published_at": "Sun, 08 Nov 2026 09:24:22 +0530",
-    "word_count_original": 242,
+    "article_url": "https://www.bbc.co.uk/hindi/live/c317k7p4ndjet?at_medium=RSS&at_campaign=rss",
+    "published_at": "Tue, 10 Nov 2026 16:38:04 +0530",
+    "word_count_original": 3730,
     "images": [
       {
         "index": 1,
-        "local_path": "out/story_01/news real image/image_01.jpg",
-        "public_path": "out/story_01/news real image/image_01.jpg",
-        "filename": "image_01.jpg",
-        "resolution": "1200x675",
-        "size_kb": 154.2,
-        "url": "https://staticimg.amarujala.com/assets/images/2026/10/26/crime-demo_271c730ee22261c161011f3ca519ba2a.jpeg?w=1200&dpr=1.0"
+        "local_path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
+        "public_path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
+        "filename": "scraped_news_img_1_01.jpg",
+        "resolution": "480x270",
+        "size_kb": 44.5,
+        "is_animated": false,
+        "is_video": false,
+        "is_scraped_news": true,
+        "credit_source": "बीबीसी हिंदी",
+        "url": "https://ichef.bbci.co.uk/ace/standard/480/cpsprodpb/c2fe/live/661f0a70-dcf3-11f1-93e1-3b657b665bcf.png"
       },
       {
         "index": 2,
-        "local_path": "out/story_01/news real image/image_02.jpg",
-        "public_path": "out/story_01/news real image/image_02.jpg",
-        "filename": "image_02.jpg",
-        "resolution": "750x422",
-        "size_kb": 14.4,
-        "url": "https://staticimg.amarujala.com/assets/images/original/default_500.png?w=414&dpr=3.0&q=80"
+        "local_path": "out/story_01/news real image/scraped_news_img_1_02.jpg",
+        "public_path": "out/story_01/news real image/scraped_news_img_1_02.jpg",
+        "filename": "scraped_news_img_1_02.jpg",
+        "resolution": "640x360",
+        "size_kb": 62.0,
+        "is_animated": false,
+        "is_video": false,
+        "is_scraped_news": true,
+        "credit_source": "बीबीसी हिंदी",
+        "url": "https://ichef.bbci.co.uk/ace/ws/640/cpsprodpb/vivo/live/images/2026/11/10/e0b55fba-3be0-4500-a748-776ea95199c5.png.webp"
       }
     ],
-    "videos": [],
-    "all_real_images": [
-      "out/story_01/news real image/scraped_news_img_1_01.jpg",
-      "out/story_01/news real image/scraped_news_img_1_02.jpg",
-      "out/story_01/news real image/context_img_1_01.jpg",
-      "out/story_01/news real image/context_img_1_02.jpg",
-      "out/story_01/news real image/context_img_1_03.jpg",
-      "out/story_01/news real image/context_img_1_04.jpg"
-    ],
-    "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / अमर उजाला क्राइम",
-    "audio_duration": 38.66,
-    "timing_specs": {
-      "fps": 30,
-      "pre_padding_frames": 0,
-      "audio_start_frame": 0,
-      "audio_duration_frames": 1160,
-      "post_padding_frames": 0,
-      "transition_frames": 0,
-      "total_story_frames": 1160,
-      "total_story_seconds": 38.66
-    },
-    "thumbnail_path": "out/story_01/thumbnail_01.jpg",
-    "keyword_to_image": {
-      "Naththo Devi": "out/story_01/news real image/news_img_1_02.jpg",
-      "Pega village": "out/story_01/news real image/news_img_1_03.jpg",
-      "Bhojipura police": "out/story_01/news real image/news_img_1_04.jpg",
-      "Naththo Devi house": "out/story_01/news real image/news_img_1_05.jpg",
-      "crime scene Uttar Pradesh": "out/story_01/news real image/news_img_1_06.jpg",
-      "Naththo Devi property": "out/story_01/news real image/news_img_1_07.jpg",
-      "Uttar Pradesh land dispute": "out/story_01/news real image/news_img_1_08.jpg",
-      "Santosh Kumar SP": "out/story_01/news real image/news_img_1_09.jpg",
-      "Uttar Pradesh Police": "out/story_01/news real image/news_img_1_10.jpg",
-      "Naththo Devi postmortem": "out/story_01/news real image/news_img_1_11.jpg",
-      "Uttar Pradesh forensic": "out/story_01/news real image/news_img_1_12.jpg",
-      "Uttar Pradesh murder": "out/story_01/news real image/news_img_1_13.jpg",
-      "property dispute homicide": "out/story_01/news real image/news_img_1_14.jpg",
-      "Uttar Pradesh police investigation": "out/story_01/news real image/news_img_1_15.jpg"
-    }
+    "videos": []
   }
 ]

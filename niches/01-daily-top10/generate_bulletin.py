@@ -275,7 +275,13 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
     os.makedirs(meems_dir, exist_ok=True)
     os.makedirs(voice_dir, exist_ok=True)
 
-    primary_img_rel = f"out/{story_dir_name}/news real image/news_img_{s_num}_01.jpg"
+    images_list = story.get("images", [])
+    if images_list and isinstance(images_list[0], dict) and images_list[0].get("local_path"):
+        primary_img_rel = images_list[0]["local_path"].replace("\\", "/")
+    elif os.path.exists(os.path.join(OUT_DIR, story_dir_name, f"news_img_{s_num}_01.jpg")):
+        primary_img_rel = f"out/{story_dir_name}/news_img_{s_num}_01.jpg"
+    else:
+        primary_img_rel = f"out/{story_dir_name}/news real image/scraped_news_img_{s_num}_01.jpg"
     primary_audio_rel = f"out/{story_dir_name}/voice over/audio_story_{s_num}.mp3"
 
     # सभी अंग्रेजी कीवर्ड्स संकलित करना (मास्टर क्लीन, शून्य मीम्स)

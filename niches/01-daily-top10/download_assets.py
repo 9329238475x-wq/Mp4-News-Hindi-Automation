@@ -192,11 +192,14 @@ COMMERCE_AND_SPAM_BLOCKLIST = [
     "brazil",
     "portuguese",
     "whitehouse",
+    "amarujala",
+    "amar ujala",
+    "अमर उजाला",
+    "amar_ujala",
 ]
 
 PRIORITY_NEWS_DOMAINS = [
     "bjp.org",
-    "amarujala",
     "jagran",
     "bhaskar",
     "ndtv",
@@ -567,8 +570,6 @@ def get_story_credit_source(story: dict) -> str:
         return "एबीपी न्यूज़"
     elif "bhaskar" in u_low:
         return "दैनिक भास्कर"
-    elif "amarujala" in u_low:
-        return "अमर उजाला"
     elif "ndtv" in u_low:
         return "NDTV"
     elif "jagran" in u_low:
@@ -622,6 +623,8 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
     seen_media_paths = set()
 
     def is_valid_news_photo(image_path: str) -> bool:
+        if "amarujala" in image_path.lower():
+            return False
         if image_path.lower().endswith((".mp4", ".webm", ".gif")):
             return True
         try:

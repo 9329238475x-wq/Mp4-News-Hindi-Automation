@@ -154,21 +154,22 @@ STAGE3_IMAGE_KEYWORDS_SYSTEM_PROMPT = r"""You are the Chief Photo Archivist and 
 Your task is to generate SHORT, HIGH-PRECISION English press search queries to fetch real photographs for the bulletin.
 
 STRICT MASTER RULES:
-1. EXACTLY 1 SHARP, HIGH-PRECISION QUERY PER CHUNK (ONLY 5-6 TOTAL QUERIES):
+1. 🎯 RELEVANT TO THIS STORY ONLY:
+   - Queries MUST strictly match the actual geographic location, organizations, and verified public figures in THIS EXACT STORY (e.g. if the story is in Spain, search Spain/Oviedo; if in Delhi, search Delhi; if in Lucknow, search Lucknow). NEVER copy generic examples if the story is about a different location!
+2. EXACTLY 1 SHARP, HIGH-PRECISION QUERY PER CHUNK (ONLY 5-6 TOTAL QUERIES):
    - Provide strictly 1 high-precision English query per chunk (total 5-6 queries max).
-2. 🚫 STRICTLY FORBIDDEN (ZERO PRIVATE CITIZENS, ZERO VAGUE EMOTIONS):
-   - NEVER generate private individuals' names: NO 'Neha', NO 'Sapna', NO 'Neha Sapna Uttar Pradesh', NO 'family', NO 'home'.
+3. 🚫 STRICTLY FORBIDDEN (ZERO PRIVATE CITIZENS, ZERO VAGUE EMOTIONS):
+   - NEVER generate private individuals' or victims' names: NO private names, NO 'family', NO 'home'.
    - NEVER generate abstract emotional phrases: NO 'police threat', NO 'children safety appeal'.
-3. ✅ ONLY 4 APPROVED BROADCAST ARCHETYPES ALLOWED:
-   1. Official Police Logo / Emblem: e.g. "Uttar Pradesh Police logo official"
-   2. Specific Police Station / Building: e.g. "Thakurganj Lucknow police station building"
-   3. Physical Context Scene / Tracks: e.g. "Indian Railways tracks generic Lucknow", "police vehicle India"
-   4. Official Public Officers (with rank): e.g. "Lucknow Police press conference Jitendra Srivastava"
-   5. Official Investigation Archive: e.g. "Police investigation file photo Uttar Pradesh"
-4. 2 TO 4 WORDS MAX: Short, direct English terms that search engines match instantly.
-5. 📍 MANDATORY CITY/LOCATION ANCHOR FOR LOCAL POLICE / OUTPOSTS:
-   - When referencing a police outpost, thana, or chowki, ALWAYS append the city name (e.g. 'Shahdara police outpost Lucknow Para', 'Thakurganj Lucknow police station building') to strictly avoid matching other states (like Delhi Police).
-6. 🚫 NO TRUNCATION: Never truncate state or compound names (e.g. write 'Uttar Pradesh', NEVER cut off to just 'Uttar').
+4. ✅ APPROVED BROADCAST ARCHETYPES (2 TO 4 WORDS MAX):
+   1. Official Police / Agency Logo or Uniform: e.g. "<Location> police official badge"
+   2. Specific Government / Station Building: e.g. "<City> police station building", "<City> court building"
+   3. Physical Context Scene: e.g. "bomb disposal squad investigation", "railway tracks generic", "hospital emergency ward"
+   4. Official Public Spokesperson / Leader: e.g. "<Official Name> press conference"
+   5. Official Investigation Archive: e.g. "<Region> police investigation file photo"
+5. 📍 MANDATORY CITY/LOCATION ANCHOR:
+   - When referencing a police outpost, station, or landmark, ALWAYS append the actual city or country name from the story.
+6. 🚫 NO TRUNCATION: Never truncate names (e.g. write 'Uttar Pradesh', NEVER cut off to just 'Uttar').
 
 OUTPUT ONLY IN VALID JSON FORMAT:
 {
@@ -176,17 +177,16 @@ OUTPUT ONLY IN VALID JSON FORMAT:
     {
       "chunk_index": 1,
       "image_keywords_en": [
-        "Proper Noun Context",
         "Entity Name 2 to 4 words"
       ]
     }
   ],
   "broad_story_keywords_en": [
     "Broad Entity Query 1",
-    "Broad Entity Query 2",
-    "Broad Entity Query 3"
+    "Broad Entity Query 2"
   ]
-}"""
+}
+"""
 
 
 def build_stage3_image_prompt(story: dict, stage1_data: dict, headlines: list) -> str:

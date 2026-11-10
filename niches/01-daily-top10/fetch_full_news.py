@@ -59,7 +59,21 @@ os.makedirs(OUT_DIR, exist_ok=True)
 os.makedirs(ASSETS_DIR, exist_ok=True)
 
 # 🚫 सख्त ब्लॉकलिस्ट: अमर उजाला को 100% ब्लॉक किया गया है (यूजर निर्देश: अमर उजाला में खराब/कम तस्वीरें होती हैं)
-BLOCKED_NEWS_DOMAINS = ["amarujala.com", "amarujala"]
+BLOCKED_NEWS_DOMAINS = [
+    "amarujala.com",
+    "amarujala",
+    "amar ujala",
+    "अमर उजाला",
+    "amar_ujala",
+]
+
+
+def is_blocked_source(text_or_url: str) -> bool:
+    """अमर उजाला व अन्य प्रतिबंधित स्रोतों को 100% ब्लॉक करना"""
+    if not text_or_url:
+        return False
+    s = str(text_or_url).lower()
+    return any(bad in s for bad in BLOCKED_NEWS_DOMAINS)
 
 # 7 मुख्य पिलर्स और शीर्ष भारतीय न्यूज़ सोर्सेस (दैनिक भास्कर, जागरण, बीबीसी, एबीपी, ज़ी न्यूज़ - फोटो व GIF युक्त)
 MASTER_7_PILLARS = [
@@ -170,7 +184,7 @@ def extract_full_article_text(url: str) -> str:
     """
     मूल समाचार वेबसाइट से 100% पूरा आर्टिकल बॉडी टेक्स्ट निकालता है।
     """
-    if not url or not url.startswith("http"):
+    if not url or not url.startswith("http") or is_blocked_source(url):
         return ""
 
     # 1. Trafilatura
@@ -247,7 +261,7 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
         "videos": []
     }
 
-    if not article_url or not article_url.startswith("http"):
+    if not article_url or not article_url.startswith("http") or is_blocked_source(article_url) or is_blocked_source(source_label):
         return result
 
     try:
@@ -272,7 +286,7 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
         elif src.startswith("/"):
             src = urllib.parse.urljoin(article_url, src)
 
-        if not src.startswith("http"):
+        if not src.startswith("http") or is_blocked_source(src):
             return
 
         junk_indicators = [
@@ -289,18 +303,24 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
             seen_img_urls.add(base_src)
             candidate_img_urls.append(src)
 
-    # 1. मेटा टैग्स (og:image, twitter:image)
+    # 1. प्राथमिक लीड तस्वीर (og:image, twitter:image) - सबसे पहले और अनिवार्य
     for prop in ["og:image", "twitter:image", "og:image:url"]:
         tag = soup.find("meta", property=prop) or soup.find("meta", attrs={"name": prop})
         if tag and tag.get("content"):
             add_img_candidate(tag["content"])
 
-    # 2. आर्टिकल बॉडी की <img> टैग्स
+    # 2. आर्टिकल बॉडी की <img> टैग्स (रिलेटेड न्यूज़ व साइडबार विजेट्स को हटाकर)
     article_container = (
         soup.find("article") or
         soup.find("div", class_=lambda c: c and any(k in str(c).lower() for k in ["article-body", "story-body", "story_content", "content-area", "detail_text"])) or
         soup
     )
+    if article_container:
+        for bad in article_container.find_all(["aside", "nav", "footer", "header", "script", "style"]):
+            bad.decompose()
+        for bad in article_container.find_all("div", class_=lambda c: c and any(k in str(c).lower() for k in ["related", "recomended", "recommended", "trending", "also-read", "more-news", "other-stories", "sidebar", "widget", "taboola", "outbrain", "ad-container", "banner", "bottom-news", "suggestion"])):
+            bad.decompose()
+
     for img_tag in article_container.find_all("img"):
         for attr in ["src", "data-src", "data-original", "data-lazy-src"]:
             val = img_tag.get(attr)
@@ -343,12 +363,12 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
                 "url": link_tag["href"]
             })
 
-    # 4. असली न्यूज़ फोटोज़ व एनिमेटेड GIFs डाउनलोड करना (15 तक प्रामाणिक मीडिया फाइल्स)
+    # 4. असली न्यूज़ फोटोज़ व एनिमेटेड GIFs डाउनलोड करना (अधिकतम 6 प्रामाणिक मीडिया फाइल्स)
     downloaded_images = []
     img_counter = 1
 
     for img_url in candidate_img_urls:
-        if img_counter > 50:
+        if img_counter > 6:
             break
         try:
             r_img = requests.get(img_url, headers=HEADERS, timeout=12)
@@ -524,6 +544,8 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
         for feed_label, feed_url in p_feeds:
             if found:
                 break
+            if is_blocked_source(feed_label) or is_blocked_source(feed_url):
+                continue
             if source_counts.get(feed_label, 0) >= 2:
                 continue
 
@@ -536,8 +558,8 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                 if not title or title in seen_titles or link in seen_urls:
                     continue
 
-                # 🚫 अमर उजाला को 100% ब्लॉक करें
-                if any(bad_dom in link.lower() for bad_dom in BLOCKED_NEWS_DOMAINS):
+                # 🚫 अमर उजाला व प्रतिबंधित स्रोतों को 100% ब्लॉक करें
+                if is_blocked_source(link) or is_blocked_source(title) or is_blocked_source(feed_label):
                     continue
 
                 # 1. क्या शीर्षक पिलर के कीवर्ड्स से मेल खाता है?
@@ -557,6 +579,10 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                             link = dec["decoded_url"]
                     except Exception:
                         pass
+
+                # डीकोडिंग के बाद भी अमर उजाला व प्रतिबंधित स्रोतों को चेक करें
+                if is_blocked_source(link):
+                    continue
 
                 # 3. पूरा 100% समाचार निकालें
                 full_text = extract_full_article_text(link)
@@ -610,6 +636,8 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
             for feed_label, feed_url in p_feeds:
                 if len(verified_stories) >= target_count or pillar_counts[p_id] >= 2:
                     break
+                if is_blocked_source(feed_label) or is_blocked_source(feed_url):
+                    continue
                 if source_counts.get(feed_label, 0) >= 2:
                     continue
 
@@ -623,6 +651,10 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                     pub_date = it["pubDate"] if isinstance(it, dict) else (it.find("pubDate").text.strip() if it.find("pubDate") is not None else "")
 
                     if not title or title in seen_titles or link in seen_urls:
+                        continue
+
+                    # 🚫 अमर उजाला व प्रतिबंधित स्रोतों को 100% ब्लॉक करें
+                    if is_blocked_source(link) or is_blocked_source(title) or is_blocked_source(feed_label):
                         continue
 
                     title_lower = title.lower()
@@ -640,6 +672,10 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                                 link = dec["decoded_url"]
                         except Exception:
                             pass
+
+                    # डीकोडिंग के बाद भी अमर उजाला को ब्लॉक करें
+                    if is_blocked_source(link):
+                        continue
 
                     full_text = extract_full_article_text(link)
                     word_count = len(full_text.split()) if full_text else 0
@@ -682,6 +718,8 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
         for f_label, f_url in backup_feeds:
             if len(verified_stories) >= target_count:
                 break
+            if is_blocked_source(f_label) or is_blocked_source(f_url):
+                continue
             items = get_feed_items(f_url)
             for it in items:
                 if len(verified_stories) >= target_count:
@@ -689,6 +727,8 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                 t = it["title"] if isinstance(it, dict) else (it.find("title").text.strip() if it.find("title") is not None else "")
                 u = it["link"] if isinstance(it, dict) else (it.find("link").text.strip() if it.find("link") is not None else "")
                 p = it["pubDate"] if isinstance(it, dict) else (it.find("pubDate").text.strip() if it.find("pubDate") is not None else "")
+                if is_blocked_source(u) or is_blocked_source(t) or is_blocked_source(f_label):
+                    continue
                 if t and t not in seen_titles and u not in seen_urls and is_within_last_24_hours(p):
                     if "news.google.com" in u:
                         try:
@@ -698,6 +738,8 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                                 u = dec["decoded_url"]
                         except Exception:
                             pass
+                    if is_blocked_source(u):
+                        continue
                     ft = extract_full_article_text(u)
                     wc = len(ft.split()) if ft else 0
                     if ft and wc >= 180:
