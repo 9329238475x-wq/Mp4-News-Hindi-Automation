@@ -29,6 +29,7 @@ export interface StoryChunk {
 export interface DLSStory {
   story_number: number;
   category: string;
+  is_suicide_story?: boolean;
   screen_headline: string;
   /** 3-4 Dynamic Sequential Screen Headlines (Change across story phases) */
   screen_headlines?: string[];

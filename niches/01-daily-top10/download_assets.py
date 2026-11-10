@@ -232,6 +232,20 @@ def sanitize_keyword_master(kw: str) -> str:
         clean = re.sub(r'keshav\s+maurya', 'Keshav Prasad Maurya BJP', clean, flags=re.IGNORECASE)
 
     c_low = clean.lower()
+    # PRIVACY & DEFAMATION SHIELD: Prevent searching private citizen names + woman/girl/female/family
+    # (e.g. 'Neha woman', 'Sapna woman', 'Pooja girl' pulling unrelated innocent women into crime news)
+    if any(w in c_low for w in ['woman', 'girl', 'female', 'lady', 'victim', 'accused']):
+        clean = 'police crime investigation India'
+        c_low = clean.lower()
+    elif any(w in c_low for w in ['suicide', 'threat', 'abuse']):
+        clean = 'police station investigation Uttar Pradesh'
+        c_low = clean.lower()
+    elif any(w in c_low for w in ['children', 'appeal']):
+        clean = 'police administration Uttar Pradesh'
+        c_low = clean.lower()
+    elif 'train tracks' in c_low or 'railway tracks' in c_low:
+        clean = 'Indian railway tracks Lucknow'
+        c_low = clean.lower()
     # Anchor generic terms to India / UP context so foreign stock/police/weddings are 100% prevented
     if any(p in c_low for p in ['police', 'barricade', 'barrier', 'traffic']) and not any(loc in c_low for loc in ['uttar pradesh', 'bareilly', 'india', 'delhi', 'lucknow']):
         clean = f"Uttar Pradesh Police {clean}"

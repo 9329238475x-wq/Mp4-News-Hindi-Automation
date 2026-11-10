@@ -212,6 +212,7 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
     });
   }
 
+  const isSuicideStory = Boolean(story.is_suicide_story) || /आत्महत्या|खुदकुशी|suicide/i.test(`${story.screen_headline || ''} ${story.voiceover_script || ''} ${(story.bullet_points || []).join(' ')}`);
   return (
     <div
       style={{
@@ -304,6 +305,33 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
             channelName={channelName}
           />
         </Sequence>
+      )}
+
+      {/* ─── 5.8 SUICIDE PREVENTION COMPLIANCE TICKER (YouTube / Meta Policy Safe) ─── */}
+      {isSuicideStory && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 104,
+            left: 40,
+            right: 40,
+            height: 40,
+            backgroundColor: 'rgba(180, 20, 20, 0.94)',
+            borderRadius: 8,
+            border: '1px solid rgba(255, 200, 200, 0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 85,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.6)',
+            color: '#ffffff',
+            fontSize: 18,
+            fontWeight: 700,
+            letterSpacing: '0.5px',
+          }}
+        >
+          🚨 मानसिक स्वास्थ्य हेल्पलाइन: Tele-MANAS (14416) | KIRAN (1800-599-0019)
+        </div>
       )}
 
       {/* ─── 6. BOTTOM TICKER (Elevated 26px, 76px Height, Zero Emojis - Z-Index 100 on Top) ─── */}

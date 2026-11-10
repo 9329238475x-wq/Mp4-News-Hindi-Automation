@@ -49,7 +49,8 @@ def sanitize_anchor_text(t: str) -> str:
     """अनौपचारिक व बचकाने शब्दों (जैसे 'भाई', 'अरे भाई', 'यार') को सख्ती से हटाना"""
     if not t:
         return ""
-    t = re.sub(r'\b(अरे भाई|भाई साहब|भाई,|भाई|यार|भैया|दोस्त|अपन)\b', '', t)
+    # Note: 'अपन' कभी न डालें क्योंकि वह 'अपनी', 'अपने' को 'ी', 'े' में काट देता है!
+    t = re.sub(r'\b(अरे भाई|भाई साहब|भाई,|भाई|यार|भैया|दोस्त)\b', '', t)
     return re.sub(r'\s+', ' ', t).strip()
 
 
@@ -131,9 +132,11 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
         })
         bulletin_points.append(b_clean)
 
+    is_suicide = bool(stage1_resp.get("is_suicide_story", False)) or bool(re.search(r"आत्महत्या|खुदकुशी|suicide", str(story.get("title", "")) + " " + str(story.get("full_text", "")), re.IGNORECASE))
     stage1_data = {
         "screen_headline": screen_hl,
         "category": stage1_resp.get("category", p_name),
+        "is_suicide_story": is_suicide,
         "chunks": cleaned_chunks
     }
     print(f"   ✅ [स्टेज 1 पूर्ण] {len(cleaned_chunks)} चंक्स तैयार! हेडलाइन: '{screen_hl[:45]}...'", flush=True)
@@ -254,6 +257,7 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
     merged_story = {
         "story_number": s_num,
         "category": stage1_data["category"],
+        "is_suicide_story": stage1_data.get("is_suicide_story", False),
         "screen_headline": primary_headline,
         "screen_headlines": cleaned_headlines,
         "chunks": cleaned_chunks,
