@@ -14,6 +14,7 @@ import shutil
 import asyncio
 import subprocess
 from typing import Tuple, Optional, Any
+from story_metadata_helper import save_story_folder_metadata
 
 # Windows / Linux UTF-8 encoding support
 if hasattr(sys.stdout, "reconfigure"):
@@ -369,8 +370,22 @@ async def generate_audio_for_story(story: dict, force: bool = False) -> tuple[st
         print(f"  ✔ [खबर {story_num}] ऑडियो पहले से मौजूद है: {output_filename} ({dur}s)")
         return f"out/{story_dir_name}/voice over/{output_filename}", dur
 
-    # 1. First attempt: OmniVoice GPU TTS
-    success = synthesize_omnivoice(clean_text, output_path)
+    # 1. First attempt: OmniVoice GPU TTS (Only if CUDA is available)
+    # Note: OmniVoice diffusion inference on 4 CPU threads takes ~15-20 mins per story!
+    # On CPU, instantly use ultra-fast Microsoft Neural Voice (hi-IN-MadhurNeural, ~1.5s).
+    has_cuda = False
+    try:
+        import torch
+        has_cuda = torch.cuda.is_available()
+    except Exception:
+        has_cuda = False
+
+    if has_cuda:
+        print(f"  🎙️ [OmniVoice GPU] CUDA Detected - Synthesizing ({len(clean_text.split())} words)...")
+        success = synthesize_omnivoice(clean_text, output_path)
+    else:
+        print(f"  ⚡ [CPU Turbo Mode] Running High-Speed Microsoft Neural Voice ({EDGE_VOICE}, ~1.5s)...")
+        success = False
 
     # 2. Fallback attempt: Edge-TTS
     if not success or not os.path.exists(output_path) or os.path.getsize(output_path) < 5000:

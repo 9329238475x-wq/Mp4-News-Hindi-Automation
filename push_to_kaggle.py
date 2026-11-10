@@ -64,7 +64,7 @@ print(f"🔗 Live Progress: https://www.kaggle.com/code/{kernel_id}", flush=True
 print("\n⏳ Monitoring execution status...", flush=True)
 
 # Poll until completion
-max_wait = 900  # 15 minutes max
+max_wait = 2400  # 40 minutes max
 start_time = time.time()
 last_status = ""
 
