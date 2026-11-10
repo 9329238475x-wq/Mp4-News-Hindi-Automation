@@ -125,16 +125,12 @@ for attempt in range(1, 4):
         if attempt < 3:
             time.sleep(10)
 
-# If output zip exists, unpack it into out_dir
-zip_files = list(out_dir.glob("*.zip"))
-for z in zip_files:
-    print(f"📦 Extracting archive: {z.name}...", flush=True)
+# Clean up any residual or stale zip archives (User requested: zero zip files)
+for z in out_dir.glob("*.zip"):
     try:
-        with zipfile.ZipFile(z, "r") as zf:
-            zf.extractall(out_dir)
-        print(f"✓ Extracted {z.name}", flush=True)
-    except Exception as e:
-        print(f"Extract error: {e}", flush=True)
+        z.unlink(missing_ok=True)
+    except Exception:
+        pass
 
 # Check for rendered video
 mp4_files = list(out_dir.rglob("*.mp4"))
