@@ -155,20 +155,22 @@ Your task is to generate SHORT, HIGH-PRECISION English press search queries to f
 
 STRICT MASTER RULES:
 1. 🎯 RELEVANT TO THIS STORY ONLY:
-   - Queries MUST strictly match the actual geographic location, organizations, and verified public figures in THIS EXACT STORY (e.g. if the story is in Spain, search Spain/Oviedo; if in Delhi, search Delhi; if in Lucknow, search Lucknow). NEVER copy generic examples if the story is about a different location!
-2. EXACTLY 1 SHARP, HIGH-PRECISION QUERY PER CHUNK (ONLY 5-6 TOTAL QUERIES):
-   - Provide strictly 1 high-precision English query per chunk (total 5-6 queries max).
+   - Queries MUST strictly match the actual geographic location, organizations, and verified public figures in THIS EXACT STORY (e.g. if the story is in Delhi, search Delhi; if in Lucknow, search Lucknow; if in Patna, search Patna). NEVER copy generic examples if the story is about a different location!
+2. 📸 EXACTLY 3 DISTINCT VISUAL QUERIES PER CHUNK:
+   - For EVERY chunk, provide strictly 3 distinct, high-precision English stock photo / press queries (2 to 4 words max each).
+   - If there are 5 chunks, provide 5 x 3 = 15 total queries!
+   - Each query in a chunk must represent a DIFFERENT visual angle of that sentence (e.g., Query 1: official building/police station, Query 2: context scene/evidence/investigation, Query 3: official badge/spokesperson/courtroom).
 3. 🚫 STRICTLY FORBIDDEN (ZERO PRIVATE CITIZENS, ZERO VAGUE EMOTIONS):
    - NEVER generate private individuals' or victims' names: NO private names, NO 'family', NO 'home'.
    - NEVER generate abstract emotional phrases: NO 'police threat', NO 'children safety appeal'.
 4. ✅ APPROVED BROADCAST ARCHETYPES (2 TO 4 WORDS MAX):
    1. Official Police / Agency Logo or Uniform: e.g. "<Location> police official badge"
    2. Specific Government / Station Building: e.g. "<City> police station building", "<City> court building"
-   3. Physical Context Scene: e.g. "bomb disposal squad investigation", "railway tracks generic", "hospital emergency ward"
+   3. Physical Context Scene: e.g. "forensic crime scene evidence", "railway tracks generic", "hospital emergency ward"
    4. Official Public Spokesperson / Leader: e.g. "<Official Name> press conference"
    5. Official Investigation Archive: e.g. "<Region> police investigation file photo"
 5. 📍 MANDATORY CITY/LOCATION ANCHOR:
-   - When referencing a police outpost, station, or landmark, ALWAYS append the actual city or country name from the story.
+   - When referencing a police outpost, station, or landmark, ALWAYS append the actual city or state name from the story.
 6. 🚫 NO TRUNCATION: Never truncate names (e.g. write 'Uttar Pradesh', NEVER cut off to just 'Uttar').
 
 OUTPUT ONLY IN VALID JSON FORMAT:
@@ -177,7 +179,17 @@ OUTPUT ONLY IN VALID JSON FORMAT:
     {
       "chunk_index": 1,
       "image_keywords_en": [
-        "Entity Name 2 to 4 words"
+        "Query 1 (2 to 4 words)",
+        "Query 2 (2 to 4 words)",
+        "Query 3 (2 to 4 words)"
+      ]
+    },
+    {
+      "chunk_index": 2,
+      "image_keywords_en": [
+        "Query 1 (2 to 4 words)",
+        "Query 2 (2 to 4 words)",
+        "Query 3 (2 to 4 words)"
       ]
     }
   ],
@@ -208,7 +220,7 @@ VOICEOVER SCRIPT (SENTENCE-BY-SENTENCE):
 {script_text}
 
 INSTRUCTIONS:
-Generate 2-3 SHORT (2 to 4 words max) specific English press queries for EACH chunk so the exact person, leader, police, or venue spoken in that sentence appears on screen.
+Generate EXACTLY 3 SHORT (2 to 4 words max) distinct English press/stock queries for EACH chunk representing different visual aspects of what is being spoken in that sentence.
 RULES: NO YEARS (no 2024/2025), NO CLOCK TIMES (no 12:30 PM), NO SLOGANS/QUOTES. ONLY 2-4 WORDS.
 Output in the requested JSON format."""
 

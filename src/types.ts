@@ -16,6 +16,13 @@ export interface StoryTimingSpecs {
 }
 
 /* ── Story Chunk (Sentence-level visual mapping & dynamic memes) ── */
+export interface VisualSlot {
+  path: string;
+  is_scraped?: boolean;
+  credit_source?: string | null;
+  keyword?: string;
+}
+
 export interface StoryChunk {
   chunk_index: number;
   sentence: string;
@@ -23,6 +30,8 @@ export interface StoryChunk {
   image_keywords_en: string[];
   meme_keyword_en?: string | null;
   local_visual_path?: string;
+  local_visual_paths?: string[];
+  visual_images?: VisualSlot[];
   is_scraped_news?: boolean;
   credit_source?: string | null;
 }

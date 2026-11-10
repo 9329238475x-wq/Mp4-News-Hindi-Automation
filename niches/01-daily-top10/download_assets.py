@@ -628,11 +628,11 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
         try:
             with Image.open(image_path) as im:
                 w, h = im.size
-                if w < 500 or h < 280:
+                if w < 420 or h < 230:
                     return False
                 aspect = w / h
                 # STRICT HORIZONTAL / LANDSCAPE WIDESCREEN ONLY (Zero vertical/portrait allowed!)
-                if aspect > 2.25 or aspect < 1.25:
+                if aspect > 2.45 or aspect < 1.15:
                     return False
                 import numpy as np
                 arr = np.array(im)
@@ -698,96 +698,131 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                             if len(scraped_pool) >= 4:
                                 break
 
-    # 🛑 हार्ड कैप: प्रति खबर अधिकतम 4 असली मीडिया फाइल्स (नो ओवरफ्लो)
-    scraped_pool = scraped_pool[:4]
+    # 🛑 प्रामाणिक समाचार तस्वीरें पूल (अधिकतम 8 वास्तविक तस्वीरें सुरक्षित)
+    scraped_pool = scraped_pool[:8]
     print(f"  📸 [Pool A - Authentic News Media] {len(scraped_pool)} प्रामाणिक समाचार तस्वीरें/GIFs चयनित (साभार: '{credit_source}')")
 
     # ─────────────────────────────────────────────────────────────────
-    # 2. POOL B: Pexels & Pixabay 16:9 ब्रॉडकास्ट स्टॉक फोटोज़ (DUCKDUCKGO 100% BANNED)
+    # 2. POOL B: Pexels & Pixabay 16:9 ब्रॉडकास्ट स्टॉक फोटोज़ (प्रति चंक 3 कीवर्ड्स)
     # ─────────────────────────────────────────────────────────────────
     context_pool = []  # list of dicts: {"path": rel_path, "is_scraped": False, "credit_source": None}
-    all_kws = list(story.get("visual_keywords_en") or story.get("visual_keywords") or [])
-    if not all_kws:
-        for c in chunks:
-            for kw in c.get("image_keywords_en", []):
-                if kw and kw not in all_kws:
-                    all_kws.append(kw)
-
-    print(f"  🎯 [Pool B - Pexels/Pixabay 16:9 Engine] {len(all_kws)} कीवर्ड्स से 16:9 लैंडस्केप फोटोज़...")
+    chunk_context_map = {}  # c_idx -> list of context image dicts
     seen_urls = set()
 
-    for k_idx, kw in enumerate(all_kws, 1):
-        if len(context_pool) >= 4:
-            break
-        c_sent = chunks[k_idx - 1].get("sentence", "") if k_idx <= len(chunks) else ""
+    print(f"  🎯 [Pool B - Pexels/Pixabay 16:9 Engine] सभी चंक्स के लिए 3-3 कीवर्ड्स से लैंडस्केप फोटोज़...")
 
-        fn = f"context_img_{story_num}_{k_idx:02d}.jpg"
-        dp = os.path.join(news_dir, fn)
-        rel_p = f"out/{story_dir_name}/news real image/{fn}".replace("\\", "/")
+    for c_idx, c in enumerate(chunks):
+        c_kws = list(c.get("image_keywords_en", []))
+        if not c_kws:
+            story_kws = story.get("visual_keywords_en") or story.get("visual_keywords") or []
+            c_kws = story_kws[c_idx*3 : (c_idx+1)*3] if story_kws else ["India news press coverage", "police station building", "court law order"]
 
-        candidate_urls = search_clean_stock_images(kw, sentence=c_sent, max_results=4)
-        kw_downloaded = False
-        for u in candidate_urls:
-            if u in seen_urls:
-                continue
-            seen_urls.add(u)
-            if download_and_verify_image(u, dp, min_width=600, min_height=350, is_meme=False):
-                context_pool.append({
+        while len(c_kws) < 3:
+            c_kws.append(f"{c_kws[-1]} scene" if c_kws else "India national news coverage")
+
+        chunk_context_map[c_idx] = []
+        c_sent = c.get("sentence", "")
+
+        for kw_idx, kw in enumerate(c_kws[:3], 1):
+            fn = f"context_img_{story_num}_{c_idx+1:02d}_{kw_idx:02d}.jpg"
+            dp = os.path.join(news_dir, fn)
+            rel_p = f"out/{story_dir_name}/news real image/{fn}".replace("\\", "/")
+
+            kw_downloaded = False
+            candidate_urls = search_clean_stock_images(kw, sentence=c_sent, max_results=5)
+            for u in candidate_urls:
+                if u in seen_urls:
+                    continue
+                seen_urls.add(u)
+                if download_and_verify_image(u, dp, min_width=500, min_height=280, is_meme=False):
+                    item = {
+                        "path": rel_p,
+                        "is_scraped": False,
+                        "credit_source": None,
+                        "keyword": kw,
+                    }
+                    context_pool.append(item)
+                    chunk_context_map[c_idx].append(item)
+                    kw_downloaded = True
+                    print(f"    ✓ [चंक {c_idx+1}.{kw_idx}] 16:9 Pexels: {fn} ('{kw}')")
+                    break
+
+            if not kw_downloaded and os.path.exists(dp) and os.path.getsize(dp) > 2000:
+                item = {
                     "path": rel_p,
                     "is_scraped": False,
                     "credit_source": None,
                     "keyword": kw,
-                })
-                kw_downloaded = True
-                print(f"    ✓ [{k_idx:02d}] 16:9 Pexels स्टॉक फोटो: {fn} (थीम: '{kw}')")
-                break
+                }
+                context_pool.append(item)
+                chunk_context_map[c_idx].append(item)
 
-        time.sleep(0.15)
+            time.sleep(0.10)
 
-    print(f"  🌐 [Pool B - Pexels/Pixabay Complete] {len(context_pool)} 16:9 स्टॉक तस्वीरें तैयार!")
+    print(f"  🌐 [Pool B - Pexels Complete] {len(context_pool)} 16:9 स्टॉक तस्वीरें तैयार!")
 
     # ─────────────────────────────────────────────────────────────────
-    # 3. INTERLEAVING & CHUNK MAPPING (ZERO CONSECUTIVE REPETITION)
+    # 3. CHUNK MULTI-SLOT VISUAL MAPPING (3 SLOTS PER CHUNK + REAL NEWS INTEGRATION)
     # ─────────────────────────────────────────────────────────────────
-    # नियम: Real News Image और Pexels Stock बारी-बारी से अल्टरनेट होंगे!
-    # Chunk 1: Real News Image (from news article, with credit)
-    # Chunk 2: Pexels Stock 1 (Landscape 16:9)
-    # Chunk 3: Real News Image (from news article, with credit)
-    # Chunk 4: Pexels Stock 2 (Landscape 16:9)
-    # Chunk 5: Real News Image (from news article, with credit)
-    s_idx = 0
-    c_idx = 0
+    # नियम (User Specifications):
+    # 1. हर चंक में 3 विजुअल स्लॉट्स (~2 से 2.5 सेकंड प्रत्येक) होंगे।
+    # 2. यदि खबर से असली तस्वीरें (Real Images) मिली हैं (1, 2, 3, 4, 5, आदि):
+    #    - वे असली तस्वीरें चंक्स में अनिवार्य रूप से प्रमुखता से (साभार क्रेडिट के साथ) दिखाई जाएंगी।
+    #    - एक ही असली तस्वीर लगातार रिपीट नहीं होगी; स्टॉक तस्वीरों और असली तस्वीरों का संतुलित मिश्रण रहेगा।
+    # 3. यदि कोई असली तस्वीर नहीं मिली (0 Real Images):
+    #    - पूरा वीडियो चंक्स की 3-3 Pexels 16:9 स्टॉक तस्वीरों से बिना किसी रुकावट के बनेगा।
+    num_scraped = len(scraped_pool)
     all_assigned_media = []
 
-    for idx, c in enumerate(chunks):
+    for c_idx, c in enumerate(chunks):
         c["visual_intent"] = "REAL_PHOTO"
         c["meme_keyword_en"] = None
 
-        is_even = (idx % 2 == 0)
-        chosen = None
+        c_stock = chunk_context_map.get(c_idx, [])
+        # यदि इस चंक में स्टॉक तस्वीरें कम हों तो context_pool से बैकअप लें
+        backup_stock = [item for item in context_pool if item not in c_stock]
+        while len(c_stock) < 3 and backup_stock:
+            c_stock.append(backup_stock.pop(0))
 
-        if is_even and scraped_pool:
-            cand = scraped_pool[s_idx % len(scraped_pool)]
-            s_idx += 1
-            chosen = cand
-        elif not is_even and context_pool:
-            cand = context_pool[c_idx % len(context_pool)]
-            c_idx += 1
-            chosen = cand
-        elif scraped_pool:
-            cand = scraped_pool[s_idx % len(scraped_pool)]
-            s_idx += 1
-            chosen = cand
-        elif context_pool:
-            cand = context_pool[c_idx % len(context_pool)]
-            c_idx += 1
-            chosen = cand
+        chunk_slots = []
 
-        if chosen:
-            c["local_visual_path"] = chosen["path"]
-            c["is_scraped_news"] = chosen["is_scraped"]
-            c["credit_source"] = chosen["credit_source"]
-            all_assigned_media.append(chosen["path"])
+        if num_scraped > 0:
+            # असली तस्वीरें उपलब्ध हैं
+            if num_scraped == 1:
+                # केवल 1 असली तस्वीर उपलब्ध है: अल्टरनेट चंक्स (1, 3, 5) पर लगाएं (लगातार रिपीट न हो)
+                if c_idx % 2 == 0:
+                    chunk_slots.append(scraped_pool[0])
+                    if len(c_stock) >= 1: chunk_slots.append(c_stock[0])
+                    if len(c_stock) >= 2: chunk_slots.append(c_stock[1])
+                else:
+                    # चंक 2, 4 आदि पूरी तरह फ्रेश स्टॉक तस्वीरों से चलेंगे
+                    chunk_slots.extend(c_stock[:3])
+            else:
+                # 2 या अधिक असली तस्वीरें उपलब्ध हैं: हर चंक को विशिष्ट असली तस्वीर + स्टॉक तस्वीरें
+                assigned_scraped = scraped_pool[c_idx % num_scraped]
+                chunk_slots.append(assigned_scraped)
+                if len(c_stock) >= 1: chunk_slots.append(c_stock[0])
+                if len(c_stock) >= 2: chunk_slots.append(c_stock[1])
+        else:
+            # 0 असली तस्वीरें: 100% Pexels 16:9 स्टॉक तस्वीरों से वीडियो बनेगा
+            chunk_slots.extend(c_stock[:3])
+
+        # यदि किसी कारणवश स्लॉट खाली रह जाए तो context_pool या scraped_pool से भरें
+        if not chunk_slots:
+            if context_pool:
+                chunk_slots = context_pool[:3]
+            elif scraped_pool:
+                chunk_slots = scraped_pool[:3]
+
+        c["visual_images"] = chunk_slots
+        c["local_visual_paths"] = [s["path"] for s in chunk_slots]
+        c["local_visual_path"] = chunk_slots[0]["path"] if chunk_slots else None
+        c["is_scraped_news"] = chunk_slots[0]["is_scraped"] if chunk_slots else False
+        c["credit_source"] = chunk_slots[0]["credit_source"] if chunk_slots else None
+
+        for s in chunk_slots:
+            if s["path"] not in all_assigned_media:
+                all_assigned_media.append(s["path"])
 
     # ─────────────────────────────────────────────────────────────────
     # 4. COVER PHOTO (out/story_XX/news_img_X_01.jpg) & ALL REAL IMAGES

@@ -80,14 +80,22 @@ def save_story_folder_metadata(story: dict, out_dir: str):
             kws = c.get("image_keywords_en", [])
             if kws:
                 lines.append(f"       🔎 Search Keywords : {', '.join(kws)}")
-            if c.get("local_visual_path"):
+            v_imgs = c.get("visual_images", [])
+            if v_imgs:
+                lines.append(f"       🎬 Mapped Photos ({len(v_imgs)} Visual Slots):")
+                for s_i, slot in enumerate(v_imgs, 1):
+                    s_path = slot.get("path")
+                    s_is_scr = slot.get("is_scraped")
+                    s_badge = f"🔴 प्रामाणिक न्यूज़ मीडिया (साभार: {slot.get('credit_source') or source_name})" if s_is_scr else "🌐 16:9 Pexels स्टॉक फोटो"
+                    lines.append(f"          [स्लॉट {s_i}] {s_path} | {s_badge}")
+            elif c.get("local_visual_path"):
                 lines.append(f"       📁 Mapped Photo     : {c.get('local_visual_path')}")
-            is_scraped = c.get("is_scraped_news")
-            if is_scraped:
-                cr = c.get("credit_source") or source_name
-                lines.append(f"       🏷️ Media Type        : 🔴 प्रामाणिक न्यूज़ मीडिया (साभार: {cr})")
-            else:
-                lines.append(f"       🏷️ Media Type        : 🌐 16:9 ब्रॉडकास्ट स्टॉक फोटो (Pexels)")
+                is_scraped = c.get("is_scraped_news")
+                if is_scraped:
+                    cr = c.get("credit_source") or source_name
+                    lines.append(f"       🏷️ Media Type        : 🔴 प्रामाणिक न्यूज़ मीडिया (साभार: {cr})")
+                else:
+                    lines.append(f"       🏷️ Media Type        : 🌐 16:9 ब्रॉडकास्ट स्टॉक फोटो (Pexels)")
             lines.append("")
         lines.append("═" * 84)
 

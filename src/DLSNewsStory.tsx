@@ -168,48 +168,76 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
 
       const chunkDur = cEnd - cStart;
 
-      // Each chunk displays its dedicated matching image (or primary story image)
-      // Long chunks (>= 150 frames / ~5s) can split into 2 matching images
-      const primaryChunkImage =
-        chunk.local_visual_path ||
-        allImages[cIdx % totalImages] ||
-        allImages[0];
-      const secondaryImage =
-        allImages[(cIdx + 1) % totalImages] || primaryChunkImage;
+      // Determine slot images for this chunk (supports up to 3 visual slots per chunk)
+      let chunkSlotImages: { path: string; isScraped: boolean; credit?: string }[] = [];
 
-      const numSlots = chunkDur >= 150 && totalImages > chunks.length ? 2 : 1;
+      if (chunk.visual_images && chunk.visual_images.length > 0) {
+        chunkSlotImages = chunk.visual_images.map((v) => {
+          const isScr = Boolean(v.is_scraped ?? (v.path.includes("scraped_") || !v.path.includes("context_")));
+          const cred = v.credit_source || (isScr ? (chunk.credit_source || story.source || "विशेष कवरेज") : undefined);
+          return {
+            path: v.path,
+            isScraped: isScr,
+            credit: cred,
+          };
+        });
+      } else if (chunk.local_visual_paths && chunk.local_visual_paths.length > 0) {
+        chunkSlotImages = chunk.local_visual_paths.map((p) => {
+          const isScr = p.includes("scraped_") || !p.includes("context_");
+          return {
+            path: p,
+            isScraped: isScr,
+            credit: isScr ? (chunk.credit_source || story.source || "विशेष कवरेज") : undefined,
+          };
+        });
+      } else {
+        const primaryChunkImage =
+          chunk.local_visual_path ||
+          allImages[cIdx % totalImages] ||
+          allImages[0];
+        const secondaryImage =
+          allImages[(cIdx + 1) % totalImages] || primaryChunkImage;
+
+        chunkSlotImages = [
+          {
+            path: primaryChunkImage,
+            isScraped: Boolean(chunk.is_scraped_news ?? (primaryChunkImage.includes("scraped_") || !primaryChunkImage.includes("context_"))),
+            credit: chunk.credit_source || story.source || "विशेष कवरेज",
+          },
+          {
+            path: secondaryImage,
+            isScraped: Boolean(secondaryImage.includes("scraped_") || !secondaryImage.includes("context_")),
+            credit: secondaryImage.includes("scraped_") ? (chunk.credit_source || story.source || "विशेष कवरेज") : undefined,
+          }
+        ];
+      }
+
+      // Slot count: allow 1, 2, or 3 images per chunk depending on chunk duration and available images
+      // Chunks >= 160 frames (~5.3s) with >= 3 images display 3 images (~2s to 2.5s each)
+      // Chunks >= 90 frames (~3s) display 2 images (~1.5s to 2s each)
+      const maxPossibleSlots = chunkSlotImages.length;
+      const numSlots =
+        chunkDur >= 160 && maxPossibleSlots >= 3
+          ? 3
+          : chunkDur >= 90 && maxPossibleSlots >= 2
+          ? 2
+          : 1;
+
       const slotDuration = Math.floor(chunkDur / numSlots);
 
       for (let s = 0; s < numSlots; s++) {
         const slotStart = cStart + s * slotDuration;
-        const slotEnd =
-          s === numSlots - 1 ? cEnd : slotStart + slotDuration;
-
-        const currentSlotImage =
-          s === 0 ? primaryChunkImage : secondaryImage;
-
-        const isScraped =
-          s === 0
-            ? (chunk.is_scraped_news ??
-               (currentSlotImage.includes("scraped_") ||
-                !currentSlotImage.includes("context_")))
-            : (currentSlotImage.includes("scraped_") ||
-               !currentSlotImage.includes("context_"));
-
-        const credit =
-          chunk.credit_source ||
-          story.source ||
-          story.real_image_attribution ||
-          "विशेष कवरेज";
+        const slotEnd = s === numSlots - 1 ? cEnd : slotStart + slotDuration;
+        const slotItem = chunkSlotImages[s % chunkSlotImages.length];
 
         chunkVisuals.push({
           chunkIndex: cIdx + 1,
           startFrame: slotStart,
           endFrame: slotEnd,
-          imageSrc: currentSlotImage,
+          imageSrc: slotItem.path,
           sentence: chunk.sentence,
-          isScrapedRealNews: isScraped,
-          creditSource: isScraped ? credit : undefined,
+          isScrapedRealNews: slotItem.isScraped,
+          creditSource: slotItem.isScraped ? slotItem.credit : undefined,
         });
       }
 

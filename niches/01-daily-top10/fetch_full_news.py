@@ -75,15 +75,72 @@ def is_blocked_source(text_or_url: str) -> bool:
     s = str(text_or_url).lower()
     return any(bad in s for bad in BLOCKED_NEWS_DOMAINS)
 
-# 7 मुख्य पिलर्स और शीर्ष भारतीय न्यूज़ सोर्सेस (दैनिक भास्कर, जागरण, बीबीसी, एबीपी, ज़ी न्यूज़ - फोटो व GIF युक्त)
+
+# 🇮🇳 विदेशी समाचारों का कड़ा बहिष्कार (100% विशुद्ध भारतीय राष्ट्रीय व प्रांतीय समाचार ओनली)
+FOREIGN_EXCLUSION_KEYWORDS = [
+    "फ्रांस", "मार्सेली", "स्पेन", "अमेरिका", "अमेरिकी", "रूस", "रूसी", "यूक्रेन",
+    "इसराइल", "इजरायल", "गाजा", "हमास", "ईरान", "ईरानी", "पाकिस्तान", "पाकिस्तानी",
+    "लंदन", "ब्रिटेन", "ब्रिटिश", "कनाडा", "जर्मनी", "जापान", "पेरिस", "न्यूयॉर्क",
+    "वाशिंगटन", "बुल्गारिया", "इटली", "ब्राजील", "चीन", "चीनी", "तुर्किये", "तुर्की",
+    "सीरिया", "लेबनान", "अफगानिस्तान", "नेपाल", "बांग्लादेश", "श्रीलंका", "थाईलैंड",
+    "ऑस्ट्रेलिया", "रूस-यूक्रेन", "रूस-यूक्रेन युद्ध", "गाजा पट्टी", "पश्चिम एशिया"
+]
+
+INDIAN_ANCHORS = [
+    # देश व राष्ट्रीय संस्थाएं
+    "भारत", "भारतीय", "देश", "केंद्र सरकार", "राज्य सरकार", "सुप्रीम कोर्ट", "हाई कोर्ट", "सीबीआई", "ईडी", "एनआईए",
+    "रेलवे", "संसद", "लोकसभा", "राज्यसभा", "चुनाव आयोग", "गृह मंत्रालय", "राजभवन", "विधानसभा",
+    # राज्य व केंद्र शासित प्रदेश
+    "उत्तर प्रदेश", "यूपी", "बिहार", "मध्य प्रदेश", "एमपी", "राजस्थान", "महाराष्ट्र", "दिल्ली",
+    "पंजाब", "हरियाणा", "गुजरात", "उत्तराखंड", "झारखंड", "छत्तीसगढ़", "पश्चिम बंगाल", "बंगाल",
+    "असम", "तमिलनाडु", "कर्नाटक", "केरल", "ओडिशा", "तेलंगाना", "आंध्र प्रदेश", "जम्मू-कश्मीर", "कश्मीर", "हिमाचल",
+    # प्रमुख शहर व जिले
+    "लखनऊ", "कानपुर", "प्रयागराज", "वाराणसी", "पटना", "भोपाल", "इंदौर", "जयपुर", "जोधपुर",
+    "मुंबई", "पुणे", "नागपुर", "नोएडा", "गाजियाबाद", "मेरठ", "आगरा", "बरेली", "गोरखपुर",
+    "अयोध्या", "ग्वालियर", "जबलपुर", "मुजफ्फरपुर", "भागलपुर", "गया", "भिवानी", "रोहतक", "हिसार",
+    "अंबाला", "करनाल", "पानीपत", "फरीदाबाद", "गुरुग्राम", "गुड़गांव", "सोनीपत", "देहरादून",
+    "हरिद्वार", "ऋषिकेश", "उधमपुर", "जम्मू", "श्रीनगर", "शिमला", "मंडी", "धर्मशाला", "अमृतसर",
+    "जालंधर", "लुधियाना", "पटियाला", "बठिंडा", "चंडीगढ़", "कोटा", "उदयपुर", "अजमेर", "बीकानेर",
+    "अलवर", "भरतपुर", "सीकर", "उज्जैन", "सागर", "रीवा", "सतना", "कटनी", "छिंदवाड़ा",
+    "दरभंगा", "पूर्णिया", "आरा", "बक्सर", "समस्तीपुर", "बेगूसराय", "मुंगेर", "छपरा", "मोतिहारी",
+    "धनबाद", "रांची", "जमशेदपुर", "बोकारो", "हजारीबाग", "रायपुर", "बिलासपुर", "दुर्ग", "भिलाई",
+    # स्थानीय पुलिस व प्रशासन पद
+    "कोतवाली", "चौकी", "थाना प्रभारी", "दारोगा", "दरोगा", "सिपाही", "डीएसपी", "एसपी", "एसएसपी",
+    "कमिश्नरेट", "पुलिस कमिश्नर", "थानाध्यक्ष", "एसएचओ"
+]
+
+
+def is_strictly_indian_news(title: str, text: str = "") -> bool:
+    """100% केवल भारत की घटनाएं सुनिश्चित करना (विदेशी अपराध/हादसे पूर्णतः वर्जित)"""
+    t_low = (title or "").lower()
+    full_sample = f"{title} {text[:600]}".lower()
+
+    # 1. यदि शीर्षक में किसी भी विदेशी देश/क्षेत्र का नाम है
+    has_foreign = any(fk in t_low for fk in FOREIGN_EXCLUSION_KEYWORDS)
+    if has_foreign:
+        # केवल तभी छूट जब शीर्षक में स्पष्ट रूप से भारत का नाम हो
+        if not ("भारत" in t_low or "भारतीय" in t_low):
+            return False
+
+    # 2. खबर में कम से कम 1 स्पष्ट भारतीय भौगोलिक/प्रशासनिक पहचान (राज्य, शहर, संस्था) अनिवार्य है
+    has_indian = any(ik in full_sample for ik in INDIAN_ANCHORS)
+    if not has_indian:
+        return False
+
+    return True
+
+
+# 7 मुख्य पिलर्स और शीर्ष भारतीय न्यूज़ सोर्सेस (100% भारतीय समाचार: एबीपी, जागरण, दैनिक भास्कर, ज़ी न्यूज़, गूगल भारत)
+# बीबीसी को विदेशी खबरों के कारण हटा दिया गया है
 MASTER_7_PILLARS = [
     {
         "id": "crime",
         "name": "🔥 क्राइम, एनकाउंटर & माफिया",
         "feeds": [
-            ("दैनिक भास्कर क्राइम", "https://www.bhaskar.com/rss-v1--category-4589.xml"),
-            ("दैनिक जागरण क्राइम", "https://rss.jagran.com/rss/news/crime.xml"),
-            ("बीबीसी हिंदी", "https://feeds.bbci.co.uk/hindi/rss.xml"),
+            ("एबीपी न्यूज़ क्राइम", "https://www.abplive.com/crime/feed"),
+            ("गूगल न्यूज़ भारत क्राइम", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%95%E0%A5%8D%E0%A4%B0%E0%A4%BE%E0%A4%87%E0%A4%AE+when:24h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ भारत पुलिस", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%AA%E0%A5%81%E0%A4%B2%E0%A4%BF%E0%A4%B8+when:24h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
             ("एबीपी न्यूज़", "https://www.abplive.com/home/feed")
         ],
         "keywords": ["हत्या", "मर्डर", "एनकाउंटर", "गोलीबारी", "गैंगस्टर", "गिरफ्तार", "शूटर", "वारदात", "चोरी", "लूट", "हमला", "चाकू", "बदमाश", "पुलिस", "अपहरण", "लाश", "शव", "क्राइम", "बंदी"]
@@ -92,10 +149,10 @@ MASTER_7_PILLARS = [
         "id": "crisis",
         "name": "⚠️ हादसे, आपदाएं & जन-समस्याएं",
         "feeds": [
-            ("दैनिक भास्कर राष्ट्रीय", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
             ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
-            ("बीबीसी हिंदी", "https://feeds.bbci.co.uk/hindi/rss.xml"),
-            ("गूगल न्यूज़ भारत", "https://news.google.com/rss/headlines/section/topic/NATION?hl=hi&gl=IN&ceid=IN:hi")
+            ("एबीपी न्यूज़ राज्य", "https://www.abplive.com/states/feed"),
+            ("गूगल न्यूज़ भारत", "https://news.google.com/rss/headlines/section/topic/NATION?hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ भारत हादसा", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%B9%E0%A4%BE%E0%A4%A6%E0%A4%B8%E0%A4%BE+when:24h&hl=hi&gl=IN&ceid=IN:hi")
         ],
         "keywords": ["हादसा", "चक्रवात", "बारिश", "ट्रेन", "आंधी", "अलर्ट", "स्कूल", "राहत", "तूफान", "जाम", "परेशान", "टक्कर", "आग", "सिलेंडर", "बिजली", "सड़क", "घायल", "अस्पताल", "धमाका"]
     },
@@ -103,11 +160,11 @@ MASTER_7_PILLARS = [
         "id": "court",
         "name": "⚖️ कोर्ट-कचहरी & सुप्रीम कोर्ट फैसले",
         "feeds": [
-            ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
-            ("दैनिक जागरण", "https://rss.jagran.com/rss/news/national.xml"),
-            ("एबीपी न्यूज़", "https://www.abplive.com/home/feed"),
+            ("गूगल न्यूज़ सुप्रीम कोर्ट", "https://news.google.com/rss/search?q=%E0%A4%B8%E0%A5%81%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A5%80%E0%A4%AE+%E0%A4%95%E0%A5%8B%E0%A4%B0%E0%A5%8D%E0%A4%9F+when:24h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
+            ("एबीपी न्यूज़ भारत", "https://www.abplive.com/news/india/feed"),
             ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml"),
-            ("गूगल न्यूज़ हिंदी", "https://news.google.com/rss?hl=hi&gl=IN&ceid=IN:hi")
+            ("गूगल न्यूज़ भारत", "https://news.google.com/rss/headlines/section/topic/NATION?hl=hi&gl=IN&ceid=IN:hi")
         ],
         "keywords": ["सुप्रीम कोर्ट", "हाई कोर्ट", "अदालत", "फैसला", "याचिका", "फटकार", "जमानत", "सजा", "वकील", "आदेश", "एससी", "सीजेआई", "कोर्ट", "सुनवाई", "जज", "निर्देश", "दोषी"]
     },
@@ -115,9 +172,9 @@ MASTER_7_PILLARS = [
         "id": "security",
         "name": "🕵️‍♂️ राष्ट्रीय सुरक्षा, खुफिया रेड & ऑपरेशंस",
         "feeds": [
-            ("बीबीसी हिंदी", "https://feeds.bbci.co.uk/hindi/rss.xml"),
-            ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
-            ("दैनिक जागरण", "https://rss.jagran.com/rss/news/national.xml"),
+            ("गूगल न्यूज़ भारत सुरक्षा", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%B8%E0%A5%81%E0%A4%B0%E0%A4%95%E0%A5%8D%E0%A4%B7%E0%A4%BE+OR+%E0%A4%8F%E0%A4%A8%E0%A4%86%E0%A4%88%E0%A4%8F+when:24h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
+            ("एबीपी न्यूज़ भारत", "https://www.abplive.com/news/india/feed"),
             ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml")
         ],
         "keywords": ["सुरक्षा", "सेना", "आतंकी", "छापा", "बॉर्डर", "ऑपरेशन", "जवान", "हमला", "हथियार", "कब्जा", "एनआईए", "सीबीआई", "जासूसी", "मुठभेड़", "सैनिक", "कमांडो", "घुसपैठ", "खुफिया"]
@@ -126,8 +183,9 @@ MASTER_7_PILLARS = [
         "id": "corruption",
         "name": "⚡ भ्रष्टाचार, घूसखोरी ट्रैप & खुलासे",
         "feeds": [
-            ("दैनिक भास्कर क्राइम", "https://www.bhaskar.com/rss-v1--category-4589.xml"),
-            ("दैनिक जागरण", "https://rss.jagran.com/rss/news/crime.xml"),
+            ("गूगल न्यूज़ भारत भ्रष्टाचार", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%AD%E0%A5%8D%E0%A4%B0%E0%A4%B7%E0%A5%8D%E0%A4%9F%E0%A4%BE%E0%A4%9A%E0%A4%BE%E0%A4%B0+OR+%E0%A4%88%E0%A4%A1%E0%A5%80+when:24h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("एबीपी न्यूज़ क्राइम", "https://www.abplive.com/crime/feed"),
+            ("दैनिक जागरण राज्य", "https://rss.jagran.com/rss/news/state.xml"),
             ("एबीपी न्यूज़", "https://www.abplive.com/home/feed")
         ],
         "keywords": ["घूस", "रिश्वत", "विजिलेंस", "घोटाला", "गड़बड़ी", "भ्रष्टाचार", "पर्दाफाश", "रंगे हाथ", "ट्रैप", "ईडी", "आय से अधिक", "फर्जी", "धोखाधड़ी", "सीज", "छापेमारी", "करोड़ों"]
@@ -136,10 +194,9 @@ MASTER_7_PILLARS = [
         "id": "politics",
         "name": "💥 राजनीतिक घमासान, बयान & बवाल",
         "feeds": [
-            ("बीबीसी हिंदी", "https://feeds.bbci.co.uk/hindi/rss.xml"),
-            ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
-            ("दैनिक जागरण", "https://rss.jagran.com/rss/news/national.xml"),
-            ("एबीपी न्यूज़", "https://www.abplive.com/home/feed"),
+            ("एबीपी न्यूज़ भारत", "https://www.abplive.com/news/india/feed"),
+            ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
+            ("गूगल न्यूज़ भारत", "https://news.google.com/rss/headlines/section/topic/NATION?hl=hi&gl=IN&ceid=IN:hi"),
             ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml")
         ],
         "keywords": ["बयान", "विवाद", "हंगामा", "विपक्ष", "सरकार", "राहुल", "मोदी", "प्रदर्शन", "नोटिस", "विरोध", "चुनौती", "चुनाव", "मंत्री", "इस्तीफा", "तकरार", "संसद", "नेता", "पार्टी", "चैलेंज"]
@@ -148,10 +205,10 @@ MASTER_7_PILLARS = [
         "id": "mystery",
         "name": "🛸 रहस्यमयी घटनाएं & कुदरती अजूबे",
         "feeds": [
-            ("गूगल न्यूज़ हिंदी", "https://news.google.com/rss?hl=hi&gl=IN&ceid=IN:hi"),
-            ("बीबीसी हिंदी", "https://feeds.bbci.co.uk/hindi/rss.xml"),
-            ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
-            ("दैनिक जागरण", "https://rss.jagran.com/rss/news/national.xml")
+            ("गूगल न्यूज़ भारत अनोखा", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%85%E0%A4%A8%E0%A5%8B%E0%A4%96%E0%A4%BE+OR+%E0%A4%85%E0%A4%9C%E0%A5%80%E0%A4%AC+when:24h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("दैनिक जागरण राज्य", "https://rss.jagran.com/rss/news/state.xml"),
+            ("एबीपी न्यूज़ राज्य", "https://www.abplive.com/states/feed"),
+            ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml")
         ],
         "keywords": ["अनोखा", "रहस्य", "अजीब", "चमत्कार", "खुदाई", "अद्भुत", "हैरान", "पंडाल", "प्राचीन", "अजूबा", "दुर्लभ", "रहस्यमयी", "चौंकाने", "विचित्र", "खजाना", "मंदिर", "गुफा", "अनोखी"]
     }
@@ -289,12 +346,15 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
         if not src.startswith("http") or is_blocked_source(src):
             return
 
+        # CDN रेजोल्यूशन अपग्रेड: यदि URL में कम चौड़ाई है तो उसे 1200px Full HD में बदलें
+        if "imwidth=" in src:
+            src = re.sub(r"imwidth=\d+", "imwidth=1200", src)
+
         junk_indicators = [
             "logo", "icon", "advertisement", "pixel", "avatar", "facebook",
             "twitter", "whatsapp", "share", "arrow", "ad.", "banner",
             "spinner", "thumb_small", "rightarrow", "user_profile",
-            "imwidth=250", "imwidth=30", "imwidth=150", "imwidth=200",
-            "thumb", "small", "superfast", "sidebar", "teaser", "author", "editor"
+            "default_16x9", "placeholder", "sidebar", "teaser", "author", "editor"
         ]
         src_lower = src.lower()
         if any(j in src_lower for j in junk_indicators):
@@ -305,29 +365,58 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
             seen_img_urls.add(base_src)
             candidate_img_urls.append(src)
 
-    # 1. प्राथमिक लीड तस्वीर (og:image, twitter:image) - सबसे पहले और अनिवार्य
-    for prop in ["og:image", "twitter:image", "og:image:url"]:
-        tag = soup.find("meta", property=prop) or soup.find("meta", attrs={"name": prop})
-        if tag and tag.get("content"):
-            add_img_candidate(tag["content"])
+    # 1. प्राथमिक लीड तस्वीर (og:image, twitter:image, preload, image_src)
+    for prop in ["og:image", "twitter:image", "og:image:url", "thumbnail"]:
+        for tag in soup.find_all("meta", property=prop) + soup.find_all("meta", attrs={"name": prop}):
+            if tag and tag.get("content"):
+                add_img_candidate(tag["content"])
 
-    # 2. आर्टिकल बॉडी की <img> टैग्स (रिलेटेड न्यूज़ व साइडबार विजेट्स को हटाकर)
-    article_container = (
-        soup.find("article") or
-        soup.find("div", class_=lambda c: c and any(k in str(c).lower() for k in [
-            "abp-story-article", "abp-story-detail", "article-body", "story-body",
-            "story_content", "content-area", "detail_text", "article-content",
-            "story-content", "story-detail"
-        ]))
-    )
-    if article_container:
-        for bad in article_container.find_all(["aside", "nav", "footer", "header", "script", "style"]):
+    for link in soup.find_all("link", rel=lambda r: r and any(x in str(r).lower() for x in ["image_src", "preload"])):
+        if link.get("as") == "image" or "image" in str(link.get("rel", "")).lower():
+            add_img_candidate(link.get("href"))
+
+    # 2. सभी <figure> व <picture> टैग्स (जहाँ मुख्य प्रेस फोटोज़ सुरक्षित होती हैं)
+    for fig in soup.find_all("figure") + soup.find_all("picture"):
+        for source_tag in fig.find_all("source"):
+            srcset = source_tag.get("srcset")
+            if srcset:
+                parts = [p.strip().split()[0] for p in srcset.split(",") if p.strip()]
+                if parts:
+                    add_img_candidate(parts[-1])
+        for img_tag in fig.find_all("img"):
+            for attr in ["src", "data-src", "data-original", "data-lazy-src", "data-high-res-src"]:
+                val = img_tag.get(attr)
+                if val:
+                    add_img_candidate(val)
+
+    # 3. आर्टिकल बॉडी व लीड इमेज कंटेनर्स
+    containers = soup.find_all(["article", "main"])
+    containers += soup.find_all("div", class_=lambda c: c and any(k in str(c).lower() for k in [
+        "lead-image", "imgpod", "abp-story-article", "abp-story-detail",
+        "article-body", "story-body", "story_content", "content-area",
+        "detail_text", "article-content", "story-content", "story-detail",
+        "body-content", "article-text", "post-content"
+    ]))
+
+    for c_box in containers:
+        for bad in c_box.find_all(["aside", "nav", "footer", "header", "script", "style"]):
             bad.decompose()
-        for bad in article_container.find_all("div", class_=lambda c: c and any(k in str(c).lower() for k in ["related", "recomended", "recommended", "trending", "also-read", "more-news", "other-stories", "sidebar", "widget", "taboola", "outbrain", "ad-container", "banner", "bottom-news", "suggestion", "follow", "share", "author", "comment"])):
+        for bad in c_box.find_all("div", class_=lambda c: c and any(k in str(c).lower() for k in [
+            "related", "recomended", "recommended", "trending", "also-read",
+            "more-news", "other-stories", "sidebar", "widget", "taboola",
+            "outbrain", "ad-container", "banner", "bottom-news", "suggestion",
+            "comment"
+        ])):
             bad.decompose()
 
-        for img_tag in article_container.find_all("img"):
-            for attr in ["src", "data-src", "data-original", "data-lazy-src"]:
+        for img_tag in c_box.find_all("img"):
+            # यदि srcset उपलब्ध है तो उच्चतम रेजोल्यूशन निकालें
+            srcset = img_tag.get("srcset")
+            if srcset:
+                parts = [p.strip().split()[0] for p in srcset.split(",") if p.strip()]
+                if parts:
+                    add_img_candidate(parts[-1])
+            for attr in ["src", "data-src", "data-original", "data-lazy-src", "data-high-res-src"]:
                 val = img_tag.get(attr)
                 if val:
                     add_img_candidate(val)
@@ -368,12 +457,12 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
                 "url": link_tag["href"]
             })
 
-    # 4. असली न्यूज़ फोटोज़ व एनिमेटेड GIFs डाउनलोड करना (अधिकतम 6 प्रामाणिक मीडिया फाइल्स)
+    # 4. असली न्यूज़ फोटोज़ व एनिमेटेड GIFs डाउनलोड करना (अधिकतम 8 प्रामाणिक मीडिया फाइल्स)
     downloaded_images = []
     img_counter = 1
 
     for img_url in candidate_img_urls:
-        if img_counter > 6:
+        if img_counter > 8:
             break
         try:
             r_img = requests.get(img_url, headers=HEADERS, timeout=12)
@@ -432,12 +521,12 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
             w, h = pil_img.size
 
             # केवल वास्तविक उच्च-गुणवत्ता वाली लैंडस्केप असली तस्वीरें ही स्वीकार करें (320x180 विजेट्स रिजेक्ट)
-            if w < 500 or h < 280:
+            if w < 420 or h < 230:
                 continue
 
             # 🚫 प्रोमोशनल बैनर, वर्टिकल (पोर्ट्रेट) फोटो, अत्यधिक सफेद बैकग्राउंड (>45%) को रिजेक्ट करें
             aspect = w / h
-            if aspect > 2.25 or aspect < 1.25:
+            if aspect > 2.45 or aspect < 1.15:
                 continue
 
             try:
@@ -539,6 +628,8 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
     pillar_counts = {p["id"]: 0 for p in MASTER_7_PILLARS}
 
     for pillar in MASTER_7_PILLARS:
+        if len(verified_stories) >= target_count:
+            break
         p_id = pillar["id"]
         p_name = pillar["name"]
         p_feeds = pillar["feeds"]
@@ -568,6 +659,10 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                 if is_blocked_source(link) or is_blocked_source(title) or is_blocked_source(feed_label):
                     continue
 
+                # 🇮🇳 केवल भारत की खबरें स्वीकार करें (विदेशी अपराध/हादसे रिजेक्ट)
+                if not is_strictly_indian_news(title):
+                    continue
+
                 # 1. क्या शीर्षक पिलर के कीवर्ड्स से मेल खाता है?
                 title_lower = title.lower()
                 if not any(k.lower() in title_lower for k in p_keywords):
@@ -595,6 +690,9 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                 word_count = len(full_text.split()) if full_text else 0
 
                 if not full_text or word_count < 180:
+                    continue
+
+                if not is_strictly_indian_news(title, full_text):
                     continue
 
                 seen_titles.add(title)
@@ -663,6 +761,10 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                     if is_blocked_source(link) or is_blocked_source(title) or is_blocked_source(feed_label):
                         continue
 
+                    # 🇮🇳 केवल भारत की खबरें स्वीकार करें (विदेशी अपराध/हादसे रिजेक्ट)
+                    if not is_strictly_indian_news(title):
+                        continue
+
                     title_lower = title.lower()
                     if not any(k.lower() in title_lower for k in p_keywords):
                         continue
@@ -687,6 +789,9 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                     word_count = len(full_text.split()) if full_text else 0
 
                     if not full_text or word_count < 180:
+                        continue
+
+                    if not is_strictly_indian_news(title, full_text):
                         continue
 
                     seen_titles.add(title)
@@ -714,12 +819,11 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
         needed = target_count - len(verified_stories)
         print(f"\n🔹 राउंड 3: राष्ट्रीय हेडलाइंस से {needed} अतिरिक्त खबरें पूरी की जा रही हैं...", flush=True)
         backup_feeds = [
-            ("बीबीसी हिंदी", "https://feeds.bbci.co.uk/hindi/rss.xml"),
-            ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
             ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
             ("एबीपी न्यूज़", "https://www.abplive.com/home/feed"),
             ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml"),
-            ("गूगल न्यूज़ हिंदी", "https://news.google.com/rss?hl=hi&gl=IN&ceid=IN:hi")
+            ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
+            ("गूगल न्यूज़ भारत", "https://news.google.com/rss/headlines/section/topic/NATION?hl=hi&gl=IN&ceid=IN:hi")
         ]
         for f_label, f_url in backup_feeds:
             if len(verified_stories) >= target_count:
@@ -735,6 +839,8 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                 p = it["pubDate"] if isinstance(it, dict) else (it.find("pubDate").text.strip() if it.find("pubDate") is not None else "")
                 if is_blocked_source(u) or is_blocked_source(t) or is_blocked_source(f_label):
                     continue
+                if not is_strictly_indian_news(t):
+                    continue
                 if t and t not in seen_titles and u not in seen_urls and is_within_last_24_hours(p):
                     if "news.google.com" in u:
                         try:
@@ -748,7 +854,7 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                         continue
                     ft = extract_full_article_text(u)
                     wc = len(ft.split()) if ft else 0
-                    if ft and wc >= 180:
+                    if ft and wc >= 180 and is_strictly_indian_news(t, ft):
                         seen_titles.add(t)
                         seen_urls.add(u)
                         verified_stories.append({

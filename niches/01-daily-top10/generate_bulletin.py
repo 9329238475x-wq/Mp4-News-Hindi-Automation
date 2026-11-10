@@ -81,30 +81,21 @@ def sanitize_keyword_master(kw: str) -> str:
 
     c_low = clean.lower()
 
-    if 'shahdara' in c_low and 'lucknow' not in c_low:
-        clean = 'Shahdara police outpost Lucknow Para'
+    # केवल यदि शाहदरा का ज़िक्र हो और लखनऊ का मामला हो
+    if 'shahdara' in c_low and 'lucknow' not in c_low and 'delhi' not in c_low:
+        clean = f'{clean} Lucknow'
         c_low = clean.lower()
 
-    if any(w in c_low for w in ['neha', 'sapna', 'pooja', 'priya', 'woman', 'girl', 'female', 'lady', 'victim', 'accused']):
-        clean = 'Police investigation file photo Uttar Pradesh'
+    # प्राइवेट नागरिकों / पीड़ितों के नामों को सामान्य आधिकारिक इन्वेस्टिगेशन से बदलना
+    if any(re.search(rf'\b{w}\b', c_low) for w in ['neha', 'sapna', 'pooja', 'priya', 'victim', 'accused']):
+        clean = 'Police investigation file photo'
         c_low = clean.lower()
-    elif any(w in c_low for w in ['threat', 'abuse', 'suicide', 'scandal']):
-        clean = 'Uttar Pradesh Police logo official'
+    elif any(re.search(rf'\b{w}\b', c_low) for w in ['suicide', 'scandal']):
+        clean = 'Official investigation file photo'
         c_low = clean.lower()
-    elif any(w in c_low for w in ['home', 'family', 'house', 'outpost']) and 'shahdara' not in c_low:
-        clean = 'Thakurganj Lucknow police station building'
+    elif re.search(r'\b(train|railway|railways)\b', c_low):
+        clean = 'Indian Railways train tracks generic'
         c_low = clean.lower()
-    elif any(w in c_low for w in ['train', 'railway', 'track', 'tracks']):
-        clean = 'Indian Railways tracks generic Lucknow'
-        c_low = clean.lower()
-    elif any(w in c_low for w in ['dcp', 'acp', 'jitendra', 'srivastava', 'officer', 'press']):
-        clean = 'Lucknow Police press conference Jitendra Srivastava'
-        c_low = clean.lower()
-
-    if any(p in c_low for p in ['chowki', 'thana', 'outpost', 'barricade', 'station']) and not any(loc in c_low for loc in ['uttar pradesh', 'bareilly', 'india', 'delhi', 'lucknow']):
-        clean = f"Lucknow Police {clean}"
-    elif any(leg in c_low for leg in ['legislator', 'legislators', 'mla', 'mlas']) and 'bjp' not in c_low:
-        clean = "Uttar Pradesh BJP MLAs"
 
     clean = re.sub(r'\s+', ' ', clean).strip()
     words = clean.split()
@@ -245,7 +236,20 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
             if s_k and s_k not in sanitized_list:
                 sanitized_list.append(s_k)
         if not sanitized_list:
-            sanitized_list = [f"{story.get('title', '')[:25]} news", "India press coverage"]
+            sanitized_list = [f"{story.get('title', '')[:25]} news", "India press coverage", "police station building"]
+        # प्रत्येक चंक के लिए ठीक 3 विशिष्ट कीवर्ड्स सुनिश्चित करना
+        fallbacks = [
+            f"{story.get('title', '')[:25]} news",
+            "police investigation scene India",
+            "official building press conference",
+            "court law justice India"
+        ]
+        fb_idx = 0
+        while len(sanitized_list) < 3 and fb_idx < len(fallbacks):
+            fb_kw = sanitize_keyword_master(fallbacks[fb_idx])
+            if fb_kw and fb_kw not in sanitized_list:
+                sanitized_list.append(fb_kw)
+            fb_idx += 1
         c["image_keywords_en"] = sanitized_list[:3]
         c["visual_intent"] = "REAL_PHOTO"
         c["meme_keyword_en"] = None
