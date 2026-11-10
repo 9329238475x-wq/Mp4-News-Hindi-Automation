@@ -87,7 +87,7 @@ def save_story_folder_metadata(story: dict, out_dir: str):
                 cr = c.get("credit_source") or source_name
                 lines.append(f"       🏷️ Media Type        : 🔴 प्रामाणिक न्यूज़ मीडिया (साभार: {cr})")
             else:
-                lines.append(f"       🏷️ Media Type        : 🌐 संदर्भ फोटो (DuckDuckGo Context)")
+                lines.append(f"       🏷️ Media Type        : 🌐 16:9 ब्रॉडकास्ट स्टॉक फोटो (Pexels)")
             lines.append("")
         lines.append("═" * 84)
 

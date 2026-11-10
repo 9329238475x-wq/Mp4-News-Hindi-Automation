@@ -292,7 +292,9 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
         junk_indicators = [
             "logo", "icon", "advertisement", "pixel", "avatar", "facebook",
             "twitter", "whatsapp", "share", "arrow", "ad.", "banner",
-            "spinner", "thumb_small", "rightarrow", "user_profile"
+            "spinner", "thumb_small", "rightarrow", "user_profile",
+            "imwidth=250", "imwidth=30", "imwidth=150", "imwidth=200",
+            "thumb", "small", "superfast", "sidebar", "teaser", "author", "editor"
         ]
         src_lower = src.lower()
         if any(j in src_lower for j in junk_indicators):
@@ -312,20 +314,23 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
     # 2. आर्टिकल बॉडी की <img> टैग्स (रिलेटेड न्यूज़ व साइडबार विजेट्स को हटाकर)
     article_container = (
         soup.find("article") or
-        soup.find("div", class_=lambda c: c and any(k in str(c).lower() for k in ["article-body", "story-body", "story_content", "content-area", "detail_text"])) or
-        soup
+        soup.find("div", class_=lambda c: c and any(k in str(c).lower() for k in [
+            "abp-story-article", "abp-story-detail", "article-body", "story-body",
+            "story_content", "content-area", "detail_text", "article-content",
+            "story-content", "story-detail"
+        ]))
     )
     if article_container:
         for bad in article_container.find_all(["aside", "nav", "footer", "header", "script", "style"]):
             bad.decompose()
-        for bad in article_container.find_all("div", class_=lambda c: c and any(k in str(c).lower() for k in ["related", "recomended", "recommended", "trending", "also-read", "more-news", "other-stories", "sidebar", "widget", "taboola", "outbrain", "ad-container", "banner", "bottom-news", "suggestion"])):
+        for bad in article_container.find_all("div", class_=lambda c: c and any(k in str(c).lower() for k in ["related", "recomended", "recommended", "trending", "also-read", "more-news", "other-stories", "sidebar", "widget", "taboola", "outbrain", "ad-container", "banner", "bottom-news", "suggestion", "follow", "share", "author", "comment"])):
             bad.decompose()
 
-    for img_tag in article_container.find_all("img"):
-        for attr in ["src", "data-src", "data-original", "data-lazy-src"]:
-            val = img_tag.get(attr)
-            if val:
-                add_img_candidate(val)
+        for img_tag in article_container.find_all("img"):
+            for attr in ["src", "data-src", "data-original", "data-lazy-src"]:
+                val = img_tag.get(attr)
+                if val:
+                    add_img_candidate(val)
 
     # 3. सभी संभावित वीडियो व एम्बेड्स
     for vid in soup.find_all("video"):
@@ -426,12 +431,13 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
             pil_img = Image.open(BytesIO(r_img.content))
             w, h = pil_img.size
 
-            if w < 250 or h < 150:
+            # केवल वास्तविक उच्च-गुणवत्ता वाली लैंडस्केप असली तस्वीरें ही स्वीकार करें (320x180 विजेट्स रिजेक्ट)
+            if w < 500 or h < 280:
                 continue
 
-            # 🚫 प्रोमोशनल बैनर, अत्यधिक सफेद बैकग्राउंड (>45%) या अजीब आस्पेक्ट रेश्यो को रिजेक्ट करें
+            # 🚫 प्रोमोशनल बैनर, वर्टिकल (पोर्ट्रेट) फोटो, अत्यधिक सफेद बैकग्राउंड (>45%) को रिजेक्ट करें
             aspect = w / h
-            if aspect > 2.2 or aspect < 0.6:
+            if aspect > 2.25 or aspect < 1.25:
                 continue
 
             try:

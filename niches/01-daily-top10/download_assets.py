@@ -316,128 +316,121 @@ def get_wikimedia_portrait(entity_name: str) -> str:
 
 
 
-def search_web_real_images(query: str, is_meme: bool = False, max_results: int = 15) -> list[str]:
+PEXELS_API_KEY = (
+    os.environ.get("PEXELS_API_KEY")
+    or "BywMJlFjbshUGVoPCpKVDiTnItEnzefzmM4lp8PEG4NqE4RV5BGQ3Wo1"
+)
+PIXABAY_API_KEY = (
+    os.environ.get("PIXABAY_API_KEY")
+    or "58157735-61a43fc3f8d00358e748b5b15"
+)
+
+
+def map_to_broadcast_stock_query(query: str, sentence: str = "") -> str:
     """
-    मल्टी-इंजन असली न्यूज़ फोटोज़ सर्च इंजन (Master Multi-Engine News Searcher):
-    1. DuckDuckGo Images इंजन (PRIMARY #1): 100% असली न्यूज़ फोटोज़ व भारतीय संदर्भ (region='in-en')
-    2. विकिमीडिया कॉमन्स आधिकारिक पोर्ट्रेट्स (नेताओं के आधिकारिक 4K चित्र)
-    3. Bing Images Async इंजन (SECONDARY FALLBACK: केवल तभी जब DuckDuckGo कम रिजल्ट दे)
-    4. भारतीय न्यूज़ पोर्टल्स को शीर्ष प्राथमिकता व सख्त एंटी-गेमिंग/एंटी-कार्टून स्पैम फ़िल्टरिंग
+    कंटेक्स्ट या चंक टेक्स्ट से Pexels/Pixabay के लिए सटीक 16:9 ब्रॉडकास्ट स्टॉक कीवर्ड बनाना
     """
-    clean_query = sanitize_keyword_master(query)
-    if not clean_query:
+    text = f"{query} {sentence}".lower()
+
+    if any(k in text for k in ["train", "railway", "track", "station", "पटरी", "ट्रेन", "रेलवे"]):
+        return "train tracks railway"
+    if any(k in text for k in ["chowki", "thana", "outpost", "investigation", "police station", "चौकी", "थाना", "जांच"]):
+        return "police investigation station"
+    if any(k in text for k in ["police", "cop", "dcp", "acp", "inspector", "पुलिस"]):
+        return "police car siren emergency"
+    if any(k in text for k in ["crime", "murder", "threat", "encounter", "shoot", "हत्या", "धमकी", "अपराध"]):
+        return "crime scene investigation"
+    if any(k in text for k in ["hospital", "ambulance", "doctor", "injured", "dead", "death", "अस्पताल", "घायल", "मौत"]):
+        return "ambulance emergency hospital"
+    if any(k in text for k in ["court", "judge", "lawyer", "case", "कोर्ट", "अदालत", "फैसला", "वकील"]):
+        return "courtroom gavel justice"
+    if any(k in text for k in ["fire", "blast", "explosion", "bomb", "आग", "धमाका", "विस्फोट"]):
+        return "firefighter emergency rescue"
+    if any(k in text for k in ["bribe", "money", "corruption", "cash", "रिश्वत", "घूस", "पैसे"]):
+        return "money currency handcuffs"
+    if any(k in text for k in ["protest", "strike", "rally", "crowd", "प्रदर्शन", "हंगामा"]):
+        return "crowd protest demonstration"
+
+    clean = re.sub(r'[^a-zA-Z\s]', ' ', query).strip()
+    words = [w for w in clean.split() if len(w) > 2 and w.lower() not in ["lucknow", "police", "press", "conference", "para", "bhuvar", "thakurganj", "spain", "oviedo"]]
+    if words:
+        return " ".join(words[:3])
+    return "breaking news broadcast"
+
+
+def search_pexels_stock_images(query: str, max_results: int = 4) -> list[str]:
+    """
+    Pexels API - 100% Widescreen Landscape (16:9) Professional Stock Photos
+    """
+    if not PEXELS_API_KEY:
         return []
-
-    collected_urls = []
-
-    # 1. DuckDuckGo इमेज सर्च (PRIMARY #1) - असली और सटीक न्यूज़ तस्वीरों का मुख्य स्रोत
-    DDGS_CLS = None
+    urls = []
     try:
-        from ddgs import DDGS as DDGS_CLS
-    except ImportError:
-        try:
-            from duckduckgo_search import DDGS as DDGS_CLS
-        except ImportError:
-            try:
-                import subprocess
-                subprocess.run([sys.executable, "-m", "pip", "install", "-q", "ddgs", "duckduckgo-search"], check=False)
-                from ddgs import DDGS as DDGS_CLS
-            except Exception:
-                try:
-                    from duckduckgo_search import DDGS as DDGS_CLS
-                except Exception:
-                    DDGS_CLS = None
+        headers = {"Authorization": PEXELS_API_KEY}
+        params = {"query": query, "orientation": "landscape", "per_page": max_results}
+        r = requests.get("https://api.pexels.com/v1/search", headers=headers, params=params, timeout=10)
+        if r.status_code == 200:
+            for p in r.json().get("photos", []):
+                w, h = p.get("width", 0), p.get("height", 0)
+                if w > 0 and h > 0 and (w / h) >= 1.25:
+                    src = p.get("src", {})
+                    u = src.get("large2x") or src.get("large") or src.get("original")
+                    if u and u not in urls:
+                        urls.append(u)
+    except Exception as e:
+        print(f"    ⚠️ Pexels error ({query}): {e}")
+    return urls
 
-    if DDGS_CLS is not None:
-        try:
-            with DDGS_CLS(timeout=14) as ddgs:
-                results = list(ddgs.images(clean_query, region="in-en", safesearch="moderate", max_results=max_results))
-                for r in results:
-                    img_u = r.get("image")
-                    t_d = r.get("title", "").lower()
-                    u_d = str(img_u).lower()
-                    combined_d = f"{u_d} {t_d}"
-                    if any(bad in combined_d for bad in COMMERCE_AND_SPAM_BLOCKLIST):
-                        continue
-                    if img_u and img_u not in collected_urls:
-                        collected_urls.append(img_u)
-            if collected_urls:
-                print(f"  ✓ [DDGS-in] Found {len(collected_urls)} photos for: '{clean_query}'")
-        except Exception as e_ddg:
-            # Global fallback query without region lock if in-en timed out / rate limited
-            try:
-                time.sleep(1.0)
-                with DDGS_CLS(timeout=12) as ddgs:
-                    results = list(ddgs.images(clean_query, max_results=max_results))
-                    for r in results:
-                        img_u = r.get("image")
-                        t_d = r.get("title", "").lower()
-                        u_d = str(img_u).lower()
-                        combined_d = f"{u_d} {t_d}"
-                        if any(bad in combined_d for bad in COMMERCE_AND_SPAM_BLOCKLIST):
-                            continue
-                        if img_u and img_u not in collected_urls:
-                            collected_urls.append(img_u)
-                if collected_urls:
-                    print(f"  ✓ [DDGS-global] Found {len(collected_urls)} photos for: '{clean_query}'")
-            except Exception as e2:
-                print(f"  ⚠️ [DDGS Notice] ({clean_query}): {e2}")
 
-    # 2. विकिमीडिया कॉमन्स पोर्ट्रेट चेक (नेताओं के आधिकारिक चित्र)
-    if not is_meme and len(collected_urls) < max_results:
-        wiki_img = get_wikimedia_portrait(clean_query)
-        if wiki_img and wiki_img not in collected_urls:
-            collected_urls.append(wiki_img)
+def search_pixabay_stock_images(query: str, max_results: int = 4) -> list[str]:
+    """
+    Pixabay API - 100% Horizontal Professional Photos
+    """
+    if not PIXABAY_API_KEY:
+        return []
+    urls = []
+    try:
+        params = {
+            "key": PIXABAY_API_KEY,
+            "q": query,
+            "image_type": "photo",
+            "orientation": "horizontal",
+            "per_page": max_results,
+            "safesearch": "true"
+        }
+        r = requests.get("https://pixabay.com/api/", params=params, timeout=10)
+        if r.status_code == 200:
+            for hit in r.json().get("hits", []):
+                w, h = hit.get("imageWidth", 0), hit.get("imageHeight", 0)
+                if w > 0 and h > 0 and (w / h) >= 1.25:
+                    u = hit.get("largeImageURL") or hit.get("webformatURL")
+                    if u and u not in urls:
+                        urls.append(u)
+    except Exception as e:
+        print(f"    ⚠️ Pixabay error ({query}): {e}")
+    return urls
 
-    # 3. Bing Images Async सर्च इंजन (SECONDARY FALLBACK - केवल तभी चलेगा जब DuckDuckGo से पर्याप्त तस्वीरें न मिलें)
-    if len(collected_urls) < 4:
-        encoded = requests.utils.quote(clean_query)
-        bing_async_url = f"https://www.bing.com/images/async?q={encoded}&first=0&count=25&mmasync=1"
-        try:
-            r = requests.get(bing_async_url, headers=BROWSER_HEADERS, timeout=8)
-            if r.status_code == 200:
-                matches = re.findall(r'm="([^"]+)"', r.text)
-                for m_raw in matches:
-                    try:
-                        item_data = json.loads(html.unescape(m_raw))
-                        img_u = item_data.get("murl")
-                        p_u = item_data.get("purl", "").lower()
-                        title_t = item_data.get("t", "").lower()
 
-                        if not img_u or img_u in collected_urls:
-                            continue
-
-                        # 100% सुरक्षा: इमेज URL, वेबपेज URL और शीर्षक तीनों पर स्पैम/स्पोर्ट्स/गेम फ़िल्टर
-                        combined_meta = f"{img_u.lower()} {p_u} {title_t}"
-                        if any(bad in combined_meta for bad in COMMERCE_AND_SPAM_BLOCKLIST):
-                            continue
-
-                        collected_urls.append(img_u)
-                        if len(collected_urls) >= max_results:
-                            break
-                    except Exception:
-                        continue
-        except Exception:
-            pass
-
-    # 4. स्पैम, ई-कॉमर्स व अप्रासंगिक सामग्री को फ़िल्टर करना
-    filtered = []
-    for u in collected_urls:
-        u_lower = u.lower()
-        if any(bad in u_lower for bad in COMMERCE_AND_SPAM_BLOCKLIST):
-            continue
-        filtered.append(u)
-
-    # 5. भारतीय प्रतिष्ठित न्यूज़ डोमेन्स को प्राथमिकता (Sorting)
-    def news_priority(u: str) -> int:
-        u_l = u.lower()
-        for p_idx, dom in enumerate(PRIORITY_NEWS_DOMAINS):
-            if dom in u_l:
-                return p_idx
-        return 999
-
-    filtered.sort(key=news_priority)
-    return filtered[:max_results]
+def search_clean_stock_images(query: str, sentence: str = "", max_results: int = 4) -> list[str]:
+    """
+    मास्टर स्टॉक इमेज इंजन (Pexels + Pixabay 16:9 Landscape):
+    DuckDuckGo 100% स्थायी रूप से बंद!
+    """
+    theme_query = map_to_broadcast_stock_query(query, sentence)
+    collected = search_pexels_stock_images(theme_query, max_results=max_results)
+    if len(collected) < max_results:
+        clean_kw = sanitize_keyword_master(query)
+        if clean_kw and clean_kw.lower() != theme_query.lower():
+            extra = search_pexels_stock_images(clean_kw, max_results=max_results - len(collected))
+            for u in extra:
+                if u not in collected:
+                    collected.append(u)
+    if len(collected) < 2:
+        pix_results = search_pixabay_stock_images(theme_query, max_results=max_results)
+        for u in pix_results:
+            if u not in collected:
+                collected.append(u)
+    return collected[:max_results]
 
 
 def crop_watermarks_smart(img: Image.Image, bottom_crop_ratio: float = 0.08, top_crop_ratio: float = 0.04) -> Image.Image:
@@ -475,8 +468,8 @@ def crop_watermarks_smart(img: Image.Image, bottom_crop_ratio: float = 0.08, top
     return img
 
 
-def download_and_verify_image(img_url: str, dest_path: str, min_width: int = 380, min_height: int = 220, is_meme: bool = False) -> bool:
-    """इमेज डाउनलोड, स्मार्ट वॉटरमार्क क्रॉपिंग और PIL सत्यापन"""
+def download_and_verify_image(img_url: str, dest_path: str, min_width: int = 600, min_height: int = 350, is_meme: bool = False) -> bool:
+    """इमेज डाउनलोड, स्मार्ट वॉटरमार्क क्रॉपिंग और PIL सत्यापन (Strict 16:9 Landscape)"""
     if not img_url or not img_url.startswith("http"):
         return False
 
@@ -495,6 +488,11 @@ def download_and_verify_image(img_url: str, dest_path: str, min_width: int = 380
             if len(content) > 3000:
                 img = Image.open(BytesIO(content))
                 if img.width >= min_width and img.height >= min_height:
+                    aspect = img.width / img.height
+                    # STRICT 16:9 / HORIZONTAL LANDSCAPE ONLY: ZERO VERTICAL/PORTRAIT ALLOWED!
+                    if not is_meme and (aspect < 1.25 or aspect > 2.25):
+                        return False
+
                     is_png = dest_path.lower().endswith(".png")
                     
                     if is_meme:
@@ -630,10 +628,11 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
         try:
             with Image.open(image_path) as im:
                 w, h = im.size
-                if w < 200 or h < 140:
+                if w < 500 or h < 280:
                     return False
                 aspect = w / h
-                if aspect > 2.2 or aspect < 0.6:
+                # STRICT HORIZONTAL / LANDSCAPE WIDESCREEN ONLY (Zero vertical/portrait allowed!)
+                if aspect > 2.25 or aspect < 1.25:
                     return False
                 import numpy as np
                 arr = np.array(im)
@@ -688,7 +687,7 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                     dp = os.path.join(news_dir, fn)
                     rel_p = f"out/{story_dir_name}/news real image/{fn}".replace("\\", "/")
                     if rel_p not in seen_media_paths:
-                        if download_and_verify_image(m_url, dp, min_width=250, min_height=150, is_meme=False):
+                        if download_and_verify_image(m_url, dp, min_width=500, min_height=280, is_meme=False):
                             seen_media_paths.add(rel_p)
                             blur_burned_in_text_and_watermarks(dp)
                             scraped_pool.append({
@@ -704,7 +703,7 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
     print(f"  📸 [Pool A - Authentic News Media] {len(scraped_pool)} प्रामाणिक समाचार तस्वीरें/GIFs चयनित (साभार: '{credit_source}')")
 
     # ─────────────────────────────────────────────────────────────────
-    # 2. POOL B: DuckDuckGo संदर्भ तस्वीरें (1 KEYWORD = 1 CONTEXT IMAGE)
+    # 2. POOL B: Pexels & Pixabay 16:9 ब्रॉडकास्ट स्टॉक फोटोज़ (DUCKDUCKGO 100% BANNED)
     # ─────────────────────────────────────────────────────────────────
     context_pool = []  # list of dicts: {"path": rel_path, "is_scraped": False, "credit_source": None}
     all_kws = list(story.get("visual_keywords_en") or story.get("visual_keywords") or [])
@@ -714,36 +713,25 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                 if kw and kw not in all_kws:
                     all_kws.append(kw)
 
-    print(f"  🎯 [Pool B - Context Search] {len(all_kws)} कीवर्ड्स से 1-1 संदर्भ तस्वीरें खोजी जा रही हैं...")
+    print(f"  🎯 [Pool B - Pexels/Pixabay 16:9 Engine] {len(all_kws)} कीवर्ड्स से 16:9 लैंडस्केप फोटोज़...")
     seen_urls = set()
 
     for k_idx, kw in enumerate(all_kws, 1):
         if len(context_pool) >= 4:
             break
-        clean_kw = sanitize_keyword_master(kw)
-        if not clean_kw:
-            continue
+        c_sent = chunks[k_idx - 1].get("sentence", "") if k_idx <= len(chunks) else ""
 
         fn = f"context_img_{story_num}_{k_idx:02d}.jpg"
         dp = os.path.join(news_dir, fn)
         rel_p = f"out/{story_dir_name}/news real image/{fn}".replace("\\", "/")
 
-        if os.path.exists(dp) and os.path.getsize(dp) > 3000:
-            context_pool.append({
-                "path": rel_p,
-                "is_scraped": False,
-                "credit_source": None,
-                "keyword": kw,
-            })
-            continue
-
-        candidate_urls = search_web_real_images(clean_kw, max_results=6)
+        candidate_urls = search_clean_stock_images(kw, sentence=c_sent, max_results=4)
         kw_downloaded = False
         for u in candidate_urls:
             if u in seen_urls:
                 continue
             seen_urls.add(u)
-            if download_and_verify_image(u, dp, min_width=320, min_height=180, is_meme=False):
+            if download_and_verify_image(u, dp, min_width=600, min_height=350, is_meme=False):
                 context_pool.append({
                     "path": rel_p,
                     "is_scraped": False,
@@ -751,58 +739,40 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                     "keyword": kw,
                 })
                 kw_downloaded = True
-                print(f"    ✓ [{k_idx:02d}] संदर्भ फोटो डाउनलोड: {fn} (कीवर्ड: '{clean_kw}')")
+                print(f"    ✓ [{k_idx:02d}] 16:9 Pexels स्टॉक फोटो: {fn} (थीम: '{kw}')")
                 break
 
-        if not kw_downloaded:
-            fb_urls = search_web_real_images(f"{clean_kw} India", max_results=4)
-            for u in fb_urls:
-                if u in seen_urls:
-                    continue
-                seen_urls.add(u)
-                if download_and_verify_image(u, dp, min_width=320, min_height=180, is_meme=False):
-                    context_pool.append({
-                        "path": rel_p,
-                        "is_scraped": False,
-                        "credit_source": None,
-                        "keyword": kw,
-                    })
-                    kw_downloaded = True
-                    print(f"    ✓ [{k_idx:02d}] बैकअप संदर्भ फोटो डाउनलोड: {fn}")
-                    break
+        time.sleep(0.15)
 
-        time.sleep(0.25)
-
-    print(f"  🌐 [Pool B - Context Search Complete] {len(context_pool)} संदर्भ तस्वीरें तैयार!")
+    print(f"  🌐 [Pool B - Pexels/Pixabay Complete] {len(context_pool)} 16:9 स्टॉक तस्वीरें तैयार!")
 
     # ─────────────────────────────────────────────────────────────────
     # 3. INTERLEAVING & CHUNK MAPPING (ZERO CONSECUTIVE REPETITION)
     # ─────────────────────────────────────────────────────────────────
+    # नियम: Real News Image और Pexels Stock बारी-बारी से अल्टरनेट होंगे!
+    # Chunk 1: Real News Image (from news article, with credit)
+    # Chunk 2: Pexels Stock 1 (Landscape 16:9)
+    # Chunk 3: Real News Image (from news article, with credit)
+    # Chunk 4: Pexels Stock 2 (Landscape 16:9)
+    # Chunk 5: Real News Image (from news article, with credit)
     s_idx = 0
     c_idx = 0
-    last_path = None
     all_assigned_media = []
 
     for idx, c in enumerate(chunks):
         c["visual_intent"] = "REAL_PHOTO"
         c["meme_keyword_en"] = None
 
-        prefer_scraped = (idx % 2 == 0)
+        is_even = (idx % 2 == 0)
         chosen = None
 
-        if prefer_scraped and scraped_pool:
+        if is_even and scraped_pool:
             cand = scraped_pool[s_idx % len(scraped_pool)]
             s_idx += 1
-            if cand["path"] == last_path and len(scraped_pool) > 1:
-                cand = scraped_pool[s_idx % len(scraped_pool)]
-                s_idx += 1
             chosen = cand
-        elif not prefer_scraped and context_pool:
+        elif not is_even and context_pool:
             cand = context_pool[c_idx % len(context_pool)]
             c_idx += 1
-            if cand["path"] == last_path and len(context_pool) > 1:
-                cand = context_pool[c_idx % len(context_pool)]
-                c_idx += 1
             chosen = cand
         elif scraped_pool:
             cand = scraped_pool[s_idx % len(scraped_pool)]
@@ -817,7 +787,6 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
             c["local_visual_path"] = chosen["path"]
             c["is_scraped_news"] = chosen["is_scraped"]
             c["credit_source"] = chosen["credit_source"]
-            last_path = chosen["path"]
             all_assigned_media.append(chosen["path"])
 
     # ─────────────────────────────────────────────────────────────────
