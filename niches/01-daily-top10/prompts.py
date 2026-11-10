@@ -150,6 +150,12 @@ STRICT MASTER RULES (SEARCH ENGINE OPTIMIZED):
 7. NEVER USE AMBIGUOUS ACRONYM 'UP' ALONE (ZERO CARTOONS GUARANTEE):
    - ❌ STRICTLY FORBIDDEN: Do NOT write 'UP' alone or 'UP legislators' (search engines confuse 'UP' with Pixar's animated movie 'Up').
    - ✅ REQUIRED: Always write out 'Uttar Pradesh' (e.g. 'Uttar Pradesh BJP', 'Uttar Pradesh Police', 'Uttar Pradesh leaders').
+8. FOR EVERY CHUNK, PROVIDE EXACTLY 2 COMPLEMENTARY SEARCH QUERIES (CRITICAL):
+   - Query 1 (PHYSICAL SCENE / OBJECT / MAP): Clear visual object or location scene matching the action (e.g. 'Lucknow city map', 'Indian railway tracks', 'Uttar Pradesh police van', 'courtroom gavel India', 'hospital ambulance India').
+   - Query 2 (SPECIFIC NEWS / ENTITY EVENT with 'news'): The exact news event or figure with 'news' suffix (e.g. 'Manish Deshraj Lucknow news', 'Thakurganj police station Lucknow', 'train accident Lucknow news').
+9. NEVER GENERATE ISOLATED UNKNOWN NAMES ALONE:
+   - ❌ STRICTLY FORBIDDEN: Do NOT write single unknown names like 'Neha woman', 'Sapna woman', 'Ramesh man' (search engines return random unrelated stock photos).
+   - ✅ REQUIRED: Always attach news context like 'police investigation fraud case' or 'Lucknow police interrogation' or 'suicide video note evidence'.
 
 OUTPUT ONLY IN VALID JSON FORMAT:
 {

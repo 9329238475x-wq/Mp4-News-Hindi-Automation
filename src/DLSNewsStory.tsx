@@ -168,18 +168,16 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
 
       const chunkDur = cEnd - cStart;
 
-      // Determine how many images to show in this chunk
-      // e.g. if 24 images across 6 chunks, ~4 images per chunk
-      // Minimum duration per image is 45 frames (~1.5s) to guarantee crisp viewer visibility
-      const remainingChunks = chunks.length - cIdx;
-      const remainingImages = Math.max(1, totalImages - globalImgIdx);
-      const targetImagesForThisChunk = Math.max(
-        1,
-        Math.ceil(remainingImages / remainingChunks)
-      );
-      const maxPossibleSlots = Math.max(1, Math.floor(chunkDur / 45));
-      const numSlots = Math.min(targetImagesForThisChunk, maxPossibleSlots);
+      // Each chunk displays its dedicated matching image (or primary story image)
+      // Long chunks (>= 150 frames / ~5s) can split into 2 matching images
+      const primaryChunkImage =
+        chunk.local_visual_path ||
+        allImages[cIdx % totalImages] ||
+        allImages[0];
+      const secondaryImage =
+        allImages[(cIdx + 1) % totalImages] || primaryChunkImage;
 
+      const numSlots = chunkDur >= 150 && totalImages > chunks.length ? 2 : 1;
       const slotDuration = Math.floor(chunkDur / numSlots);
 
       for (let s = 0; s < numSlots; s++) {
@@ -188,19 +186,15 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
           s === numSlots - 1 ? cEnd : slotStart + slotDuration;
 
         const currentSlotImage =
-          allImages[globalImgIdx % totalImages] ||
-          chunk.local_visual_path ||
-          allImages[0];
+          s === 0 ? primaryChunkImage : secondaryImage;
 
         chunkVisuals.push({
-          chunkIndex: globalImgIdx + 1,
+          chunkIndex: cIdx + 1,
           startFrame: slotStart,
           endFrame: slotEnd,
           imageSrc: currentSlotImage,
           sentence: chunk.sentence,
         });
-
-        globalImgIdx++;
       }
 
       if (chunk.visual_intent === "MEME_REACTION" && chunk.local_visual_path) {
