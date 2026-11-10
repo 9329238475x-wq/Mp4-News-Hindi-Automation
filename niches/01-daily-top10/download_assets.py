@@ -232,19 +232,21 @@ def sanitize_keyword_master(kw: str) -> str:
         clean = re.sub(r'keshav\s+maurya', 'Keshav Prasad Maurya BJP', clean, flags=re.IGNORECASE)
 
     c_low = clean.lower()
-    # PRIVACY & DEFAMATION SHIELD: Prevent searching private citizen names + woman/girl/female/family
-    # (e.g. 'Neha woman', 'Sapna woman', 'Pooja girl' pulling unrelated innocent women into crime news)
-    if any(w in c_low for w in ['woman', 'girl', 'female', 'lady', 'victim', 'accused']):
-        clean = 'police crime investigation India'
+    # PRIVACY & DEFAMATION SHIELD: 5 Approved Broadcast Archetypes
+    if any(w in c_low for w in ['neha', 'sapna', 'pooja', 'priya', 'woman', 'girl', 'female', 'lady', 'victim', 'accused']):
+        clean = 'Police investigation file photo Uttar Pradesh'
         c_low = clean.lower()
-    elif any(w in c_low for w in ['suicide', 'threat', 'abuse']):
-        clean = 'police station investigation Uttar Pradesh'
+    elif any(w in c_low for w in ['threat', 'abuse', 'suicide', 'scandal']):
+        clean = 'Uttar Pradesh Police logo official'
         c_low = clean.lower()
-    elif any(w in c_low for w in ['children', 'appeal']):
-        clean = 'police administration Uttar Pradesh'
+    elif any(w in c_low for w in ['home', 'family', 'house', 'outpost']):
+        clean = 'Thakurganj Lucknow police station building'
         c_low = clean.lower()
-    elif 'train tracks' in c_low or 'railway tracks' in c_low:
-        clean = 'Indian railway tracks Lucknow'
+    elif any(w in c_low for w in ['train', 'railway', 'track', 'tracks']):
+        clean = 'Indian Railways tracks generic Lucknow'
+        c_low = clean.lower()
+    elif any(w in c_low for w in ['dcp', 'acp', 'jitendra', 'srivastava', 'officer', 'press']):
+        clean = 'Lucknow Police press conference Jitendra Srivastava'
         c_low = clean.lower()
     # Anchor generic terms to India / UP context so foreign stock/police/weddings are 100% prevented
     if any(p in c_low for p in ['police', 'barricade', 'barrier', 'traffic']) and not any(loc in c_low for loc in ['uttar pradesh', 'bareilly', 'india', 'delhi', 'lucknow']):
@@ -631,11 +633,14 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
 
         time.sleep(0.3)
 
-    # 4. चंक मैपिंग (हर चंक को उसके कीवर्ड की फोटो से जोड़ना)
+    # 4. चंक मैपिंग (चंक 1 को मूल समाचार की असली फोटो, बाकी चंक्स को उनके कीवर्ड की फोटो)
     story["keyword_to_image"] = keyword_to_image
     for idx, c in enumerate(chunks):
         c["visual_intent"] = "REAL_PHOTO"
         c["meme_keyword_en"] = None
+        if idx == 0 and primary_article_img:
+            c["local_visual_path"] = primary_article_img
+            continue
         c_kws = c.get("image_keywords_en", [])
         mapped_img = None
         for ck in c_kws:
