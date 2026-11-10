@@ -558,6 +558,7 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                     all_kws.append(kw)
 
     # 2. मूल समाचार आर्टिकल से 1 प्राथमिक असली तस्वीर (यदि उपलब्ध हो)
+    primary_article_img = None
     article_media = story.get("images", [])
     for m in article_media:
         if isinstance(m, dict):
@@ -566,7 +567,8 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
             if loc_path:
                 full_loc = os.path.join(BASE_DIR, *loc_path.replace("\\", "/").split("/"))
                 if os.path.exists(full_loc) and loc_path not in final_images:
-                    final_images.append(loc_path.replace("\\", "/"))
+                    primary_article_img = loc_path.replace("\\", "/")
+                    final_images.append(primary_article_img)
                     if m_url:
                         seen_urls.add(m_url)
                     break
@@ -576,7 +578,8 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                 dp = os.path.join(news_dir, fn)
                 rel_p = f"out/{story_dir_name}/news real image/{fn}"
                 if download_and_verify_image(m_url, dp, min_width=250, min_height=150, is_meme=False):
-                    final_images.append(rel_p)
+                    primary_article_img = rel_p
+                    final_images.append(primary_article_img)
                     break
 
     # 3. मुख्य नियम: 1 KEYWORD = EXACTLY 1 IMAGE (DuckDuckGo Web Search)
