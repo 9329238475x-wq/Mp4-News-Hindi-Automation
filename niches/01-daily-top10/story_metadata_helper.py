@@ -57,12 +57,15 @@ def save_story_folder_metadata(story: dict, out_dir: str):
     lines.append("")
     lines.append("═" * 84)
 
-    # All English image search queries
+    # All English image search queries (1 Keyword = 1 Photo)
     all_kws = story.get("visual_keywords_en") or story.get("visual_keywords") or []
+    kw_to_img = story.get("keyword_to_image", {})
     if all_kws:
-        lines.append("🔎 फोटो सर्च कीवर्ड्स (ENGLISH IMAGE SEARCH KEYWORDS FOR DUCKDUCKGO / WEB):")
+        lines.append("🔎 फोटो सर्च कीवर्ड्स (1 KEYWORD = 1 PHOTO MAPPING):")
         for k_i, kw in enumerate(all_kws, 1):
-            lines.append(f"   [{k_i:02d}] {kw}")
+            mapped_img = kw_to_img.get(kw, "")
+            status_suffix = f"  -> 📸 {mapped_img}" if mapped_img else ""
+            lines.append(f"   [{k_i:02d}] {kw}{status_suffix}")
         lines.append("")
         lines.append("═" * 84)
 
@@ -85,7 +88,7 @@ def save_story_folder_metadata(story: dict, out_dir: str):
     # Downloaded images if present
     all_imgs = story.get("all_real_images", [])
     if all_imgs:
-        lines.append(f"🌐 डाउनलोड की गई कुल {len(all_imgs)} असली तस्वीरों की सूची (REAL PHOTOS):")
+        lines.append(f"🌐 डाउनलोड की गई कुल {len(all_imgs)} असली तस्वीरों की सूची (1 KEYWORD = 1 PHOTO):")
         for im_i, im_p in enumerate(all_imgs, 1):
             lines.append(f"   [{im_i:02d}] {im_p}")
         lines.append("═" * 84)

@@ -21,7 +21,7 @@
           "Bhojipura police"
         ],
         "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/news_img_1_01.jpg"
+        "local_visual_path": "out/story_01/news real image/news_img_1_02.jpg"
       },
       {
         "chunk_index": 2,
@@ -33,7 +33,7 @@
           "crime scene Uttar Pradesh"
         ],
         "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/news_img_1_02.jpg"
+        "local_visual_path": "out/story_01/news real image/news_img_1_05.jpg"
       },
       {
         "chunk_index": 3,
@@ -45,7 +45,7 @@
           "Uttar Pradesh land dispute"
         ],
         "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/news_img_1_03.jpg"
+        "local_visual_path": "out/story_01/news real image/news_img_1_07.jpg"
       },
       {
         "chunk_index": 4,
@@ -57,7 +57,7 @@
           "Uttar Pradesh Police"
         ],
         "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/news_img_1_04.jpg"
+        "local_visual_path": "out/story_01/news real image/news_img_1_09.jpg"
       },
       {
         "chunk_index": 5,
@@ -69,7 +69,7 @@
           "Uttar Pradesh forensic"
         ],
         "meme_keyword_en": null,
-        "local_visual_path": "out/story_01/news real image/news_img_1_05.jpg"
+        "local_visual_path": "out/story_01/news real image/news_img_1_11.jpg"
       }
     ],
     "bulletin_points": [
@@ -123,8 +123,8 @@
     "real_image_url": "https://staticimg.amarujala.com/assets/images/2026/10/26/crime-demo_271c730ee22261c161011f3ca519ba2a.jpeg?w=1200&dpr=1.0",
     "real_image_attribution": "अमर उजाला क्राइम",
     "original_title": "बरेली: निसंतान वृद्धा की गला दबाकर हत्या, मुंह में ठूंसा हुआ था कपड़ा, पुलिस जांच में जुटी",
-    "local_news_image": "out/story_01/news real image/news_img_1_01.jpg",
-    "local_visual_asset": "out/story_01/news real image/news_img_1_01.jpg",
+    "local_news_image": "out/story_01/news real image/article_media_1_01.jpg",
+    "local_visual_asset": "out/story_01/news real image/article_media_1_01.jpg",
     "local_audio_asset": "out/story_01/voice over/audio_story_1.mp3",
     "article_url": "https://www.amarujala.com/uttar-pradesh/bareilly/crime/childless-elderly-woman-strangled-to-death-in-bareilly-2026-11-08",
     "published_at": "Sun, 08 Nov 2026 09:24:22 +0530",
@@ -151,7 +151,7 @@
     ],
     "videos": [],
     "all_real_images": [
-      "out/story_01/news real image/news_img_1_01.jpg",
+      "out/story_01/news real image/article_media_1_01.jpg",
       "out/story_01/news real image/news_img_1_02.jpg",
       "out/story_01/news real image/news_img_1_03.jpg",
       "out/story_01/news real image/news_img_1_04.jpg",
@@ -162,7 +162,10 @@
       "out/story_01/news real image/news_img_1_09.jpg",
       "out/story_01/news real image/news_img_1_10.jpg",
       "out/story_01/news real image/news_img_1_11.jpg",
-      "out/story_01/news real image/news_img_1_12.jpg"
+      "out/story_01/news real image/news_img_1_12.jpg",
+      "out/story_01/news real image/news_img_1_13.jpg",
+      "out/story_01/news real image/news_img_1_14.jpg",
+      "out/story_01/news real image/news_img_1_15.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / अमर उजाला क्राइम",
     "audio_duration": 38.66,
@@ -175,6 +178,23 @@
       "transition_frames": 0,
       "total_story_frames": 1160,
       "total_story_seconds": 38.66
+    },
+    "thumbnail_path": "out/story_01/thumbnail_01.jpg",
+    "keyword_to_image": {
+      "Naththo Devi": "out/story_01/news real image/news_img_1_02.jpg",
+      "Pega village": "out/story_01/news real image/news_img_1_03.jpg",
+      "Bhojipura police": "out/story_01/news real image/news_img_1_04.jpg",
+      "Naththo Devi house": "out/story_01/news real image/news_img_1_05.jpg",
+      "crime scene Uttar Pradesh": "out/story_01/news real image/news_img_1_06.jpg",
+      "Naththo Devi property": "out/story_01/news real image/news_img_1_07.jpg",
+      "Uttar Pradesh land dispute": "out/story_01/news real image/news_img_1_08.jpg",
+      "Santosh Kumar SP": "out/story_01/news real image/news_img_1_09.jpg",
+      "Uttar Pradesh Police": "out/story_01/news real image/news_img_1_10.jpg",
+      "Naththo Devi postmortem": "out/story_01/news real image/news_img_1_11.jpg",
+      "Uttar Pradesh forensic": "out/story_01/news real image/news_img_1_12.jpg",
+      "Uttar Pradesh murder": "out/story_01/news real image/news_img_1_13.jpg",
+      "property dispute homicide": "out/story_01/news real image/news_img_1_14.jpg",
+      "Uttar Pradesh police investigation": "out/story_01/news real image/news_img_1_15.jpg"
     }
   }
 ]

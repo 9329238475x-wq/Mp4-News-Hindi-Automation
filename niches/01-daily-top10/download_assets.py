@@ -527,13 +527,12 @@ def download_and_verify_image(img_url: str, dest_path: str, min_width: int = 380
     return False
 
 
-def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list[str]:
+def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> list[str]:
     """
-    एक खबर के लिए प्रामाणिक 100% असली न्यूज़ फोटोज़ व एनिमेटेड GIFs जुटाना (10-12 तस्वीरें MAX):
-    1. मूल समाचार आर्टिकल (Dainik Bhaskar / ABP / Jagran) से 2-3 असली तस्वीरें व GIFs लोड करना।
-    2. DuckDuckGo इमेज सर्च (region='in-en') से प्रत्येक चंक के लिए सटीक मैचिंग प्रेस फ़ोटो (1 फ़ोटो प्रति चंक)।
-    3. सख्त सीमा: कुल 8 से 12 तस्वीरें (NO 54 images, NO quota waste, NO Pexels random stock models)।
-    4. हर चंक को उसकी सही तस्वीर से मैप करना ताकि स्क्रीन पर वही दिखे जो एंकर बोल रहा है।
+    1 KEYWORD = EXACTLY 1 IMAGE GUARANTEE (1:1 Ratio):
+    1. प्रत्येक सर्च कीवर्ड (visual_keywords_en) से ठीक 1 प्रामाणिक प्रेस फोटो डाउनलोड करना।
+    2. न एक से ज्यादा, न एक से कम - जितने कीवर्ड्स, उतनी ही तस्वीरें!
+    3. हर चंक को उसके संबंधित कीवर्ड की फोटो से 100% मैप करना।
     """
     story_num = story.get("story_number", 1)
     chunks = story.get("chunks", [])
@@ -545,16 +544,20 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list
 
     final_images = []
     seen_urls = set()
+    keyword_to_image = {}
     root_primary_path = os.path.join(story_dir, f"news_img_{story_num}_01.jpg")
 
-    # ──────────────────────────────────────────────────────────────────────────
-    # 1. मूल समाचार आर्टिकल (ABP / Bhaskar आदि) से मुख्य असली तस्वीरें (अधिकतम 2-3 फ़ोटोज़)
-    # ──────────────────────────────────────────────────────────────────────────
+    # 1. सभी सर्च कीवर्ड्स की सूची (Chunks + Broad Keywords)
+    all_kws = list(story.get("visual_keywords_en") or story.get("visual_keywords") or [])
+    if not all_kws:
+        for c in chunks:
+            for kw in c.get("image_keywords_en", []):
+                if kw and kw not in all_kws:
+                    all_kws.append(kw)
+
+    # 2. मूल समाचार आर्टिकल से 1 प्राथमिक असली तस्वीर (यदि उपलब्ध हो)
     article_media = story.get("images", [])
-    article_count = 0
     for m in article_media:
-        if article_count >= 3:
-            break
         if isinstance(m, dict):
             loc_path = m.get("local_path")
             m_url = m.get("url")
@@ -564,112 +567,98 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = 12) -> list
                     final_images.append(loc_path.replace("\\", "/"))
                     if m_url:
                         seen_urls.add(m_url)
-                    article_count += 1
-                    continue
-
+                    break
             if m_url and m_url.startswith("http") and m_url not in seen_urls:
                 seen_urls.add(m_url)
-                img_idx = len(final_images) + 1
-                fn = f"article_media_{story_num}_{img_idx:02d}.jpg"
+                fn = f"article_media_{story_num}_01.jpg"
                 dp = os.path.join(news_dir, fn)
                 rel_p = f"out/{story_dir_name}/news real image/{fn}"
                 if download_and_verify_image(m_url, dp, min_width=250, min_height=150, is_meme=False):
                     final_images.append(rel_p)
-                    article_count += 1
-
-    if article_count > 0:
-        print(f"  📰 [आर्टिकल मीडिया] मूल खबर से {article_count} असली तस्वीरें लोड हुईं!")
-
-    # ──────────────────────────────────────────────────────────────────────────
-    # 2. DuckDuckGo इमेज सर्च: प्रत्येक चंक (Sentence) के लिए 1-2 सटीक तस्वीरें
-    # ──────────────────────────────────────────────────────────────────────────
-    print(f"  🔎 [DuckDuckGo Web Search] {len(chunks)} चंक्स के लिए लाइव प्रेस तस्वीरें खोजी जा रही हैं...")
-
-    for c_idx, chunk in enumerate(chunks, 1):
-        if len(final_images) >= target_count:
-            break
-
-        chunk_keywords = chunk.get("image_keywords_en", [])
-        chunk_got_img = False
-
-        for kw in chunk_keywords:
-            clean_kw = sanitize_keyword_master(kw)
-            if not clean_kw:
-                continue
-
-            candidate_urls = search_web_real_images(clean_kw, max_results=5)
-            for u in candidate_urls:
-                if u in seen_urls:
-                    continue
-                seen_urls.add(u)
-
-                img_idx = len(final_images) + 1
-                fn = f"news_img_{story_num}_{img_idx:02d}.jpg"
-                dp = os.path.join(news_dir, fn)
-                rel_p = f"out/{story_dir_name}/news real image/{fn}"
-
-                if download_and_verify_image(u, dp, min_width=320, min_height=180, is_meme=False):
-                    final_images.append(rel_p)
-                    chunk["local_visual_path"] = rel_p
-                    chunk_got_img = True
                     break
 
-            if chunk_got_img:
-                break
+    # 3. मुख्य नियम: 1 KEYWORD = EXACTLY 1 IMAGE (DuckDuckGo Web Search)
+    print(f"  🎯 [1-KEYWORD = 1-IMAGE RULE] कुल {len(all_kws)} कीवर्ड्स हैं -> ठीक {len(all_kws)} तस्वीरें खोजी जाएंगी...")
 
-        time.sleep(0.4)
+    for k_idx, kw in enumerate(all_kws, 1):
+        clean_kw = sanitize_keyword_master(kw)
+        if not clean_kw:
+            continue
 
-    # ──────────────────────────────────────────────────────────────────────────
-    # 3. बैकअप सर्च: यदि तस्वीरें 8 से कम हों तो स्टोरी कीवर्ड्स से पूरा करें
-    # ──────────────────────────────────────────────────────────────────────────
-    if len(final_images) < 8:
-        broad_kws = story.get("visual_keywords_en", []) or story.get("visual_keywords", [])
-        for b_kw in broad_kws:
-            if len(final_images) >= target_count:
-                break
-            clean_b = sanitize_keyword_master(b_kw)
-            if not clean_b:
+        print(f"  [{k_idx:02d}/{len(all_kws):02d}] कीवर्ड: '{kw}' (सर्च: '{clean_kw}')")
+        candidate_urls = search_web_real_images(clean_kw, max_results=6)
+        kw_downloaded = False
+
+        for u in candidate_urls:
+            if u in seen_urls:
                 continue
+            seen_urls.add(u)
 
-            candidate_urls = search_web_real_images(clean_b, max_results=5)
-            for u in candidate_urls:
+            img_idx = len(final_images) + 1
+            fn = f"news_img_{story_num}_{img_idx:02d}.jpg"
+            dp = os.path.join(news_dir, fn)
+            rel_p = f"out/{story_dir_name}/news real image/{fn}"
+
+            if download_and_verify_image(u, dp, min_width=320, min_height=180, is_meme=False):
+                final_images.append(rel_p)
+                keyword_to_image[kw] = rel_p
+                kw_downloaded = True
+                print(f"    ✓ 1 फोटो डाउनलोड सफल: {fn}")
+                # 🛑 1 कीवर्ड = सिर्फ 1 ही इमेज! तुरंत अगला कीवर्ड लें!
+                break
+
+        if not kw_downloaded:
+            # Fallback attempt with India context
+            fallback_q = f"{clean_kw} India"
+            fb_urls = search_web_real_images(fallback_q, max_results=4)
+            for u in fb_urls:
                 if u in seen_urls:
                     continue
                 seen_urls.add(u)
-
                 img_idx = len(final_images) + 1
                 fn = f"news_img_{story_num}_{img_idx:02d}.jpg"
                 dp = os.path.join(news_dir, fn)
                 rel_p = f"out/{story_dir_name}/news real image/{fn}"
-
                 if download_and_verify_image(u, dp, min_width=320, min_height=180, is_meme=False):
                     final_images.append(rel_p)
-                    if len(final_images) >= target_count:
-                        break
-            time.sleep(0.4)
+                    keyword_to_image[kw] = rel_p
+                    kw_downloaded = True
+                    print(f"    ✓ 1 फोटो डाउनलोड (बैकअप सर्च): {fn}")
+                    break
 
-    # ──────────────────────────────────────────────────────────────────────────
-    # 4. चंक मैपिंग व प्राइमरी कवर कॉपी
-    # ──────────────────────────────────────────────────────────────────────────
-    if final_images:
-        for idx, c in enumerate(chunks):
-            c["visual_intent"] = "REAL_PHOTO"
-            c["meme_keyword_en"] = None
-            if not c.get("local_visual_path"):
-                c["local_visual_path"] = final_images[idx % len(final_images)]
+        if not kw_downloaded:
+            print(f"    ⚠️ इस कीवर्ड पर कोई वैध फोटो नहीं मिली।")
 
-        if not os.path.exists(root_primary_path):
-            try:
-                first_full = os.path.join(BASE_DIR, *final_images[0].split("/"))
-                if os.path.exists(first_full) and not first_full.lower().endswith(".mp4"):
-                    import shutil
-                    shutil.copyfile(first_full, root_primary_path)
-            except Exception:
-                pass
+        time.sleep(0.3)
 
-    print(f"  📸 [इमेज डाउनलोड पूर्ण] कुल {len(final_images)} प्रामाणिक तस्वीरें सेव हुईं (टारगेट: {target_count})")
+    # 4. चंक मैपिंग (हर चंक को उसके कीवर्ड की फोटो से जोड़ना)
+    story["keyword_to_image"] = keyword_to_image
+    for idx, c in enumerate(chunks):
+        c["visual_intent"] = "REAL_PHOTO"
+        c["meme_keyword_en"] = None
+        c_kws = c.get("image_keywords_en", [])
+        mapped_img = None
+        for ck in c_kws:
+            if ck in keyword_to_image:
+                mapped_img = keyword_to_image[ck]
+                break
+        if mapped_img:
+            c["local_visual_path"] = mapped_img
+        elif final_images:
+            c["local_visual_path"] = final_images[idx % len(final_images)]
+
+    # 5. प्राइमरी कवर कॉपी
+    if final_images and not os.path.exists(root_primary_path):
+        try:
+            first_full = os.path.join(BASE_DIR, *final_images[0].split("/"))
+            if os.path.exists(first_full) and not first_full.lower().endswith(".mp4"):
+                import shutil
+                shutil.copyfile(first_full, root_primary_path)
+        except Exception:
+            pass
+
+    print(f"  📸 [डाउनलोड पूर्ण] कुल {len(all_kws)} कीवर्ड्स में से {len(keyword_to_image)} कीवर्ड्स की 1-1 फोटो सेव हुई (कुल {len(final_images)} तस्वीरें)!")
     return final_images
-
 
 def download_all_assets(max_stories: int = None, target_count: int = 12, force: bool = False):
     """
@@ -699,11 +688,11 @@ def download_all_assets(max_stories: int = None, target_count: int = 12, force: 
         headline = story.get("screen_headline", "")[:50]
         print(f"\n▶️ [खबर {num:02d}] {headline}...")
 
-        # यदि पहले से 10+ तस्वीरें हैं और force=False है, तो स्किप करें
+        all_kws = list(story.get("visual_keywords_en") or story.get("visual_keywords") or [])
         existing = story.get("all_real_images", [])
         valid_existing = [img for img in existing if os.path.exists(os.path.join(BASE_DIR, img))]
-        if not force and len(valid_existing) >= target_count:
-            print(f"  ✔ पहले से {len(valid_existing)} तस्वीरें मौजूद हैं, स्किप किया गया।")
+        if not force and len(valid_existing) >= len(all_kws) and len(all_kws) > 0:
+            print(f"  ✔ पहले से सभी {len(valid_existing)} कीवर्ड्स की तस्वीरें मौजूद हैं, स्किप किया गया।")
             continue
 
         downloaded = fetch_10_to_15_images_for_story(story, target_count=target_count)
