@@ -376,11 +376,15 @@ def extract_and_download_story_media(story_index: int, article_url: str) -> dict
                 chosen_fn = mp4_filename if converted else gif_filename
                 print(f"      🎬 [Animated GIF] प्रामाणिक न्यूज़ GIF सक्रिय: {chosen_fn}", flush=True)
 
+                chosen_full = os.path.join(story_dir, chosen_fn)
+                gif_size_kb = round(os.path.getsize(chosen_full) / 1024, 1) if os.path.exists(chosen_full) else 0.0
                 downloaded_images.append({
                     "index": img_counter,
                     "local_path": chosen_rel,
                     "public_path": chosen_rel,
                     "filename": chosen_fn,
+                    "resolution": "Animated Media",
+                    "size_kb": gif_size_kb,
                     "is_animated": True,
                     "is_video": converted,
                     "url": img_url
@@ -749,12 +753,17 @@ def write_to_txt_file(stories: list, output_path: str):
         if imgs:
             lines.append(f"कुल डाउनलोड चित्र: {len(imgs)}")
             for img in imgs:
-                is_primary = " [मुख्य फोटो (PRIMARY)]" if img["index"] == 1 else ""
-                lines.append(f"  [फोटो {img['index']:02d}]{is_primary} रेज़ोल्यूशन: {img['resolution']} px | साइज: {img['size_kb']} KB")
-                lines.append(f"            लोकल फाइल : {img['local_path']}")
+                im_idx = img.get("index", 1)
+                is_primary = " [मुख्य फोटो (PRIMARY)]" if im_idx == 1 else ""
+                res_val = img.get("resolution", "HD")
+                size_val = img.get("size_kb", "0")
+                loc_val = img.get("local_path", "")
+                url_val = img.get("url", "")
+                lines.append(f"  [फोटो {im_idx:02d}]{is_primary} रेज़ोल्यूशन: {res_val} px | साइज: {size_val} KB")
+                lines.append(f"            लोकल फाइल : {loc_val}")
                 if img.get("public_path"):
                     lines.append(f"            पब्लिक पाथ: {img['public_path']} (Remotion वीडियो उपयोग हेतु)")
-                lines.append(f"            मूल वेब URL: {img['url']}")
+                lines.append(f"            मूल वेब URL: {url_val}")
         else:
             lines.append("  (वेबसाइट पर कोई वैध उच्च-गुणवत्ता चित्र नहीं मिला)")
 
