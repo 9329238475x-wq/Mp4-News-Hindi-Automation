@@ -132,6 +132,15 @@ for z in out_dir.glob("*.zip"):
     except Exception:
         pass
 
+# Sync root artifacts into out/story_01/ so user opening out/story_01/script_1.txt sees latest
+story_01_dir = out_dir / "story_01"
+story_01_dir.mkdir(parents=True, exist_ok=True)
+for item_name in ["script_1.txt", "story_1_data.json", "thumbnail_01.jpg"]:
+    src_item = out_dir / item_name
+    dst_item = story_01_dir / item_name
+    if src_item.exists():
+        shutil.copy2(src_item, dst_item)
+
 # Check for rendered video
 mp4_files = list(out_dir.rglob("*.mp4"))
 if mp4_files:
