@@ -277,6 +277,59 @@ def get_wikimedia_portrait(entity_name: str) -> str:
     return ""
 
 
+
+def search_pexels_indian_images(query: str, max_results: int = 8) -> list[str]:
+    """
+    Groq AI कीवर्ड्स से Pexels API द्वारा 100% भारतीय संदर्भ (HD Landscape) फोटोज़ लोड करना।
+    हमेशा भारतीय संदर्भ सुनिश्चित करने के लिए 'India' या 'Indian' जोड़ता है।
+    """
+    clean_query = sanitize_keyword_master(query)
+    if not clean_query:
+        return []
+
+    api_key = os.environ.get("PEXELS_API_KEY", "").strip()
+    if not api_key:
+        api_key = "BywMJlFjbshUGVoPCpKVDiTnItEnzefzmM4lp8PEG4NqE4RV5BGQ3Wo1"
+
+    # Ensure Indian context
+    search_term = clean_query
+    if not any(ind in search_term.lower() for ind in ["india", "indian", "delhi", "mumbai", "up", "bihar"]):
+        search_term = f"{search_term} India"
+
+    headers = {
+        "Authorization": api_key,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    }
+    urls = []
+    try:
+        resp = requests.get(
+            "https://api.pexels.com/v1/search",
+            params={
+                "query": search_term,
+                "per_page": min(max_results * 2, 20),
+                "orientation": "landscape",
+            },
+            headers=headers,
+            timeout=12,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            for p in data.get("photos", []):
+                src = p.get("src", {})
+                img_url = src.get("large2x") or src.get("large") or src.get("original") or src.get("medium")
+                if img_url and img_url not in urls:
+                    urls.append(img_url)
+                    if len(urls) >= max_results:
+                        break
+            if urls:
+                print(f"  ✓ [Pexels API] '{search_term}' के लिए {len(urls)} HD फोटोज़ मिलीं!")
+        else:
+            print(f"  ⚠️ [Pexels API] Status {resp.status_code}: {resp.text[:100]}")
+    except Exception as e:
+        print(f"  ⚠️ [Pexels API Error] {e}")
+
+    return urls
+
 def search_web_real_images(query: str, is_meme: bool = False, max_results: int = 15) -> list[str]:
     """
     मल्टी-इंजन असली न्यूज़ फोटोज़ सर्च इंजन (Master Multi-Engine News Searcher):

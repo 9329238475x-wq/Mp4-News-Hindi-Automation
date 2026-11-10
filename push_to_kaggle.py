@@ -87,6 +87,19 @@ while time.time() - start_time < max_wait:
             break
         elif "ERROR" in current_status or fail_msg:
             print(f"\n⚠️ Kernel ended with ERROR: {fail_msg}", flush=True)
+            try:
+                print("\n📋 Fetching Kaggle execution error logs...", flush=True)
+                k_logs = api.kernels_logs(kernel_id)
+                if k_logs:
+                    import json as _js
+                    parsed_logs = _js.loads(k_logs) if isinstance(k_logs, str) else k_logs
+                    for entry in parsed_logs[-30:]:
+                        stream = entry.get("stream_name", "")
+                        data = entry.get("data", "")
+                        if stream == "stderr" or "error" in data.lower() or "exception" in data.lower():
+                            print(f"  [{stream}] {data.strip()}", flush=True)
+            except Exception as _log_e:
+                print(f"  (Could not fetch logs: {_log_e})", flush=True)
             break
         elif "CANCEL" in current_status:
             print("\n⚠️ Kernel execution was CANCELLED.", flush=True)
