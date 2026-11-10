@@ -117,3 +117,4 @@ def blur_burned_in_text_and_watermarks(image_path: str) -> bool:
     except Exception as e:
         print(f"    ⚠️ [Blur Helper] Error processing {image_path}: {e}")
     return False
+
