@@ -409,6 +409,21 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
             if w < 250 or h < 150:
                 continue
 
+            # 🚫 प्रोमोशनल बैनर, अत्यधिक सफेद बैकग्राउंड (>45%) या अजीब आस्पेक्ट रेश्यो को रिजेक्ट करें
+            aspect = w / h
+            if aspect > 2.2 or aspect < 0.6:
+                continue
+
+            try:
+                import numpy as np
+                arr_chk = np.array(pil_img)
+                if arr_chk.ndim >= 3:
+                    white_ratio = ((arr_chk[:, :, 0] > 230) & (arr_chk[:, :, 1] > 230) & (arr_chk[:, :, 2] > 230)).mean()
+                    if white_ratio > 0.45:
+                        continue
+            except Exception:
+                pass
+
             if pil_img.mode != "RGB":
                 pil_img = pil_img.convert("RGB")
 

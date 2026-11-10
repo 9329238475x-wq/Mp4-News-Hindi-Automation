@@ -610,6 +610,27 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
     scraped_pool = []  # list of dicts: {"path": rel_path, "is_scraped": True, "credit_source": credit_source}
     seen_media_paths = set()
 
+    def is_valid_news_photo(image_path: str) -> bool:
+        if image_path.lower().endswith((".mp4", ".webm", ".gif")):
+            return True
+        try:
+            with Image.open(image_path) as im:
+                w, h = im.size
+                if w < 200 or h < 140:
+                    return False
+                aspect = w / h
+                if aspect > 2.2 or aspect < 0.6:
+                    return False
+                import numpy as np
+                arr = np.array(im)
+                if arr.ndim >= 3:
+                    white_ratio = ((arr[:, :, 0] > 230) & (arr[:, :, 1] > 230) & (arr[:, :, 2] > 230)).mean()
+                    if white_ratio > 0.45:
+                        return False
+            return True
+        except Exception:
+            return False
+
     # (a) Check article_media from story["images"]
     article_media = story.get("images", [])
     for m in article_media:
@@ -619,12 +640,13 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                 full_loc = os.path.join(BASE_DIR, *loc_path.replace("\\", "/").split("/"))
                 if os.path.exists(full_loc) and loc_path not in seen_media_paths:
                     seen_media_paths.add(loc_path)
-                    blur_burned_in_text_and_watermarks(full_loc)
-                    scraped_pool.append({
-                        "path": loc_path.replace("\\", "/"),
-                        "is_scraped": True,
-                        "credit_source": credit_source,
-                    })
+                    if is_valid_news_photo(full_loc):
+                        blur_burned_in_text_and_watermarks(full_loc)
+                        scraped_pool.append({
+                            "path": loc_path.replace("\\", "/"),
+                            "is_scraped": True,
+                            "credit_source": credit_source,
+                        })
 
     # (b) Also check files in news_dir that are authentic scraped media
     if os.path.exists(news_dir):
@@ -634,12 +656,13 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                 rel_p = f"out/{story_dir_name}/news real image/{fn}".replace("\\", "/")
                 if rel_p not in seen_media_paths and os.path.getsize(full_fn) > 2000:
                     seen_media_paths.add(rel_p)
-                    blur_burned_in_text_and_watermarks(full_fn)
-                    scraped_pool.append({
-                        "path": rel_p,
-                        "is_scraped": True,
-                        "credit_source": credit_source,
-                    })
+                    if is_valid_news_photo(full_fn):
+                        blur_burned_in_text_and_watermarks(full_fn)
+                        scraped_pool.append({
+                            "path": rel_p,
+                            "is_scraped": True,
+                            "credit_source": credit_source,
+                        })
 
     # (c) If scraped pool is small (< 2) and remote URLs exist, download up to 4 genuine photos
     if len(scraped_pool) < 2:
