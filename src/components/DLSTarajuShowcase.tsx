@@ -38,6 +38,8 @@ export interface ChunkVisual {
   endFrame: number;
   imageSrc: string;
   sentence?: string;
+  isScrapedRealNews?: boolean;
+  creditSource?: string | null;
 }
 
 interface DLSTarajuShowcaseProps {
@@ -88,6 +90,7 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
   let activeTransitionFrame = 0;
   let transitionSeed = 0;
   let activeChunkDuration = 120;
+  let activeChunkVisual: ChunkVisual | null = null;
 
   if (chunkVisuals && chunkVisuals.length > 0) {
     const activeVisual =
@@ -96,6 +99,7 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
         ? chunkVisuals[0]
         : chunkVisuals[chunkVisuals.length - 1]);
 
+    activeChunkVisual = activeVisual;
     currentImage = activeVisual.imageSrc || currentImage;
     activeTransitionFrame = Math.max(0, frame - activeVisual.startFrame);
     transitionSeed = activeVisual.chunkIndex;
@@ -285,6 +289,50 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
         }}
       />
 
-          </div>
+      {/* ─── Authentic Scraped News Attribution Badge (ONLY on real scraped news media) ─── */}
+      {Boolean(activeChunkVisual?.isScrapedRealNews) && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 16,
+            left: 20,
+            backgroundColor: "rgba(8, 14, 26, 0.85)",
+            border: "1px solid rgba(255, 255, 255, 0.22)",
+            borderLeft: "4.5px solid #e50914",
+            padding: "5px 12px",
+            borderRadius: 6,
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+            zIndex: 35,
+            backdropFilter: "blur(8px)",
+            boxShadow: "0 6px 18px rgba(0, 0, 0, 0.88)",
+          }}
+        >
+          <span
+            style={{
+              fontSize: 13,
+              color: "#94a3b8",
+              fontWeight: 700,
+              fontFamily: "'Noto Sans Devanagari', sans-serif",
+              letterSpacing: 0.5,
+            }}
+          >
+            फोटो साभार :
+          </span>
+          <span
+            style={{
+              fontSize: 14,
+              color: "#ffffff",
+              fontWeight: 800,
+              fontFamily: "'Noto Sans Devanagari', sans-serif",
+              textShadow: "0 2px 4px rgba(0,0,0,0.9)",
+            }}
+          >
+            {activeChunkVisual?.creditSource || attributionTag || "विशेष कवरेज"}
+          </span>
+        </div>
+      )}
+    </div>
   );
 };

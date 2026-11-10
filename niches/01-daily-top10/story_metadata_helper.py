@@ -82,13 +82,19 @@ def save_story_folder_metadata(story: dict, out_dir: str):
                 lines.append(f"       🔎 Search Keywords : {', '.join(kws)}")
             if c.get("local_visual_path"):
                 lines.append(f"       📁 Mapped Photo     : {c.get('local_visual_path')}")
+            is_scraped = c.get("is_scraped_news")
+            if is_scraped:
+                cr = c.get("credit_source") or source_name
+                lines.append(f"       🏷️ Media Type        : 🔴 प्रामाणिक न्यूज़ मीडिया (साभार: {cr})")
+            else:
+                lines.append(f"       🏷️ Media Type        : 🌐 संदर्भ फोटो (DuckDuckGo Context)")
             lines.append("")
         lines.append("═" * 84)
 
     # Downloaded images if present
     all_imgs = story.get("all_real_images", [])
     if all_imgs:
-        lines.append(f"🌐 डाउनलोड की गई कुल {len(all_imgs)} असली तस्वीरों की सूची (1 KEYWORD = 1 PHOTO):")
+        lines.append(f"🌐 उपयोग में ली गई कुल {len(all_imgs)} तस्वीरों की सूची:")
         for im_i, im_p in enumerate(all_imgs, 1):
             lines.append(f"   [{im_i:02d}] {im_p}")
         lines.append("═" * 84)
@@ -98,4 +104,3 @@ def save_story_folder_metadata(story: dict, out_dir: str):
             sf.write("\n".join(lines) + "\n")
     except Exception as e:
         print(f"    ⚠️ [Metadata] script_{s_num}.txt save error: {e}")
-

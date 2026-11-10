@@ -35,6 +35,14 @@ from bs4 import BeautifulSoup
 from PIL import Image
 from io import BytesIO
 
+# Import Watermark and Burned-in Text Blurring Engine
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+try:
+    from image_blur_helper import clean_watermarks_and_text, blur_burned_in_text_and_watermarks
+except Exception:
+    clean_watermarks_and_text = None
+    blur_burned_in_text_and_watermarks = None
+
 # UTF-8 एनकोडिंग सपोर्ट (Windows)
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -225,7 +233,7 @@ def clean_news_text(raw: str) -> str:
     return "\n\n".join(cleaned)
 
 
-def extract_and_download_story_media(story_index: int, article_url: str) -> dict:
+def extract_and_download_story_media(story_index: int, article_url: str, source_label: str = "") -> dict:
     """
     मूल समाचार वेबपेज से सभी असली चित्र (HD Images) और वीडियो खोजकर
     स्थानीय रूप से media/story_{idx:02d}/ में डाउनलोड व सेव करता है।
@@ -352,13 +360,13 @@ def extract_and_download_story_media(story_index: int, article_url: str) -> dict
 
             if is_gif:
                 # 🎬 दैनिक भास्कर / अन्य स्रोतों से प्राप्त एनिमेटेड GIF
-                gif_filename = f"news_gif_{story_index}_{img_counter:02d}.gif"
+                gif_filename = f"scraped_news_gif_{story_index}_{img_counter:02d}.gif"
                 gif_local_path = os.path.join(story_dir, gif_filename)
                 with open(gif_local_path, "wb") as gf:
                     gf.write(r_img.content)
 
                 # Remotion में स्मूथ फ्रेम-बाई-फ्रेम प्ले करने हेतु ffmpeg से लूपिंग MP4 में कन्वर्ट
-                mp4_filename = f"news_gif_{story_index}_{img_counter:02d}.mp4"
+                mp4_filename = f"scraped_news_gif_{story_index}_{img_counter:02d}.mp4"
                 mp4_local_path = os.path.join(story_dir, mp4_filename)
                 rel_mp4_path = f"out/story_{story_index:02d}/news real image/{mp4_filename}"
                 rel_gif_path = f"out/story_{story_index:02d}/news real image/{gif_filename}"
@@ -387,6 +395,8 @@ def extract_and_download_story_media(story_index: int, article_url: str) -> dict
                     "size_kb": gif_size_kb,
                     "is_animated": True,
                     "is_video": converted,
+                    "is_scraped_news": True,
+                    "credit_source": source_label,
                     "url": img_url
                 })
                 img_counter += 1
@@ -402,7 +412,11 @@ def extract_and_download_story_media(story_index: int, article_url: str) -> dict
             if pil_img.mode != "RGB":
                 pil_img = pil_img.convert("RGB")
 
-            filename = f"news_img_{story_index}_{img_counter:02d}.jpg"
+            # ✂️ वॉटरमार्क, चैनल लोगो व बॉटम टेक्स्ट ब्लरिंग (100% Broadcast Glass Effect)
+            if clean_watermarks_and_text is not None:
+                pil_img = clean_watermarks_and_text(pil_img)
+
+            filename = f"scraped_news_img_{story_index}_{img_counter:02d}.jpg"
             local_save_path = os.path.join(story_dir, filename)
             pil_img.save(local_save_path, "JPEG", quality=95)
 
@@ -424,6 +438,8 @@ def extract_and_download_story_media(story_index: int, article_url: str) -> dict
                 "size_kb": file_size_kb,
                 "is_animated": False,
                 "is_video": False,
+                "is_scraped_news": True,
+                "credit_source": source_label,
                 "url": img_url
             })
             img_counter += 1
@@ -696,7 +712,7 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
     for i, story in enumerate(final_stories, start=1):
         print(f"\n📥 [खबर #{i:02d}] मीडिया डाउनलोड हो रहा है ({story['pillar_name']})...", flush=True)
         print(f"   शीर्षक : {story['title'][:55]}...", flush=True)
-        media_res = extract_and_download_story_media(i, story["url"])
+        media_res = extract_and_download_story_media(i, story["url"], source_label=story.get("source", ""))
         story["images"] = media_res["images"]
         story["videos"] = media_res["videos"]
         story["story_number"] = i

@@ -188,12 +188,28 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
         const currentSlotImage =
           s === 0 ? primaryChunkImage : secondaryImage;
 
+        const isScraped =
+          s === 0
+            ? (chunk.is_scraped_news ??
+               (currentSlotImage.includes("scraped_") ||
+                !currentSlotImage.includes("context_")))
+            : (currentSlotImage.includes("scraped_") ||
+               !currentSlotImage.includes("context_"));
+
+        const credit =
+          chunk.credit_source ||
+          story.source ||
+          story.real_image_attribution ||
+          "विशेष कवरेज";
+
         chunkVisuals.push({
           chunkIndex: cIdx + 1,
           startFrame: slotStart,
           endFrame: slotEnd,
           imageSrc: currentSlotImage,
           sentence: chunk.sentence,
+          isScrapedRealNews: isScraped,
+          creditSource: isScraped ? credit : undefined,
         });
       }
 

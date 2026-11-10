@@ -23,6 +23,8 @@ export interface StoryChunk {
   image_keywords_en: string[];
   meme_keyword_en?: string | null;
   local_visual_path?: string;
+  is_scraped_news?: boolean;
+  credit_source?: string | null;
 }
 
 /* ── Single Story ── */
@@ -41,7 +43,9 @@ export interface DLSStory {
   primary_source_index: number;
   real_image_url: string | null;
   real_image_attribution: string;
+  source?: string;
   original_title: string;
+  all_real_images?: string[];
   /** Locally downloaded visual asset path (relative to public/) */
   local_visual_asset?: string;
   /** Locally downloaded news source image (relative to public/) */

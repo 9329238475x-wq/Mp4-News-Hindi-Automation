@@ -20,6 +20,14 @@ import requests
 from io import BytesIO
 from PIL import Image
 from dotenv import load_dotenv
+
+# Import Watermark & Burned-in Text Blurring Engine
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+try:
+    from image_blur_helper import blur_burned_in_text_and_watermarks, clean_watermarks_and_text
+except Exception:
+    def blur_burned_in_text_and_watermarks(p): return True
+    def clean_watermarks_and_text(im): return im
 from story_metadata_helper import save_story_folder_metadata
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -529,12 +537,61 @@ def download_and_verify_image(img_url: str, dest_path: str, min_width: int = 380
     return False
 
 
+
+def get_story_credit_source(story: dict) -> str:
+    """मूल समाचार चैनल का प्रामाणिक नाम प्राप्त करना (साभार हेतु)"""
+    src = story.get("source")
+    if src and len(src.strip()) > 1:
+        return src.strip()
+
+    attr = story.get("real_image_attribution")
+    if attr and len(attr.strip()) > 1:
+        clean_attr = attr.replace("क्राइम", "").replace("ब्यूरो", "").strip()
+        if clean_attr:
+            return clean_attr
+
+    url = story.get("article_url", "") or ""
+    u_low = url.lower()
+    if "abplive" in u_low:
+        return "एबीपी न्यूज़"
+    elif "bhaskar" in u_low:
+        return "दैनिक भास्कर"
+    elif "amarujala" in u_low:
+        return "अमर उजाला"
+    elif "ndtv" in u_low:
+        return "NDTV"
+    elif "jagran" in u_low:
+        return "दैनिक जागरण"
+    elif "zeenews" in u_low:
+        return "ज़ी न्यूज़"
+    elif "aajtak" in u_low:
+        return "आज तक"
+    elif "indiatoday" in u_low:
+        return "इंडिया टुडे"
+    elif "thehindu" in u_low:
+        return "द हिंदू"
+    elif "indianexpress" in u_low:
+        return "द इंडियन एक्सप्रेस"
+    elif "navbharattimes" in u_low:
+        return "नवभारत टाइम्स"
+    elif "etvbharat" in u_low:
+        return "ईटीवी भारत"
+
+    return "मूल समाचार कवरेज"
+
+
 def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> list[str]:
     """
-    1 KEYWORD = EXACTLY 1 IMAGE GUARANTEE (1:1 Ratio):
-    1. प्रत्येक सर्च कीवर्ड (visual_keywords_en) से ठीक 1 प्रामाणिक प्रेस फोटो डाउनलोड करना।
-    2. न एक से ज्यादा, न एक से कम - जितने कीवर्ड्स, उतनी ही तस्वीरें!
-    3. हर चंक को उसके संबंधित कीवर्ड की फोटो से 100% मैप करना।
+    1. POOL A (Authentic Scraped News Media):
+       - Original photos & animated GIFs scraped from the actual news article.
+       - Blurs burned-in third-party headlines, logos, and channel watermarks.
+       - Assigned credit tag: 'फोटो साभार: {source}'.
+    2. POOL B (Context Stock / Press Assets):
+       - 1 KEYWORD = 1 CONTEXT IMAGE (DuckDuckGo search).
+       - No credit tag (only for authentic news photos).
+    3. INTERLEAVING & ZERO-CONSECUTIVE-REPEAT GUARANTEE:
+       - Alternates: [Real News Media] -> [Context Asset] -> [Real News Media] -> [Context Asset]...
+       - No identical media ever appears consecutively!
     """
     story_num = story.get("story_number", 1)
     chunks = story.get("chunks", [])
@@ -544,12 +601,73 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
     news_dir = os.path.join(story_dir, "news real image")
     os.makedirs(news_dir, exist_ok=True)
 
-    final_images = []
-    seen_urls = set()
-    keyword_to_image = {}
+    credit_source = get_story_credit_source(story)
     root_primary_path = os.path.join(story_dir, f"news_img_{story_num}_01.jpg")
 
-    # 1. सभी सर्च कीवर्ड्स की सूची (Chunks + Broad Keywords)
+    # ─────────────────────────────────────────────────────────────────
+    # 1. POOL A: मूल समाचार आर्टिकल से प्रामाणिक असली तस्वीरें व GIFs
+    # ─────────────────────────────────────────────────────────────────
+    scraped_pool = []  # list of dicts: {"path": rel_path, "is_scraped": True, "credit_source": credit_source}
+    seen_media_paths = set()
+
+    # (a) Check article_media from story["images"]
+    article_media = story.get("images", [])
+    for m in article_media:
+        if isinstance(m, dict):
+            loc_path = m.get("local_path")
+            if loc_path:
+                full_loc = os.path.join(BASE_DIR, *loc_path.replace("\\", "/").split("/"))
+                if os.path.exists(full_loc) and loc_path not in seen_media_paths:
+                    seen_media_paths.add(loc_path)
+                    blur_burned_in_text_and_watermarks(full_loc)
+                    scraped_pool.append({
+                        "path": loc_path.replace("\\", "/"),
+                        "is_scraped": True,
+                        "credit_source": credit_source,
+                    })
+
+    # (b) Also check files in news_dir that are authentic scraped media
+    if os.path.exists(news_dir):
+        for fn in sorted(os.listdir(news_dir)):
+            if fn.startswith("scraped_") or (fn.startswith("news_img_") and not fn.startswith("context_")):
+                full_fn = os.path.join(news_dir, fn)
+                rel_p = f"out/{story_dir_name}/news real image/{fn}".replace("\\", "/")
+                if rel_p not in seen_media_paths and os.path.getsize(full_fn) > 2000:
+                    seen_media_paths.add(rel_p)
+                    blur_burned_in_text_and_watermarks(full_fn)
+                    scraped_pool.append({
+                        "path": rel_p,
+                        "is_scraped": True,
+                        "credit_source": credit_source,
+                    })
+
+    # (c) If scraped pool is small (< 2) and remote URLs exist, download up to 4 genuine photos
+    if len(scraped_pool) < 2:
+        for idx, m in enumerate(article_media):
+            if isinstance(m, dict):
+                m_url = m.get("url")
+                if m_url and m_url.startswith("http"):
+                    fn = f"scraped_news_img_{story_num}_{len(scraped_pool) + 1:02d}.jpg"
+                    dp = os.path.join(news_dir, fn)
+                    rel_p = f"out/{story_dir_name}/news real image/{fn}".replace("\\", "/")
+                    if rel_p not in seen_media_paths:
+                        if download_and_verify_image(m_url, dp, min_width=250, min_height=150, is_meme=False):
+                            seen_media_paths.add(rel_p)
+                            blur_burned_in_text_and_watermarks(dp)
+                            scraped_pool.append({
+                                "path": rel_p,
+                                "is_scraped": True,
+                                "credit_source": credit_source,
+                            })
+                            if len(scraped_pool) >= 4:
+                                break
+
+    print(f"  📸 [Pool A - Authentic News Media] {len(scraped_pool)} असली समाचार तस्वीरें/GIFs उपलब्ध (साभार: '{credit_source}')")
+
+    # ─────────────────────────────────────────────────────────────────
+    # 2. POOL B: DuckDuckGo संदर्भ तस्वीरें (1 KEYWORD = 1 CONTEXT IMAGE)
+    # ─────────────────────────────────────────────────────────────────
+    context_pool = []  # list of dicts: {"path": rel_path, "is_scraped": False, "credit_source": None}
     all_kws = list(story.get("visual_keywords_en") or story.get("visual_keywords") or [])
     if not all_kws:
         for c in chunks:
@@ -557,116 +675,135 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                 if kw and kw not in all_kws:
                     all_kws.append(kw)
 
-    # 2. मूल समाचार आर्टिकल से 1 प्राथमिक असली तस्वीर (यदि उपलब्ध हो)
-    primary_article_img = None
-    article_media = story.get("images", [])
-    for m in article_media:
-        if isinstance(m, dict):
-            loc_path = m.get("local_path")
-            m_url = m.get("url")
-            if loc_path:
-                full_loc = os.path.join(BASE_DIR, *loc_path.replace("\\", "/").split("/"))
-                if os.path.exists(full_loc) and loc_path not in final_images:
-                    primary_article_img = loc_path.replace("\\", "/")
-                    final_images.append(primary_article_img)
-                    if m_url:
-                        seen_urls.add(m_url)
-                    break
-            if m_url and m_url.startswith("http") and m_url not in seen_urls:
-                seen_urls.add(m_url)
-                fn = f"article_media_{story_num}_01.jpg"
-                dp = os.path.join(news_dir, fn)
-                rel_p = f"out/{story_dir_name}/news real image/{fn}"
-                if download_and_verify_image(m_url, dp, min_width=250, min_height=150, is_meme=False):
-                    primary_article_img = rel_p
-                    final_images.append(primary_article_img)
-                    break
-
-    # 3. मुख्य नियम: 1 KEYWORD = EXACTLY 1 IMAGE (DuckDuckGo Web Search)
-    print(f"  🎯 [1-KEYWORD = 1-IMAGE RULE] कुल {len(all_kws)} कीवर्ड्स हैं -> ठीक {len(all_kws)} तस्वीरें खोजी जाएंगी...")
+    print(f"  🎯 [Pool B - Context Search] {len(all_kws)} कीवर्ड्स से 1-1 संदर्भ तस्वीरें खोजी जा रही हैं...")
+    seen_urls = set()
 
     for k_idx, kw in enumerate(all_kws, 1):
         clean_kw = sanitize_keyword_master(kw)
         if not clean_kw:
             continue
 
-        print(f"  [{k_idx:02d}/{len(all_kws):02d}] कीवर्ड: '{kw}' (सर्च: '{clean_kw}')")
+        fn = f"context_img_{story_num}_{k_idx:02d}.jpg"
+        dp = os.path.join(news_dir, fn)
+        rel_p = f"out/{story_dir_name}/news real image/{fn}".replace("\\", "/")
+
+        if os.path.exists(dp) and os.path.getsize(dp) > 3000:
+            context_pool.append({
+                "path": rel_p,
+                "is_scraped": False,
+                "credit_source": None,
+                "keyword": kw,
+            })
+            continue
+
         candidate_urls = search_web_real_images(clean_kw, max_results=6)
         kw_downloaded = False
-
         for u in candidate_urls:
             if u in seen_urls:
                 continue
             seen_urls.add(u)
-
-            img_idx = len(final_images) + 1
-            fn = f"news_img_{story_num}_{img_idx:02d}.jpg"
-            dp = os.path.join(news_dir, fn)
-            rel_p = f"out/{story_dir_name}/news real image/{fn}"
-
             if download_and_verify_image(u, dp, min_width=320, min_height=180, is_meme=False):
-                final_images.append(rel_p)
-                keyword_to_image[kw] = rel_p
+                context_pool.append({
+                    "path": rel_p,
+                    "is_scraped": False,
+                    "credit_source": None,
+                    "keyword": kw,
+                })
                 kw_downloaded = True
-                print(f"    ✓ 1 फोटो डाउनलोड सफल: {fn}")
-                # 🛑 1 कीवर्ड = सिर्फ 1 ही इमेज! तुरंत अगला कीवर्ड लें!
+                print(f"    ✓ [{k_idx:02d}] संदर्भ फोटो डाउनलोड: {fn} (कीवर्ड: '{clean_kw}')")
                 break
 
         if not kw_downloaded:
-            # Fallback attempt with India context
-            fallback_q = f"{clean_kw} India"
-            fb_urls = search_web_real_images(fallback_q, max_results=4)
+            fb_urls = search_web_real_images(f"{clean_kw} India", max_results=4)
             for u in fb_urls:
                 if u in seen_urls:
                     continue
                 seen_urls.add(u)
-                img_idx = len(final_images) + 1
-                fn = f"news_img_{story_num}_{img_idx:02d}.jpg"
-                dp = os.path.join(news_dir, fn)
-                rel_p = f"out/{story_dir_name}/news real image/{fn}"
                 if download_and_verify_image(u, dp, min_width=320, min_height=180, is_meme=False):
-                    final_images.append(rel_p)
-                    keyword_to_image[kw] = rel_p
+                    context_pool.append({
+                        "path": rel_p,
+                        "is_scraped": False,
+                        "credit_source": None,
+                        "keyword": kw,
+                    })
                     kw_downloaded = True
-                    print(f"    ✓ 1 फोटो डाउनलोड (बैकअप सर्च): {fn}")
+                    print(f"    ✓ [{k_idx:02d}] बैकअप संदर्भ फोटो डाउनलोड: {fn}")
                     break
 
-        if not kw_downloaded:
-            print(f"    ⚠️ इस कीवर्ड पर कोई वैध फोटो नहीं मिली।")
+        time.sleep(0.25)
 
-        time.sleep(0.3)
+    print(f"  🌐 [Pool B - Context Search Complete] {len(context_pool)} संदर्भ तस्वीरें तैयार!")
 
-    # 4. चंक मैपिंग (चंक 1 को मूल समाचार की असली फोटो, बाकी चंक्स को उनके कीवर्ड की फोटो)
-    story["keyword_to_image"] = keyword_to_image
+    # ─────────────────────────────────────────────────────────────────
+    # 3. INTERLEAVING & CHUNK MAPPING (ZERO CONSECUTIVE REPETITION)
+    # ─────────────────────────────────────────────────────────────────
+    s_idx = 0
+    c_idx = 0
+    last_path = None
+    all_assigned_media = []
+
     for idx, c in enumerate(chunks):
         c["visual_intent"] = "REAL_PHOTO"
         c["meme_keyword_en"] = None
-        if idx == 0 and primary_article_img:
-            c["local_visual_path"] = primary_article_img
-            continue
-        c_kws = c.get("image_keywords_en", [])
-        mapped_img = None
-        for ck in c_kws:
-            if ck in keyword_to_image:
-                mapped_img = keyword_to_image[ck]
-                break
-        if mapped_img:
-            c["local_visual_path"] = mapped_img
-        elif final_images:
-            c["local_visual_path"] = final_images[idx % len(final_images)]
 
-    # 5. प्राइमरी कवर कॉपी
-    if final_images and not os.path.exists(root_primary_path):
+        prefer_scraped = (idx % 2 == 0)
+        chosen = None
+
+        if prefer_scraped and scraped_pool:
+            cand = scraped_pool[s_idx % len(scraped_pool)]
+            s_idx += 1
+            if cand["path"] == last_path and len(scraped_pool) > 1:
+                cand = scraped_pool[s_idx % len(scraped_pool)]
+                s_idx += 1
+            chosen = cand
+        elif not prefer_scraped and context_pool:
+            cand = context_pool[c_idx % len(context_pool)]
+            c_idx += 1
+            if cand["path"] == last_path and len(context_pool) > 1:
+                cand = context_pool[c_idx % len(context_pool)]
+                c_idx += 1
+            chosen = cand
+        elif scraped_pool:
+            cand = scraped_pool[s_idx % len(scraped_pool)]
+            s_idx += 1
+            chosen = cand
+        elif context_pool:
+            cand = context_pool[c_idx % len(context_pool)]
+            c_idx += 1
+            chosen = cand
+
+        if chosen:
+            c["local_visual_path"] = chosen["path"]
+            c["is_scraped_news"] = chosen["is_scraped"]
+            c["credit_source"] = chosen["credit_source"]
+            last_path = chosen["path"]
+            all_assigned_media.append(chosen["path"])
+
+    # ─────────────────────────────────────────────────────────────────
+    # 4. COVER PHOTO (out/story_XX/news_img_X_01.jpg) & ALL REAL IMAGES
+    # ─────────────────────────────────────────────────────────────────
+    unique_all_images = []
+    primary_choice = (scraped_pool[0]["path"] if scraped_pool else (context_pool[0]["path"] if context_pool else None))
+    if primary_choice:
+        unique_all_images.append(primary_choice)
+
+    for item in scraped_pool + context_pool:
+        p = item["path"]
+        if p not in unique_all_images:
+            unique_all_images.append(p)
+
+    if primary_choice and not os.path.exists(root_primary_path):
         try:
-            first_full = os.path.join(BASE_DIR, *final_images[0].split("/"))
-            if os.path.exists(first_full) and not first_full.lower().endswith(".mp4"):
+            full_prim = os.path.join(BASE_DIR, *primary_choice.split("/"))
+            if os.path.exists(full_prim) and not full_prim.lower().endswith(".mp4"):
                 import shutil
-                shutil.copyfile(first_full, root_primary_path)
+                shutil.copyfile(full_prim, root_primary_path)
         except Exception:
             pass
 
-    print(f"  📸 [डाउनलोड पूर्ण] कुल {len(all_kws)} कीवर्ड्स में से {len(keyword_to_image)} कीवर्ड्स की 1-1 फोटो सेव हुई (कुल {len(final_images)} तस्वीरें)!")
-    return final_images
+    print(f"  🎬 [अंतिम मैपिंग] चंक अनुक्रम: {len(chunks)} चंक्स को अल्टरनेट (Real -> Context -> Real) से मैप किया गया!")
+    return unique_all_images
+
 
 def download_all_assets(max_stories: int = None, target_count: int = 12, force: bool = False):
     """

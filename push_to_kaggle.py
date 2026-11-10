@@ -114,7 +114,10 @@ print("\n📥 Fetching output files from Kaggle...", flush=True)
 
 for attempt in range(1, 4):
     try:
-        files, _ = api.kernels_output(kernel_id, path=str(out_dir), force=True, quiet=True)
+        import contextlib, io
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+            files, _ = api.kernels_output(kernel_id, path=str(out_dir), force=True, quiet=True)
         print(f"✓ Downloaded {len(files) if files else 0} output files to {out_dir}", flush=True)
         break
     except Exception as e:
