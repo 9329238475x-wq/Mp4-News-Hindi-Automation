@@ -426,8 +426,8 @@ async def generate_audio_for_story(story: dict, force: bool = False) -> tuple[st
     return f"out/{story_dir_name}/voice over/{output_filename}", dur
 
 
-async def generate_all_bulletin_audio(force: bool = False):
-    """सभी 10 खबरों का वॉइसओवर तैयार करना और JSON को अपडेट करना"""
+async def generate_all_bulletin_audio(force: bool = False, max_stories: int = 1):
+    """खबरों का वॉइसओवर तैयार करना (Default: 1 Story for testing)"""
     print("\n" + "=" * 65)
     print("🎙️ TV BROADCAST HINDI AUDIO PIPELINE (OmniVoice GPU / Edge-TTS)")
     print("=" * 65)
@@ -444,8 +444,13 @@ async def generate_all_bulletin_audio(force: bool = False):
         print("❌ कोई खबर डेटा में मौजूद नहीं है!")
         return
 
-    print(f"कुल खबरें: {len(stories)}")
-    for story in stories:
+    if max_stories:
+        target_stories = stories[:max_stories]
+    else:
+        target_stories = stories
+
+    print(f"कुल खबरें (प्रोसेस्ड): {len(target_stories)}")
+    for story in target_stories:
         s_num = story.get("story_number", 1)
         rel_path, dur = await generate_audio_for_story(story, force=force)
         story["local_audio_asset"] = rel_path
@@ -461,5 +466,9 @@ async def generate_all_bulletin_audio(force: bool = False):
 
 
 if __name__ == "__main__":
-    force_run = "--force" in sys.argv
-    asyncio.run(generate_all_bulletin_audio(force=force_run))
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--force", action="store_true", help="री-जेनेरेट करें")
+    parser.add_argument("--max", type=int, default=1, help="अधिकतम कितनी खबरों का ऑडियो बनाना है (Default: 1)")
+    args = parser.parse_args()
+    asyncio.run(generate_all_bulletin_audio(force=args.force, max_stories=args.max))

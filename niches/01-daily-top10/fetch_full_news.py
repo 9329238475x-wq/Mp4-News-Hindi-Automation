@@ -828,12 +828,16 @@ def write_to_json_file(stories: list, output_path: str):
     print(f"📁 JSON डेटा सेव हुआ: {output_path}", flush=True)
 
 
-def main():
-    stories = fetch_master_bulletin(target_count=10)
+def main(target_count: int = 1):
+    stories = fetch_master_bulletin(target_count=target_count)
     write_to_txt_file(stories, TXT_OUTPUT_PATH)
     write_to_json_file(stories, JSON_OUTPUT_PATH)
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--max", type=int, default=1, help="अधिकतम कितनी खबरें फेच करनी हैं (Default: 1)")
+    args = parser.parse_args()
+    main(target_count=args.max)
 
