@@ -19,9 +19,11 @@ Master 7-Pillar News Extractor for India (Last 24 Hours)
 
 import os
 import sys
+import re
 import json
 import time
 import datetime
+import email.utils
 import urllib.request
 import urllib.parse
 import xml.etree.ElementTree as ET
@@ -221,18 +223,26 @@ HEADERS = {
 }
 
 
-MAX_NEWS_HOURS = 12
+MAX_NEWS_HOURS = 24
 
 
 def is_within_last_24_hours(date_str: str) -> bool:
-    """जांच: क्या खबर पिछले 12 घंटे के अंदर प्रकाशित हुई है"""
+    """जांच: क्या खबर पिछले 24 घंटे के अंदर प्रकाशित हुई है"""
     if not date_str:
         return True
     try:
+        dt = email.utils.parsedate_to_datetime(date_str)
+        now = datetime.datetime.now(datetime.timezone.utc)
+        diff_hours = (now - dt).total_seconds() / 3600.0
+        return -0.5 <= diff_hours <= 24.5  # पिछले 24 घंटे के अंदर की ताज़ा खबर
+    except Exception:
+        pass
+
+    try:
         pub_dt = datetime.datetime.strptime(date_str[:25].strip(), "%a, %d %b %Y %H:%M:%S")
-        now = datetime.datetime.now()
-        diff = now - pub_dt
-        return diff.total_seconds() <= (MAX_NEWS_HOURS * 3600 + 7200)  # 12h + 2h buffer
+        now = datetime.datetime.utcnow()
+        diff_hours = (now - pub_dt).total_seconds() / 3600.0
+        return -0.5 <= diff_hours <= 24.5
     except Exception:
         return True
 

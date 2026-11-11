@@ -114,10 +114,24 @@ print("\n📥 Fetching output files from Kaggle...", flush=True)
 
 for attempt in range(1, 4):
     try:
-        import contextlib, io
+        import builtins, contextlib, io
+        _orig_open = builtins.open
+
+        def _safe_open(*args, **kwargs):
+            mode = args[1] if len(args) > 1 else kwargs.get("mode", "r")
+            if "b" not in mode and "encoding" not in kwargs:
+                kwargs["encoding"] = "utf-8"
+                kwargs["errors"] = "replace"
+            return _orig_open(*args, **kwargs)
+
+        builtins.open = _safe_open
         buf = io.StringIO()
-        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
-            files, _ = api.kernels_output(kernel_id, path=str(out_dir), force=True, quiet=True)
+        try:
+            with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+                files, _ = api.kernels_output(kernel_id, path=str(out_dir), force=True, quiet=True)
+        finally:
+            builtins.open = _orig_open
+
         print(f"✓ Downloaded {len(files) if files else 0} output files to {out_dir}", flush=True)
         break
     except Exception as e:
