@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-🔥 Master Million-View DLS News / Superfast News YouTube Thumbnail Generator (1280x720)
------------------------------------------------------------------------------------------
+🔥 Master Million-View Superfast News YouTube Thumbnail Generator (1280x720)
+-----------------------------------------------------------------------------
 100% matched to user's exact uploaded reference & refinements:
-  1. Top-Left: Radiant Sunburst Blue Box with [सुपरफास्ट न्यूज़ LIVE] (Clean, no yellow inner border)
+  1. Top-Left: Radiant Sunburst Blue Box with [सुपरफास्ट न्यूज़ LIVE] (Clean, no yellow inner border, LIVE lowered)
   2. Top-Center: Huge Red Date (e.g. 12 / 29) + Month (नवंबर / अक्टूबर) in Baloo 2 (Clean & Uncluttered)
-  3. Top-Right: Weekday (e.g. गुरुवार) + Year [2026] + [मुख्य] sitting directly above [समाचार] in 3D Blue (Matra fully visible!)
+  3. Top-Right: Weekday (e.g. गुरुवार) + Year [2026] + [मुख्य] sitting JUST DIRECTLY ABOVE [समाचार] in 3D Blue
   4. Middle Row:
      - Cyan Gradient Pill: [आज PM मोदी सरकार ने लिए 5 बड़े फैसले] in Baloo 2
-     - Right: [समाचार] vertically aligned right below [मुख्य] to form 'मुख्य समाचार'
+     - Right: [समाचार] vertically aligned tight right below [मुख्य] to form 'मुख्य समाचार'
   5. White Hook Strip: Enlarged Multi-Color Underlined Keywords in Baloo 2 (Fills the strip!)
   6. Bottom Red Banner:
      - Left: [क्राइम अलर्ट] TV Badge (Neon Cyan + Golden Yellow in Baloo 2)
@@ -143,10 +143,10 @@ def build_dls_reference_html(
 ) -> str:
     """
     Builds the pixel-perfect HTML/CSS layout:
-    - [सुपरफास्ट न्यूज़ LIVE] on sunburst rays without inner yellow border
+    - [सुपरफास्ट न्यूज़ LIVE] with lowered LIVE pill
     - Baloo 2 for all Devanagari text
     - Poppins-Black for date digits and year pill
-    - [मुख्य] with unclipped 'ु' matra, directly above [समाचार]
+    - [मुख्य] placed JUST DIRECTLY ABOVE [समाचार]
     - White strip text enlarged (51px) to fill height
     - [क्राइम अलर्ट] badge on bottom-left
     - [50 बड़ी खबरें] vertically centered in the red banner
@@ -215,7 +215,7 @@ def build_dls_reference_html(
     background: linear-gradient(180deg, #fffde6 0%, #fff7a0 55%, #ffe940 100%);
   }
 
-  /* A. Top-Left Blue Ray Box (सुपरफास्ट न्यूज़ LIVE - Yellow border removed!) */
+  /* A. Top-Left Blue Ray Box (सुपरफास्ट न्यूज़ LIVE) */
   .brand-box {
     width: 360px;
     height: 305px;
@@ -252,7 +252,7 @@ def build_dls_reference_html(
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 4px 10px;
+    padding: 0 10px;
   }
 
   .brand-text-1 {
@@ -276,21 +276,22 @@ def build_dls_reference_html(
     -webkit-text-stroke: 3.5px #4a2200;
     text-shadow: 3px 3px 0 #000, 0 0 16px rgba(255, 242, 0, 0.6);
     letter-spacing: 1px;
-    margin-bottom: 6px;
     font-family: 'BalooLocal', sans-serif;
   }
 
+  /* LIVE pill lowered down */
   .brand-live-pill {
     background: linear-gradient(180deg, #ff1a24 0%, #b80009 100%);
     color: #ffffff;
     font-size: 26px;
     font-weight: 900;
-    padding: 2px 24px;
+    padding: 3px 28px;
     border-radius: 6px;
     letter-spacing: 2px;
     box-shadow: 0 3px 8px rgba(0,0,0,0.6);
     border: 2px solid #ffffff;
     font-family: 'PoppinsHeavy', sans-serif;
+    margin-top: 24px;
   }
 
   /* B. Top-Center Date & Month */
@@ -328,16 +329,16 @@ def build_dls_reference_html(
     font-family: 'BalooLocal', sans-serif;
   }
 
-  /* C. Top-Right Day, Year & MUKHYA (Matra clipping 100% fixed) */
+  /* C. Top-Right Box (Mukhya sits JUST ABOVE Samachar!) */
   .top-right-box {
     width: 270px;
+    height: 305px;
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
     padding: 10px 8px 0 8px;
     margin-right: 16px;
-    overflow: visible;
   }
 
   .day-and-year-row {
@@ -346,7 +347,6 @@ def build_dls_reference_html(
     justify-content: center;
     gap: 10px;
     width: 100%;
-    margin-bottom: 6px;
   }
 
   .day-name {
@@ -370,19 +370,22 @@ def build_dls_reference_html(
     font-family: 'PoppinsHeavy', sans-serif;
   }
 
+  /* MUKHYA: Absolute at bottom: 0px, sitting JUST ABOVE Samachar */
   .mukhya-top {
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    width: 100%;
     paint-order: stroke fill;
-    font-size: 78px;
+    font-size: 82px;
     font-weight: 900;
-    line-height: 1.15;
+    line-height: 1;
     color: #0044cc;
     -webkit-text-stroke: 3.5px #ffffff;
     text-shadow: 3px 3px 0 #001f5b, 5px 5px 12px rgba(0,0,0,0.35);
     text-align: center;
     letter-spacing: 0.5px;
     font-family: 'BalooLocal', sans-serif;
-    margin-top: 4px;
-    width: 100%;
   }
 
   /* ═══════════════════════════════════════════════════════════
@@ -439,7 +442,7 @@ def build_dls_reference_html(
 
   .samachar-right {
     paint-order: stroke fill;
-    font-size: 78px;
+    font-size: 82px;
     font-weight: 900;
     line-height: 1;
     color: #003bbb;
@@ -467,7 +470,7 @@ def build_dls_reference_html(
     align-items: center;
     justify-content: center;
     padding: 0 12px;
-    font-size: 51px; /* Enlarged from 44px to fill the patti! */
+    font-size: 51px;
     font-weight: 900;
     letter-spacing: 0.2px;
     box-shadow: 0 4px 14px rgba(0,0,0,0.25);
@@ -583,7 +586,7 @@ def build_dls_reference_html(
 <body>
   <!-- 1. TOP SECTION -->
   <div class="top-section">
-    <!-- Top-Left Blue Ray Box with "सुपरफास्ट न्यूज़ LIVE" (No yellow patti frame) -->
+    <!-- Top-Left Blue Ray Box with "सुपरफास्ट न्यूज़ LIVE" (LIVE lowered) -->
     <div class="brand-box">
       <div class="brand-rays"></div>
       <div class="brand-inner-frame">
@@ -599,7 +602,7 @@ def build_dls_reference_html(
       <div class="month-name">__MONTH_STR__</div>
     </div>
 
-    <!-- Top-Right Day, Year & MUKHYA (Directly above Samachar, Matra fully clear) -->
+    <!-- Top-Right Day, Year & MUKHYA (Directly above Samachar) -->
     <div class="top-right-box">
       <div class="day-and-year-row">
         <div class="day-name">__WEEKDAY_STR__</div>
@@ -688,8 +691,8 @@ def generate_dls_reference_pillow(
 
     draw.text((45, 45), "सुपरफास्ट", fill=(255, 242, 0), font=f_baloo, stroke_width=3, stroke_fill=(74, 34, 0))
     draw.text((105, 125), "न्यूज", fill=(255, 242, 0), font=f_baloo, stroke_width=3, stroke_fill=(74, 34, 0))
-    draw.rounded_rectangle([120, 230, 240, 270], radius=6, fill=(229, 9, 20), outline=(255, 255, 255), width=2)
-    draw.text((145, 234), "LIVE", fill=(255, 255, 255), font=f_day)
+    draw.rounded_rectangle([120, 240, 240, 280], radius=6, fill=(229, 9, 20), outline=(255, 255, 255), width=2)
+    draw.text((145, 244), "LIVE", fill=(255, 255, 255), font=f_day)
 
     # Huge Date & Month
     draw.text((375, 25), day_num, fill=(229, 0, 0), font=f_huge_date, stroke_width=8, stroke_fill=(255, 230, 0))
@@ -699,7 +702,7 @@ def generate_dls_reference_pillow(
     draw.text((1010, 20), weekday_str, fill=(0, 43, 73), font=f_day)
     draw.rounded_rectangle((1160, 24, 1260, 68), radius=6, fill=(255, 230, 0), outline=(0, 0, 0), width=2)
     draw.text((1175, 28), year_str, fill=(0, 0, 0), font=f_day)
-    draw.text((1060, 95), "मुख्य", fill=(0, 68, 204), font=f_baloo, stroke_width=3, stroke_fill=(255, 255, 255))
+    draw.text((1060, 220), "मुख्य", fill=(0, 68, 204), font=f_baloo, stroke_width=3, stroke_fill=(255, 255, 255))
 
     # 2. Middle Row: Cyan Pill + Samachar (Y: 305-405)
     draw.rectangle([0, 305, THUMB_W, 405], fill=(255, 233, 64))
@@ -760,11 +763,11 @@ def generate_sensational_thumbnail(
     channel_name: str = "MP4 NEWS"
 ) -> str:
     """
-    Main Entrypoint: Generates the Master DLS News / Superfast News YouTube Thumbnail
+    Main Entrypoint: Generates the Master Superfast News YouTube Thumbnail
     100% matched to user's layout & typography specifications:
-    - [सुपरफास्ट न्यूज़ LIVE] on sunburst rays without inner yellow border
+    - [सुपरफास्ट न्यूज़ LIVE] with lowered LIVE pill
     - Baloo 2 for all Hindi text
-    - [मुख्य] with unclipped 'ु' matra, directly above [समाचार]
+    - [मुख्य] sitting JUST DIRECTLY ABOVE [समाचार]
     - White strip text enlarged (51px) to fill height
     - [क्राइम अलर्ट] badge on bottom left
     - [50 बड़ी खबरें] vertically centered in the red banner
@@ -821,13 +824,13 @@ def generate_sensational_thumbnail(
                 pass
 
             if res.returncode == 0 and os.path.exists(out_abs) and os.path.getsize(out_abs) > 10000:
-                print(f"  ✓ [Headless Browser] Custom Master Thumbnail Ready: {out_path} ({os.path.getsize(out_abs)/1024:.0f} KB)")
+                print(f"  ✓ [Headless Browser] Superfast News Master Thumbnail Ready: {out_path} ({os.path.getsize(out_abs)/1024:.0f} KB)")
                 return out_path
         except Exception as e:
             print(f"  ⚠️ Browser screenshot error: {e}")
 
     # Engine B: Pure Pillow Fallback Engine
-    print("  🖼️ [Pillow Engine] Rendering Custom Master Thumbnail...")
+    print("  🖼️ [Pillow Engine] Rendering Superfast News Master Thumbnail...")
     generate_dls_reference_pillow(
         day_num=day_num,
         month_str=month_str,
@@ -838,13 +841,13 @@ def generate_sensational_thumbnail(
         out_path=out_path,
         is_crime_heavy=is_crime_heavy
     )
-    print(f"  ✓ [Pillow Engine] Custom Master Thumbnail Ready: {out_path}")
+    print(f"  ✓ [Pillow Engine] Superfast News Master Thumbnail Ready: {out_path}")
     return out_path
 
 
 if __name__ == "__main__":
     demo_out = str(PROJECT_ROOT / "out" / "test_dls_reference_thumbnail.jpg")
-    print("Testing 100% Customized Superfast News YouTube Thumbnail Generator...")
+    print("Testing 100% Superfast News YouTube Thumbnail Generator...")
     res = generate_sensational_thumbnail(
         headline="आज के मुख्य समाचार 50 बड़ी खबरें",
         out_path=demo_out,
