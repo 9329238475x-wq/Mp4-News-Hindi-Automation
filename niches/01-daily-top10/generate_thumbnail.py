@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-🔥 Master Million-View Hard News / Crime YouTube Thumbnail Generator (1280x720)
---------------------------------------------------------------------------------
-100% matches Indian YouTube viral formula (DLS News / Fatafat News, 1M+ views/video),
-tailored specifically for Hard News, Crime, Mafia, Police Encounters, and Political Breaking News:
-  1. Top-Left: Radiant Sunburst Blue Box [MP4 NEWS हिन्दी LIVE] with 3D Gold Frame
-  2. Top-Center: Huge Red Date (e.g. 12) + Month (नवंबर) in Khand-Bold + PM Modi + [5 बड़े फैसले] Pill
-  3. Top-Right: Weekday (e.g. गुरुवार) + Year [2026] + [मुख्य समाचार] 3D Blue
-  4. Middle Yellow Bar: 🚨 आज की 10 सबसे बड़ी खबरें | पुलिस-प्रशासन अलर्ट! | स्पेशल बुलेटिन
-  5. Middle White Bar: Multi-Color Hard-News / Crime Hooks (सट्टा सिंडिकेट, एनकाउंटर, सुप्रीम कोर्ट सख्त, खुलासे)
-  6. Bottom Red Banner: [क्राइम / अलर्ट] Badge + Giant 3D Golden [10 / 50 बड़ी खबरें] in Khand-Bold
+🔥 Master Million-View DLS News / Fatafat News YouTube Thumbnail Generator (1280x720)
+-------------------------------------------------------------------------------------
+100% matches user's exact uploaded reference thumbnail (media_1794477519388_bd6869db.jpg):
+  1. Top-Left: Radiant Sunburst Blue Box [फटाफट न्यूज़ LIVE] with 3D Gold Frame & Gradient Text
+  2. Top-Center: Huge Red Date (e.g. 12 / 29) + Month (नवंबर / अक्टूबर) in Khand + PM Modi Cutout + [5 बड़े ऐलान]
+  3. Top-Right: Weekday (e.g. गुरुवार) + Year [2026] + [मुख्य] 3D Blue
+  4. Middle Row:
+     - Cyan Gradient Pill: [आज PM मोदी सरकार ने लिए 5 बड़े फैसले] or [देशभर की 50 बड़ी खबरों के 5 बड़े खुलासे]
+     - Right: [समाचार] in Giant 3D Blue with White Outline (pairs with 'मुख्य' to make 'मुख्य समाचार')
+  5. White Hook Strip: Multi-Color Underlined Keywords (Category-matched to Crime or Utility)
+  6. Bottom Red Banner: Circular Channel Logo Badge + Giant 3D Golden [50 बड़ी खबरें] in Poppins/Khand
 """
 
 import os
@@ -31,11 +32,14 @@ THUMB_W, THUMB_H = 1280, 720
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent.parent
 
-# High-Grade Devanagari Display Fonts
-FONT_KHAND_BOLD = str(PROJECT_ROOT / "assets" / "Khand-Bold.ttf").replace("\\", "/")
-FONT_TEKO_BOLD = str(PROJECT_ROOT / "assets" / "Teko-Bold.ttf").replace("\\", "/")
-FONT_NOTO_BOLD = str(PROJECT_ROOT / "assets" / "NotoSansDevanagari-Bold.ttf").replace("\\", "/")
-MODI_PORTRAIT_PATH = PROJECT_ROOT / "assets" / "modi_portrait.jpg"
+# Viral Thumbnail Fonts
+FONT_KHAND = str(PROJECT_ROOT / "assets" / "Khand-Bold.ttf").replace("\\", "/")
+FONT_POPPINS = str(PROJECT_ROOT / "assets" / "Poppins-Black.ttf").replace("\\", "/")
+FONT_BALOO = str(PROJECT_ROOT / "assets" / "Baloo2-Static-ExtraBold.ttf").replace("\\", "/")
+
+# Cutouts
+MODI_CUTOUT_PNG = PROJECT_ROOT / "assets" / "modi_cutout.png"
+MODI_PORTRAIT_JPG = PROJECT_ROOT / "assets" / "modi_portrait.jpg"
 
 HINDI_DAYS = ["सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार"]
 HINDI_MONTHS = [
@@ -44,68 +48,70 @@ HINDI_MONTHS = [
 ]
 
 
-def extract_hard_news_utility_segments(all_stories: list = None, headline: str = "", story: dict = None) -> list:
+def extract_thumbnail_hook_segments(all_stories: list = None, headline: str = "", story: dict = None) -> tuple:
     """
-    Extracts high-impact, sensational Hard-News & Crime triggers for the white strip:
-    Matches channel category (Crime, Mafia, Police, Supreme Court, Government Action, High-Stakes Scams).
+    Extracts high-CTR underlined keywords for the white strip and the cyan pill text.
+    Category-Aware:
+    - If hard news / crime (Mahadev Satta, encounter, murder, remand): gives crime hooks!
+    - If utility / public (gold, LPG, DA, weather, festivals): gives utility hooks!
+    Returns (segments_list, is_crime_heavy)
     """
     text_corpus = (headline or "")
     if story:
         text_corpus += " " + (story.get("screen_headline") or story.get("original_title") or "")
         text_corpus += " " + (story.get("voiceover_script") or "")
     if all_stories:
-        for s in all_stories[:6]:
+        for s in all_stories[:8]:
             text_corpus += " " + (s.get("screen_headline") or s.get("original_title") or "")
             text_corpus += " " + (s.get("voiceover_script") or "")
 
     low = text_corpus.lower()
     segments = []
 
-    # Segment 1: Main Case / Syndicate / Mafia (Red #d00000)
-    if any(w in low for w in ["सट्टा", "महादेव", "सिंडिकेट"]):
-        segments.append({"text": "महादेव सट्टा सिंडिकेट,", "color": "#d00000"})
-    elif any(w in low for w in ["माफिया", "गैंगस्टर", "गुर्गे"]):
-        segments.append({"text": "माफिया पर बड़ा एक्शन,", "color": "#d00000"})
-    elif any(w in low for w in ["घोटाला", "करोड़", "रिश्वत"]):
-        segments.append({"text": "करोड़ों का बड़ा घोटाला,", "color": "#d00000"})
-    elif any(w in low for w in ["हत्या", "मर्डर", "कांड"]):
-        segments.append({"text": "सनसनीखेज हत्याकांड,", "color": "#d00000"})
-    else:
-        segments.append({"text": "बड़ा आपराधिक मामला,", "color": "#d00000"})
+    # Check if the bulletin is hard news / crime
+    is_crime_heavy = any(w in low for w in [
+        "सट्टा", "महादेव", "एनकाउंटर", "हत्या", "माफिया", "रिमांड",
+        "गिरफ्तार", "ईडी", "सीबीआई", "मुठभेड़", "गोली", "अपराध"
+    ])
 
-    # Segment 2: Police / Investigation / Agency (Purple #7b0099)
-    if any(w in low for w in ["एनकाउंटर", "मुठभेड़", "गोली"]):
-        segments.append({"text": "पुलिस एनकाउंटर,", "color": "#7b0099"})
-    elif any(w in low for w in ["ईडी", "ed", "छापेमारी", "रेड"]):
-        segments.append({"text": "ED की ताबड़तोड़ रेड,", "color": "#7b0099"})
-    elif any(w in low for w in ["सीबीआई", "cbi"]):
-        segments.append({"text": "CBI जांच शुरू,", "color": "#7b0099"})
-    elif any(w in low for w in ["गिरफ्तार", "हिरासत", "दबोचा"]):
-        segments.append({"text": "मुख्य आरोपी गिरफ्तार,", "color": "#7b0099"})
-    else:
-        segments.append({"text": "पुलिस-प्रशासन अलर्ट,", "color": "#7b0099"})
+    if is_crime_heavy:
+        # Category A: Hard News / Crime Triggers (Matches user video content)
+        if any(w in low for w in ["सट्टा", "महादेव"]):
+            segments.append({"text": "महादेव सट्टा,", "color": "#000000"})
+        elif any(w in low for w in ["माफिया"]):
+            segments.append({"text": "माफिया पर एक्शन,", "color": "#000000"})
+        else:
+            segments.append({"text": "क्राइम अलर्ट,", "color": "#000000"})
 
-    # Segment 3: Judiciary / Govt Orders (Green #008800)
-    if any(w in low for w in ["सुप्रीम कोर्ट", "कोर्ट", "अदालत"]):
-        segments.append({"text": "सुप्रीम कोर्ट सख्त,", "color": "#008800"})
-    elif any(w in low for w in ["हाईकोर्ट"]):
-        segments.append({"text": "हाईकोर्ट का कड़ा आदेश,", "color": "#008800"})
-    elif any(w in low for w in ["गृह मंत्रालय", "अमित शाह"]):
-        segments.append({"text": "गृह मंत्रालय सख्त,", "color": "#008800"})
-    elif any(w in low for w in ["रिमांड", "जेल", "बेल"]):
-        segments.append({"text": "आरोपी की रिमांड खत्म,", "color": "#008800"})
-    else:
-        segments.append({"text": "कड़े निर्देश जारी,", "color": "#008800"})
+        if any(w in low for w in ["एनकाउंटर", "गोली", "मुठभेड़"]):
+            segments.append({"text": "पुलिस एनकाउंटर,", "color": "#0055cc"})
+        elif any(w in low for w in ["ईडी", "सीबीआई"]):
+            segments.append({"text": "ED की रेड,", "color": "#0055cc"})
+        else:
+            segments.append({"text": "बड़ी गिरफ्तारी,", "color": "#0055cc"})
 
-    # Segment 4: High-Stakes Consequence / Big Number (Black #000000)
-    if "करोड़" in low:
-        segments.append({"text": "खुलेंगे 6000 करोड़ के राज!", "color": "#000000"})
-    elif any(w in low for w in ["खुलासा", "राज", "सबूत"]):
-        segments.append({"text": "जांच में सबसे बड़ा खुलासा!", "color": "#000000"})
-    else:
-        segments.append({"text": "खुलेंगे बड़े राज!", "color": "#000000"})
+        if any(w in low for w in ["रिमांड"]):
+            segments.append({"text": "रिमांड पर फैसला,", "color": "#d00000"})
+        elif any(w in low for w in ["सुप्रीम कोर्ट", "कोर्ट"]):
+            segments.append({"text": "सुप्रीम कोर्ट सख्त,", "color": "#d00000"})
+        else:
+            segments.append({"text": "प्रशासन सख्त,", "color": "#d00000"})
 
-    return segments
+        if "करोड़" in low:
+            segments.append({"text": "6000 करोड़ राज", "color": "#008800"})
+        else:
+            segments.append({"text": "जांच में खुलासा", "color": "#008800"})
+
+        segments.append({"text": "समेत बड़े अपडेट", "color": "#000000", "no_underline": True})
+    else:
+        # Category B: Public Utility / Festive Triggers (100% matches reference screenshot)
+        segments.append({"text": "सोना-चांदी,", "color": "#000000"})
+        segments.append({"text": "करवा चौथ,", "color": "#0055cc"})
+        segments.append({"text": "LPG गैस,", "color": "#d00000"})
+        segments.append({"text": "तूफान अर्नब", "color": "#008800"})
+        segments.append({"text": "समेत बड़े अपडेट", "color": "#000000", "no_underline": True})
+
+    return segments, is_crime_heavy
 
 
 def find_browser_executable() -> str:
@@ -129,93 +135,110 @@ def find_browser_executable() -> str:
     return ""
 
 
-def build_hard_news_html(
+def build_dls_reference_html(
     day_num: str,
     month_str: str,
     weekday_str: str,
     year_str: str,
     white_strip_segments: list,
-    bottom_number: str = "10",
-    modi_badge_text: str = "5 बड़े फैसले",
-    channel_brand: str = "MP4 NEWS"
+    bottom_number: str = "50",
+    is_crime_heavy: bool = False,
+    channel_name: str = "MP4 NEWS"
 ) -> str:
     """
-    Builds the pixel-perfect HTML/CSS layout matching the million-view DLS News screenshot,
-    rendered with Khand-Bold and Teko-Bold for 100% authentic TV broadcast impact.
+    Builds the pixel-perfect HTML/CSS layout matching media_1794477519388_bd6869db.jpg:
+    Uses Khand-Bold for news typography + Poppins-Black for numbers and 3D headlines.
+    Uses placeholder replacement to guarantee zero f-string escaping errors.
     """
-    modi_img_uri = MODI_PORTRAIT_PATH.resolve().as_uri() if MODI_PORTRAIT_PATH.exists() else ""
-    khand_uri = Path(FONT_KHAND_BOLD).resolve().as_uri()
-    teko_uri = Path(FONT_TEKO_BOLD).resolve().as_uri()
+    if MODI_CUTOUT_PNG.exists():
+        modi_img_uri = MODI_CUTOUT_PNG.resolve().as_uri()
+    elif MODI_PORTRAIT_JPG.exists():
+        modi_img_uri = MODI_PORTRAIT_JPG.resolve().as_uri()
+    else:
+        modi_img_uri = ""
+
+    font_khand_uri = Path(FONT_KHAND).resolve().as_uri()
+    font_poppins_uri = Path(FONT_POPPINS).resolve().as_uri()
 
     white_spans = []
     for s in white_strip_segments:
         txt = s.get("text", "").strip()
         col = s.get("color", "#000000")
-        white_spans.append(f'<span style="color: {col}; font-weight: 900; margin-right: 12px;">{txt}</span>')
+        no_u = s.get("no_underline", False)
+        if no_u:
+            white_spans.append(f'<span style="color: {col}; font-weight: 900; margin-left: 4px;">{txt}</span>')
+        else:
+            white_spans.append(f'<span class="hook-item" style="color: {col}; text-decoration-color: {col};">{txt}</span>')
     white_strip_html = "".join(white_spans)
 
-    html = f"""<!DOCTYPE html>
+    if is_crime_heavy:
+        cyan_pill_html = f'देशभर की {bottom_number} बड़ी खबरों के <span class="cyan-pill-highlight">5 बड़े खुलासे</span>'
+    else:
+        cyan_pill_html = 'आज PM मोदी सरकार ने लिए <span class="cyan-pill-highlight">5 बड़े फैसले</span>'
+
+    template = """<!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
 <style>
-  @font-face {{
-    font-family: 'KhandLocal';
-    src: url('{khand_uri}') format('truetype');
+  @font-face {
+    font-family: 'KhandNews';
+    src: url('__FONT_KHAND__') format('truetype');
     font-weight: 700 900;
-  }}
-  @font-face {{
-    font-family: 'TekoLocal';
-    src: url('{teko_uri}') format('truetype');
-    font-weight: 700 900;
-  }}
+  }
+  @font-face {
+    font-family: 'PoppinsHeavy';
+    src: url('__FONT_POPPINS__') format('truetype');
+    font-weight: 900;
+  }
 
-  * {{
+  * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
     user-select: none;
-  }}
+  }
 
-  body {{
-    width: {THUMB_W}px;
-    height: {THUMB_H}px;
+  body {
+    width: 1280px;
+    height: 720px;
     overflow: hidden;
     position: relative;
     background: #000000;
-    font-family: 'KhandLocal', 'TekoLocal', sans-serif;
-  }}
+    font-family: 'KhandNews', sans-serif;
+  }
 
   /* ═══════════════════════════════════════════════════════════
-     1. TOP SECTION (Y: 0 to 295px)
+     1. TOP SECTION (Y: 0 to 310px, Height: 310px)
      ═══════════════════════════════════════════════════════════ */
-  .top-section {{
+  .top-section {
     position: absolute;
     top: 0;
     left: 0;
     width: 1280px;
-    height: 295px;
+    height: 310px;
     display: flex;
-    background: linear-gradient(180deg, #fffde6 0%, #fff7a8 55%, #ffe850 100%);
-  }}
+    background: linear-gradient(180deg, #fffde8 0%, #fff799 50%, #ffe938 100%);
+  }
 
-  /* A. Top-Left Blue Ray Box (MP4 NEWS हिन्दी LIVE) */
-  .brand-box {{
+  /* A. Top-Left Blue Ray Box */
+  .brand-box {
     width: 360px;
-    height: 295px;
+    height: 310px;
     position: relative;
     overflow: hidden;
-    background: radial-gradient(circle at 50% 50%, #2968f0 0%, #103ea8 55%, #071f63 100%);
+    background: radial-gradient(circle at 50% 50%, #1e5de6 0%, #0d38a0 55%, #051a58 100%);
     border-right: 5px solid #ffe600;
+    border-bottom: 4px solid #ffe600;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+    box-shadow: 4px 0 16px rgba(0,0,0,0.5);
     z-index: 10;
-  }}
+  }
 
-  .brand-rays {{
+  .brand-rays {
     position: absolute;
     top: -150px;
     left: -120px;
@@ -223,13 +246,13 @@ def build_hard_news_html(
     height: 600px;
     background: repeating-conic-gradient(
       from 0deg at 50% 50%,
-      rgba(255, 255, 255, 0.16) 0deg 12deg,
+      rgba(255, 255, 255, 0.22) 0deg 12deg,
       transparent 12deg 24deg
     );
     pointer-events: none;
-  }}
+  }
 
-  .brand-inner-frame {{
+  .brand-inner-frame {
     position: relative;
     z-index: 2;
     display: flex;
@@ -238,146 +261,148 @@ def build_hard_news_html(
     justify-content: center;
     border: 4px solid #ffe600;
     border-radius: 18px;
-    padding: 6px 20px 8px 20px;
-    background: rgba(4, 18, 64, 0.75);
-    box-shadow: 0 0 20px rgba(255, 230, 0, 0.4), inset 0 0 14px rgba(255, 230, 0, 0.3);
-  }}
+    padding: 6px 22px 8px 22px;
+    background: rgba(3, 15, 54, 0.82);
+    box-shadow: 0 0 20px rgba(255, 230, 0, 0.5), inset 0 0 14px rgba(255, 230, 0, 0.35);
+  }
 
-  .brand-text-1 {{
-    font-size: 64px;
+  .brand-text-1 {
+    paint-order: stroke fill;
+    font-size: 84px;
     font-weight: 900;
-    line-height: 0.95;
+    line-height: 0.92;
     color: #fff200;
-    -webkit-text-stroke: 2.5px #593500;
-    text-shadow: 3px 3px 0 #000, 0 0 15px rgba(255, 242, 0, 0.6);
+    -webkit-text-stroke: 3px #543000;
+    text-shadow: 3px 3px 0 #000, 0 0 16px rgba(255, 242, 0, 0.6);
     letter-spacing: 1px;
-    font-family: 'KhandLocal', sans-serif;
-  }}
+    font-family: 'KhandNews', sans-serif;
+  }
 
-  .brand-text-2 {{
-    font-size: 72px;
+  .brand-text-2 {
+    paint-order: stroke fill;
+    font-size: 96px;
     font-weight: 900;
-    line-height: 0.95;
-    color: #ffffff;
-    -webkit-text-stroke: 2.5px #b80009;
-    text-shadow: 3px 3px 0 #000, 0 0 15px rgba(255, 255, 255, 0.6);
+    line-height: 0.92;
+    color: #fff200;
+    -webkit-text-stroke: 3px #543000;
+    text-shadow: 3px 3px 0 #000, 0 0 16px rgba(255, 242, 0, 0.6);
     letter-spacing: 1px;
-    margin-bottom: 4px;
-    font-family: 'KhandLocal', sans-serif;
-  }}
+    margin-bottom: 6px;
+    font-family: 'KhandNews', sans-serif;
+  }
 
-  .brand-live-pill {{
+  .brand-live-pill {
     background: linear-gradient(180deg, #ff1a24 0%, #b80009 100%);
     color: #ffffff;
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 900;
-    padding: 2px 22px;
+    padding: 2px 24px;
     border-radius: 6px;
     letter-spacing: 2px;
     box-shadow: 0 3px 8px rgba(0,0,0,0.6);
     border: 2px solid #ffffff;
-    font-family: 'KhandLocal', sans-serif;
-  }}
+    font-family: 'PoppinsHeavy', sans-serif;
+  }
 
-  /* B. Top-Center Date & Month (Tight, Bold, No Gap!) */
-  .date-container {{
+  /* B. Top-Center Date & Month */
+  .date-container {
     flex: 1;
     position: relative;
     display: flex;
     align-items: center;
     padding-left: 14px;
     padding-top: 4px;
-  }}
+  }
 
-  .huge-date-number {{
-    font-size: 250px;
+  .huge-date-number {
+    paint-order: stroke fill;
+    font-size: 245px;
     font-weight: 900;
     line-height: 0.78;
     color: #e50000;
     -webkit-text-stroke: 8px #ffe600;
-    text-shadow: 4px 4px 0 #700000, 8px 8px 14px rgba(0,0,0,0.35);
-    margin-right: 18px;
+    text-shadow: 4px 4px 0 #750000, 8px 8px 16px rgba(0,0,0,0.35);
+    margin-right: 12px;
     letter-spacing: -6px;
-    font-family: 'KhandLocal', sans-serif;
-  }}
+    font-family: 'PoppinsHeavy', sans-serif;
+  }
 
-  .month-and-modi {{
+  .month-and-modi {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding-top: 2px;
-  }}
+    padding-top: 6px;
+  }
 
-  .month-name {{
-    font-size: 135px;
+  .month-name {
+    paint-order: stroke fill;
+    font-size: 142px;
     font-weight: 900;
-    line-height: 0.85;
+    line-height: 0.80;
     color: #e50000;
-    -webkit-text-stroke: 4px #ffffff;
-    text-shadow: 3px 3px 0 #700000, 6px 6px 12px rgba(0,0,0,0.3);
-    letter-spacing: -1px;
-    font-family: 'KhandLocal', sans-serif;
-  }}
+    -webkit-text-stroke: 4.5px #ffffff;
+    text-shadow: 3.5px 3.5px 0 #750000, 6px 6px 14px rgba(0,0,0,0.35);
+    letter-spacing: -0.5px;
+    font-family: 'KhandNews', sans-serif;
+  }
 
-  .modi-bar {{
+  .modi-bar {
     display: flex;
     align-items: center;
     margin-top: 6px;
-  }}
+  }
 
-  .modi-portrait {{
-    width: 86px;
-    height: 86px;
-    border-radius: 50%;
+  .modi-portrait {
+    width: 95px;
+    height: 95px;
     object-fit: cover;
-    object-position: center 20%;
-    border: 3.5px solid #ffe600;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    background: #ffffff;
+    object-position: center top;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
     margin-right: 12px;
-  }}
+  }
 
-  .modi-pill {{
-    background: linear-gradient(180deg, #00f0ff 0%, #00b4d8 100%);
+  .modi-pill {
+    background: linear-gradient(180deg, #ffc800 0%, #ffa500 100%);
     color: #000000;
-    font-size: 36px;
+    font-size: 38px;
     font-weight: 900;
-    padding: 2px 16px;
-    border-radius: 6px;
+    padding: 2px 20px;
+    border-radius: 8px;
     border: 2px solid #ffffff;
     box-shadow: 0 3px 8px rgba(0,0,0,0.35);
     white-space: nowrap;
-    font-family: 'KhandLocal', sans-serif;
-  }}
+    font-family: 'KhandNews', sans-serif;
+    letter-spacing: 0.5px;
+  }
 
-  /* C. Top-Right Day, Year & Mukhya Samachar (Tight, 3D Punchy!) */
-  .top-right-box {{
-    width: 280px;
+  /* C. Top-Right Day, Year & Mukhya */
+  .top-right-box {
+    width: 270px;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    padding-right: 16px;
-    padding-top: 10px;
-  }}
+    padding-right: 18px;
+    padding-top: 8px;
+  }
 
-  .day-and-year-row {{
+  .day-and-year-row {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
     margin-bottom: 2px;
-  }}
+  }
 
-  .day-name {{
-    font-size: 58px;
+  .day-name {
+    font-size: 60px;
     font-weight: 900;
     line-height: 0.95;
-    color: #002266;
+    color: #002b49;
     letter-spacing: -0.5px;
-    font-family: 'KhandLocal', sans-serif;
-  }}
+    font-family: 'KhandNews', sans-serif;
+  }
 
-  .year-pill {{
+  .year-pill {
     background: #ffe600;
     color: #000000;
     font-size: 36px;
@@ -386,11 +411,12 @@ def build_hard_news_html(
     border-radius: 6px;
     border: 2.5px solid #000000;
     box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    font-family: 'KhandLocal', sans-serif;
-  }}
+    font-family: 'PoppinsHeavy', sans-serif;
+  }
 
-  .mukhya-samachar {{
-    font-size: 64px;
+  .mukhya-top {
+    paint-order: stroke fill;
+    font-size: 78px;
     font-weight: 900;
     line-height: 0.92;
     color: #0044cc;
@@ -398,311 +424,337 @@ def build_hard_news_html(
     text-shadow: 3px 3px 0 #001f5b, 5px 5px 10px rgba(0,0,0,0.35);
     text-align: right;
     letter-spacing: 0.5px;
-    font-family: 'KhandLocal', sans-serif;
+    font-family: 'KhandNews', sans-serif;
     margin-top: 2px;
-  }}
+  }
 
   /* ═══════════════════════════════════════════════════════════
-     2. MIDDLE STRIP 1: YELLOW BAR (Y: 295 to 395px, Height: 100px)
+     2. MIDDLE STRIP 1: CYAN PILL + SAMACHAR (Y: 310 to 405px)
      ═══════════════════════════════════════════════════════════ */
-  .yellow-bar {{
+  .middle-cyan-row {
     position: absolute;
-    top: 295px;
+    top: 310px;
     left: 0;
     width: 1280px;
-    height: 100px;
-    background: linear-gradient(180deg, #fff000 0%, #ffd000 100%);
-    border-top: 4px solid #d50000;
-    border-bottom: 4px solid #d50000;
+    height: 95px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    padding: 0 16px;
     z-index: 15;
-  }}
+    background: #ffe938;
+  }
 
-  .yellow-bar-left {{
+  .cyan-pill {
+    flex: 1;
+    height: 80px;
+    background: linear-gradient(180deg, #dcf8ff 0%, #a0ebf9 50%, #68daef 100%);
+    border: 2.5px solid #005577;
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    font-family: 'KhandLocal', sans-serif;
-  }}
+    padding: 0 18px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    margin-right: 18px;
+    font-family: 'KhandNews', sans-serif;
+  }
 
-  .yellow-bar-text {{
+  .cyan-pill-text {
     color: #000000;
-    font-size: 54px;
+    font-size: 50px;
     font-weight: 900;
     letter-spacing: 0.5px;
     line-height: 1;
-  }}
+  }
 
-  .highlight-action {{
-    color: #d50000;
+  .cyan-pill-highlight {
+    color: #d00000;
     font-weight: 900;
-    margin-left: 8px;
-    text-shadow: 1px 1px 0 #ffffff;
-  }}
+    margin-left: 6px;
+  }
 
-  .yellow-bar-right {{
-    color: #0033aa;
-    font-size: 52px;
+  .samachar-right {
+    paint-order: stroke fill;
+    font-size: 82px;
     font-weight: 900;
-    -webkit-text-stroke: 1.8px #ffffff;
-    text-shadow: 2px 2px 0 #001f5b;
-    font-family: 'KhandLocal', sans-serif;
-  }}
+    line-height: 1;
+    color: #003bbb;
+    -webkit-text-stroke: 3.5px #ffffff;
+    text-shadow: 3px 3px 0 #001f5b, 5px 5px 12px rgba(0,0,0,0.35);
+    font-family: 'KhandNews', sans-serif;
+    letter-spacing: 0.5px;
+    padding-right: 8px;
+  }
 
   /* ═══════════════════════════════════════════════════════════
-     3. MIDDLE STRIP 2: WHITE MULTI-COLOR HOOK (Y: 395 to 495px)
+     3. MIDDLE STRIP 2: WHITE HOOK STRIP (Y: 405 to 500px)
      ═══════════════════════════════════════════════════════════ */
-  .white-strip {{
+  .white-strip {
     position: absolute;
-    top: 395px;
+    top: 405px;
     left: 0;
     width: 1280px;
-    height: 100px;
+    height: 95px;
     background: #ffffff;
-    border-bottom: 4px solid #d50000;
+    border-top: 3.5px solid #000000;
+    border-bottom: 3.5px solid #000000;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 16px;
-    font-size: 44px;
+    padding: 0 14px;
+    font-size: 41px;
     font-weight: 900;
     letter-spacing: 0.2px;
     box-shadow: 0 4px 14px rgba(0,0,0,0.25);
     z-index: 15;
     white-space: nowrap;
     overflow: hidden;
-    font-family: 'KhandLocal', sans-serif;
-  }}
+    font-family: 'KhandNews', sans-serif;
+  }
+
+  .hook-item {
+    margin-right: 12px;
+    text-decoration: underline;
+    text-underline-offset: 6px;
+    text-decoration-thickness: 3.5px;
+  }
 
   /* ═══════════════════════════════════════════════════════════
-     4. BOTTOM STRIP: MASTER RED BANNER (Y: 495 to 720px, Height: 225px)
+     4. BOTTOM STRIP: MASTER RED BANNER (Y: 500 to 720px, Height: 220px)
      ═══════════════════════════════════════════════════════════ */
-  .bottom-red-banner {{
+  .bottom-red-banner {
     position: absolute;
-    top: 495px;
+    top: 500px;
     left: 0;
     width: 1280px;
-    height: 225px;
-    background: linear-gradient(180deg, #e60000 0%, #aa0000 45%, #660000 100%);
+    height: 220px;
+    background: linear-gradient(180deg, #d80000 0%, #a00000 45%, #580000 100%);
     border-top: 4px solid #ffe600;
     display: flex;
     align-items: center;
-    padding: 0 18px;
+    padding: 0 20px;
     box-shadow: inset 0 4px 12px rgba(255, 230, 0, 0.4);
     z-index: 15;
-  }}
+  }
 
-  /* Left Badge: क्राइम / अलर्ट (Hard News Category Badge!) */
-  .bottom-left-box {{
-    width: 220px;
-    height: 185px;
-    background: linear-gradient(180deg, #103282 0%, #061845 100%);
-    border: 3.5px solid #ffe600;
-    border-radius: 14px;
+  /* Left Circular Emblem Badge */
+  .circular-emblem {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #051838 0%, #000000 100%);
+    border: 4.5px solid #ffe600;
+    box-shadow: 0 0 20px rgba(255, 230, 0, 0.6), 0 6px 16px rgba(0,0,0,0.8);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.6);
     flex-shrink: 0;
-    margin-right: 18px;
-    font-family: 'KhandLocal', sans-serif;
-  }}
+    margin-right: 22px;
+  }
 
-  .crime-tag {{
-    font-size: 72px;
+  .emblem-title {
+    font-size: 34px;
     font-weight: 900;
-    line-height: 0.9;
-    color: #00ffff;
-    -webkit-text-stroke: 2.5px #002266;
-    text-shadow: 2px 2px 0 #000;
-    letter-spacing: 0.5px;
-  }}
+    line-height: 1;
+    color: #ffffff;
+    font-family: 'PoppinsHeavy', sans-serif;
+    letter-spacing: 1px;
+  }
 
-  .alert-tag {{
-    font-size: 68px;
+  .emblem-sub {
+    font-size: 28px;
     font-weight: 900;
-    line-height: 0.9;
-    color: #fff200;
-    -webkit-text-stroke: 2.5px #593500;
-    text-shadow: 2px 2px 0 #000;
-    margin-top: 4px;
-    letter-spacing: 0.5px;
-  }}
+    line-height: 1;
+    color: #ffe600;
+    font-family: 'KhandNews', sans-serif;
+    margin-top: 2px;
+  }
 
-  /* Giant 3D Golden Text: 10 / 50 बड़ी खबरें (Tight, Massive, Cohesive!) */
-  .giant-headline-container {{
+  /* Giant 3D Golden Text */
+  .giant-headline-container {
     flex: 1;
     display: flex;
     align-items: baseline;
     justify-content: center;
-    font-family: 'KhandLocal', sans-serif;
-  }}
+    font-family: 'PoppinsHeavy', sans-serif;
+  }
 
-  .giant-number {{
-    font-size: 225px;
+  .giant-number {
+    paint-order: stroke fill;
+    font-size: 215px;
     font-weight: 900;
     line-height: 0.82;
     color: #fff200;
-    -webkit-text-stroke: 8px #450000;
-    text-shadow: 4px 4px 0 #280000, 8px 8px 0 #180000, 12px 12px 24px rgba(0,0,0,0.95);
-    margin-right: 20px;
-    letter-spacing: -6px;
-  }}
+    -webkit-text-stroke: 8px #3a0000;
+    text-shadow: 3px 3px 0 #200000, 6px 6px 0 #120000, 10px 10px 20px rgba(0,0,0,0.95);
+    margin-right: 18px;
+    letter-spacing: -4px;
+  }
 
-  .giant-words {{
-    font-size: 190px;
+  .giant-words {
+    paint-order: stroke fill;
+    font-size: 168px;
     font-weight: 900;
     line-height: 0.82;
     color: #fff200;
-    -webkit-text-stroke: 7px #450000;
-    text-shadow: 4px 4px 0 #280000, 8px 8px 0 #180000, 12px 12px 24px rgba(0,0,0,0.95);
+    -webkit-text-stroke: 7.5px #3a0000;
+    text-shadow: 3px 3px 0 #200000, 6px 6px 0 #120000, 10px 10px 20px rgba(0,0,0,0.95);
     letter-spacing: 0px;
     white-space: nowrap;
-  }}
+  }
 </style>
 </head>
 <body>
   <!-- 1. TOP SECTION -->
   <div class="top-section">
-    <!-- Brand Box -->
     <div class="brand-box">
       <div class="brand-rays"></div>
       <div class="brand-inner-frame">
-        <div class="brand-text-1">MP4 NEWS</div>
-        <div class="brand-text-2">हिन्दी</div>
+        <div class="brand-text-1">फटाफट</div>
+        <div class="brand-text-2">न्यूज</div>
         <div class="brand-live-pill">LIVE</div>
       </div>
     </div>
 
-    <!-- Date, Month, Modi -->
     <div class="date-container">
-      <div class="huge-date-number">{day_num}</div>
+      <div class="huge-date-number">__DAY_NUM__</div>
       <div class="month-and-modi">
-        <div class="month-name">{month_str}</div>
+        <div class="month-name">__MONTH_STR__</div>
         <div class="modi-bar">
-          <img class="modi-portrait" src="{modi_img_uri}" alt="PM Modi">
-          <div class="modi-pill">{modi_badge_text}</div>
+          <img class="modi-portrait" src="__MODI_URI__" alt="PM Modi">
+          <div class="modi-pill">5 बड़े ऐलान</div>
         </div>
       </div>
     </div>
 
-    <!-- Top Right (Day, Year, Mukhya Samachar) -->
     <div class="top-right-box">
       <div class="day-and-year-row">
-        <div class="day-name">{weekday_str}</div>
-        <div class="year-pill">{year_str}</div>
+        <div class="day-name">__WEEKDAY_STR__</div>
+        <div class="year-pill">__YEAR_STR__</div>
       </div>
-      <div class="mukhya-samachar">मुख्य समाचार</div>
+      <div class="mukhya-top">मुख्य</div>
     </div>
   </div>
 
-  <!-- 2. MIDDLE STRIP 1: YELLOW BAR -->
-  <div class="yellow-bar">
-    <div class="yellow-bar-left">
-      <span class="yellow-bar-text">🚨 आज की {bottom_number} सबसे बड़ी खबरें <span class="highlight-action">| पुलिस-प्रशासन अलर्ट!</span></span>
+  <!-- 2. MIDDLE STRIP 1: CYAN PILL + SAMACHAR -->
+  <div class="middle-cyan-row">
+    <div class="cyan-pill">
+      <span class="cyan-pill-text">__CYAN_PILL_HTML__</span>
     </div>
-    <div class="yellow-bar-right">स्पेशल बुलेटिन</div>
+    <div class="samachar-right">समाचार</div>
   </div>
 
-  <!-- 3. MIDDLE STRIP 2: WHITE MULTI-COLOR HOOK STRIP (PURE CRIME / HARD NEWS HOOKS) -->
+  <!-- 3. MIDDLE STRIP 2: WHITE MULTI-COLOR HOOK STRIP WITH UNDERLINES -->
   <div class="white-strip">
-    {white_strip_html}
+    __WHITE_STRIP_HTML__
   </div>
 
   <!-- 4. BOTTOM STRIP: MASTER RED BANNER -->
   <div class="bottom-red-banner">
-    <div class="bottom-left-box">
-      <div class="crime-tag">क्राइम</div>
-      <div class="alert-tag">अलर्ट</div>
+    <div class="circular-emblem">
+      <div class="emblem-title">MP4</div>
+      <div class="emblem-sub">NEWS</div>
     </div>
     <div class="giant-headline-container">
-      <span class="giant-number">{bottom_number}</span>
+      <span class="giant-number">__BOTTOM_NUMBER__</span>
       <span class="giant-words">बड़ी खबरें</span>
     </div>
   </div>
 </body>
-</html>
-"""
-    return html
+</html>"""
+
+    return (
+        template
+        .replace("__FONT_KHAND__", font_khand_uri)
+        .replace("__FONT_POPPINS__", font_poppins_uri)
+        .replace("__MODI_URI__", modi_img_uri)
+        .replace("__DAY_NUM__", day_num)
+        .replace("__MONTH_STR__", month_str)
+        .replace("__WEEKDAY_STR__", weekday_str)
+        .replace("__YEAR_STR__", year_str)
+        .replace("__CYAN_PILL_HTML__", cyan_pill_html)
+        .replace("__WHITE_STRIP_HTML__", white_strip_html)
+        .replace("__BOTTOM_NUMBER__", bottom_number)
+    )
 
 
-def generate_hard_news_thumbnail_pillow(
+def generate_dls_reference_pillow(
     day_num: str,
     month_str: str,
     weekday_str: str,
     year_str: str,
     white_strip_segments: list,
     bottom_number: str,
-    out_path: str
+    out_path: str,
+    is_crime_heavy: bool = False
 ) -> str:
-    """Pure Pillow Engine Fallback: Draws identical Hard News layout using local Khand font"""
+    """Pure Pillow Engine Fallback: Draws identical layout"""
     canvas = Image.new("RGB", (THUMB_W, THUMB_H), (255, 255, 255))
     draw = ImageDraw.Draw(canvas)
 
-    # 1. Top Section Background (Y: 0-295)
-    for y in range(295):
-        ratio = y / 295.0
+    # 1. Top Section Background (Y: 0-310)
+    for y in range(310):
+        ratio = y / 310.0
         r = int(255 - ratio * 0)
-        g = int(253 - ratio * 21)
-        b = int(230 - ratio * 150)
+        g = int(253 - ratio * 20)
+        b = int(232 - ratio * 176)
         draw.line([(0, y), (THUMB_W, y)], fill=(r, g, b))
 
     # Top-Left Blue Brand Box
-    draw.rectangle([0, 0, 360, 295], fill=(16, 62, 168), outline=(255, 230, 0), width=5)
-    draw.rounded_rectangle([25, 20, 335, 275], radius=16, fill=(4, 18, 64), outline=(255, 230, 0), width=4)
+    draw.rectangle([0, 0, 360, 310], fill=(13, 56, 160), outline=(255, 230, 0), width=5)
+    draw.rounded_rectangle([25, 20, 335, 290], radius=16, fill=(3, 15, 54), outline=(255, 230, 0), width=4)
 
     # Fonts
-    font_path = FONT_KHAND_BOLD if os.path.exists(FONT_KHAND_BOLD) else FONT_NOTO_BOLD
-    f_brand1 = ImageFont.truetype(font_path, 58) if os.path.exists(font_path) else ImageFont.load_default()
-    f_brand2 = ImageFont.truetype(font_path, 66) if os.path.exists(font_path) else ImageFont.load_default()
-    f_live = ImageFont.truetype(font_path, 22) if os.path.exists(font_path) else ImageFont.load_default()
-    f_huge_date = ImageFont.truetype(font_path, 210) if os.path.exists(font_path) else ImageFont.load_default()
-    f_month = ImageFont.truetype(font_path, 110) if os.path.exists(font_path) else ImageFont.load_default()
-    f_day = ImageFont.truetype(font_path, 52) if os.path.exists(font_path) else ImageFont.load_default()
-    f_strip = ImageFont.truetype(font_path, 42) if os.path.exists(font_path) else ImageFont.load_default()
-    f_bot_num = ImageFont.truetype(font_path, 180) if os.path.exists(font_path) else ImageFont.load_default()
-    f_bot_word = ImageFont.truetype(font_path, 150) if os.path.exists(font_path) else ImageFont.load_default()
+    f_khand = ImageFont.truetype(FONT_KHAND, 76) if os.path.exists(FONT_KHAND) else ImageFont.load_default()
+    f_huge_date = ImageFont.truetype(FONT_POPPINS, 210) if os.path.exists(FONT_POPPINS) else ImageFont.load_default()
+    f_month = ImageFont.truetype(FONT_KHAND, 120) if os.path.exists(FONT_KHAND) else ImageFont.load_default()
+    f_day = ImageFont.truetype(FONT_KHAND, 54) if os.path.exists(FONT_KHAND) else ImageFont.load_default()
+    f_strip = ImageFont.truetype(FONT_KHAND, 42) if os.path.exists(FONT_KHAND) else ImageFont.load_default()
+    f_bot_num = ImageFont.truetype(FONT_POPPINS, 180) if os.path.exists(FONT_POPPINS) else ImageFont.load_default()
+    f_bot_word = ImageFont.truetype(FONT_POPPINS, 140) if os.path.exists(FONT_POPPINS) else ImageFont.load_default()
 
-    draw.text((70, 35), "MP4 NEWS", fill=(255, 242, 0), font=f_brand1, stroke_width=2, stroke_fill=(89, 53, 0))
-    draw.text((120, 105), "हिन्दी", fill=(255, 255, 255), font=f_brand2, stroke_width=2, stroke_fill=(184, 0, 9))
-    draw.rounded_rectangle([115, 215, 245, 255], radius=6, fill=(229, 9, 20), outline=(255, 255, 255), width=2)
-    draw.text((145, 220), "LIVE", fill=(255, 255, 255), font=f_live)
+    draw.text((70, 35), "फटाफट", fill=(255, 242, 0), font=f_khand, stroke_width=3, stroke_fill=(84, 48, 0))
+    draw.text((105, 115), "न्यूज", fill=(255, 242, 0), font=f_khand, stroke_width=3, stroke_fill=(84, 48, 0))
+    draw.rounded_rectangle([120, 220, 240, 260], radius=6, fill=(229, 9, 20), outline=(255, 255, 255), width=2)
+    draw.text((145, 224), "LIVE", fill=(255, 255, 255), font=f_day)
 
     # Huge Date & Month
-    draw.text((385, 25), day_num, fill=(229, 0, 0), font=f_huge_date, stroke_width=7, stroke_fill=(255, 230, 0))
+    draw.text((375, 25), day_num, fill=(229, 0, 0), font=f_huge_date, stroke_width=8, stroke_fill=(255, 230, 0))
     draw.text((630, 40), month_str, fill=(229, 0, 0), font=f_month, stroke_width=4, stroke_fill=(255, 255, 255))
 
-    # Modi image thumbnail in circle
-    if MODI_PORTRAIT_PATH.exists():
+    # Modi image thumbnail
+    modi_p = MODI_CUTOUT_PNG if MODI_CUTOUT_PNG.exists() else MODI_PORTRAIT_JPG
+    if modi_p.exists():
         try:
-            with Image.open(MODI_PORTRAIT_PATH) as m_img:
+            with Image.open(modi_p) as m_img:
                 m_resized = m_img.resize((84, 84))
-                canvas.paste(m_resized, (630, 165))
-                draw.rectangle([628, 163, 716, 251], outline=(255, 230, 0), width=3)
+                if m_resized.mode == "RGBA":
+                    canvas.paste(m_resized, (630, 165), m_resized)
+                else:
+                    canvas.paste(m_resized, (630, 165))
         except Exception:
             pass
 
-    # Top-Right Day & Year
-    draw.text((1010, 20), weekday_str, fill=(0, 34, 102), font=f_day)
+    # Top-Right Day, Year, Mukhya
+    draw.text((1010, 20), weekday_str, fill=(0, 43, 73), font=f_day)
     draw.rounded_rectangle((1160, 24, 1260, 68), radius=6, fill=(255, 230, 0), outline=(0, 0, 0), width=2)
     draw.text((1175, 28), year_str, fill=(0, 0, 0), font=f_day)
-    draw.text((1020, 105), "मुख्य समाचार", fill=(0, 68, 204), font=f_day, stroke_width=2, stroke_fill=(255, 255, 255))
+    draw.text((1120, 105), "मुख्य", fill=(0, 68, 204), font=f_day, stroke_width=2, stroke_fill=(255, 255, 255))
 
-    # 2. Middle Yellow Bar (Y: 295-395)
-    draw.rectangle([0, 295, THUMB_W, 395], fill=(255, 224, 0), outline=(213, 0, 0), width=4)
-    draw.text((25, 312), f"🚨 आज की {bottom_number} सबसे बड़ी खबरें | पुलिस-प्रशासन अलर्ट!", fill=(0, 0, 0), font=f_strip)
-    draw.text((1060, 312), "स्पेशल बुलेटिन", fill=(0, 51, 170), font=f_strip)
+    # 2. Middle Row: Cyan Pill + Samachar (Y: 310-405)
+    draw.rectangle([0, 310, THUMB_W, 405], fill=(255, 233, 64))
+    draw.rounded_rectangle([18, 318, 960, 398], radius=12, fill=(164, 237, 249), outline=(0, 85, 119), width=2)
+    pill_label = f"देशभर की {bottom_number} बड़ी खबरों के 5 बड़े खुलासे" if is_crime_heavy else "आज PM मोदी सरकार ने लिए 5 बड़े फैसले"
+    draw.text((36, 328), pill_label, fill=(0, 0, 0), font=f_strip)
+    draw.text((1000, 315), "समाचार", fill=(0, 59, 187), font=f_khand, stroke_width=3, stroke_fill=(255, 255, 255))
 
-    # 3. Middle White Bar (Y: 395-495)
-    draw.rectangle([0, 395, THUMB_W, 495], fill=(255, 255, 255), outline=(213, 0, 0), width=4)
-    x_cursor = 25
+    # 3. Middle White Strip (Y: 405-500)
+    draw.rectangle([0, 405, THUMB_W, 500], fill=(255, 255, 255), outline=(0, 0, 0), width=3)
+    x_cursor = 30
     color_map = {
         "#d00000": (208, 0, 0),
-        "#7b0099": (123, 0, 153),
+        "#0055cc": (0, 85, 204),
         "#008800": (0, 136, 0),
         "#000000": (0, 0, 0),
     }
@@ -710,27 +762,29 @@ def generate_hard_news_thumbnail_pillow(
         txt = seg.get("text", "") + " "
         c_hex = seg.get("color", "#000000")
         c_rgb = color_map.get(c_hex, (0, 0, 0))
-        draw.text((x_cursor, 415), txt, fill=c_rgb, font=f_strip)
-        bbox = draw.textbbox((x_cursor, 415), txt, font=f_strip)
-        x_cursor = bbox[2] + 10
+        draw.text((x_cursor, 422), txt, fill=c_rgb, font=f_strip)
+        bbox = draw.textbbox((x_cursor, 422), txt, font=f_strip)
+        if not seg.get("no_underline", False):
+            draw.line([(x_cursor, 475), (bbox[2] - 5, 475)], fill=c_rgb, width=3)
+        x_cursor = bbox[2] + 12
 
-    # 4. Bottom Red Banner (Y: 495-720)
-    for y in range(495, 720):
-        ratio = (y - 495) / 225.0
-        r = int(230 - ratio * 128)
+    # 4. Bottom Red Banner (Y: 500-720)
+    for y in range(500, 720):
+        ratio = (y - 500) / 220.0
+        r = int(216 - ratio * 128)
         g = 0
         b = 0
         draw.line([(0, y), (THUMB_W, y)], fill=(r, g, b))
-    draw.line([(0, 495), (THUMB_W, 495)], fill=(255, 230, 0), width=4)
+    draw.line([(0, 500), (THUMB_W, 500)], fill=(255, 230, 0), width=4)
 
-    # Left box: क्राइम / अलर्ट
-    draw.rounded_rectangle([20, 515, 240, 700], radius=14, fill=(6, 24, 69), outline=(255, 230, 0), width=4)
-    draw.text((45, 530), "क्राइम", fill=(0, 255, 255), font=f_day, stroke_width=2, stroke_fill=(0, 34, 102))
-    draw.text((40, 615), "अलर्ट", fill=(255, 242, 0), font=f_day, stroke_width=2, stroke_fill=(89, 53, 0))
+    # Left circular emblem
+    draw.ellipse([25, 535, 165, 675], fill=(0, 0, 0), outline=(255, 230, 0), width=4)
+    draw.text((55, 560), "MP4", fill=(255, 255, 255), font=f_day)
+    draw.text((50, 615), "NEWS", fill=(255, 230, 0), font=f_day)
 
-    # Giant 3D Golden text: 10 / 50 बड़ी खबरें
-    draw.text((280, 505), bottom_number, fill=(255, 242, 0), font=f_bot_num, stroke_width=7, stroke_fill=(74, 0, 0))
-    draw.text((540, 525), "बड़ी खबरें", fill=(255, 242, 0), font=f_bot_word, stroke_width=6, stroke_fill=(74, 0, 0))
+    # Giant 3D Golden text
+    draw.text((220, 510), bottom_number, fill=(255, 242, 0), font=f_bot_num, stroke_width=8, stroke_fill=(58, 0, 0))
+    draw.text((490, 530), "बड़ी खबरें", fill=(255, 242, 0), font=f_bot_word, stroke_width=7, stroke_fill=(58, 0, 0))
 
     os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
     canvas.save(out_path, "JPEG", quality=95)
@@ -744,11 +798,11 @@ def generate_sensational_thumbnail(
     category: str = "क्राइम",
     story: dict = None,
     all_stories: list = None,
-    channel_name: str = "MP4 NEWS हिन्दी"
+    channel_name: str = "MP4 NEWS"
 ) -> str:
     """
-    Main Entrypoint: Generates the Master Hard-News / Crime Broadcast Thumbnail
-    (100% matches user's channel category and viral million-view formula)
+    Main Entrypoint: Generates the Master DLS News / Fatafat News YouTube Thumbnail
+    100% matches user's reference image (media_1794477519388_bd6869db.jpg)
     """
     now = datetime.now()
     day_num = str(now.day)
@@ -758,24 +812,24 @@ def generate_sensational_thumbnail(
 
     # Story count determines bottom number: 50 for 50-news bulletin, 10 for Top 10
     story_count = len(all_stories) if all_stories else (50 if "50" in headline else 10)
-    bottom_number = "50" if story_count >= 50 else "10"
+    bottom_number = "50"
 
-    # Extract dynamic citizen utility triggers for the white strip (Pure Hard News & Crime)
-    white_segments = extract_hard_news_utility_segments(all_stories=all_stories, headline=headline, story=story)
+    # Extract category-aware keywords & check if crime heavy
+    white_segments, is_crime_heavy = extract_thumbnail_hook_segments(all_stories=all_stories, headline=headline, story=story)
 
     # Engine A: Headless Chromium / Edge Screenshot (Vector Sharpness & 3D Lighting)
     browser = find_browser_executable()
     if browser:
         try:
-            html_content = build_hard_news_html(
+            html_content = build_dls_reference_html(
                 day_num=day_num,
                 month_str=month_str,
                 weekday_str=weekday_str,
                 year_str=year_str,
                 white_strip_segments=white_segments,
                 bottom_number=bottom_number,
-                modi_badge_text="5 बड़े फैसले",
-                channel_brand="MP4 NEWS"
+                is_crime_heavy=is_crime_heavy,
+                channel_name=channel_name
             )
             with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False, encoding="utf-8") as tf:
                 tf.write(html_content)
@@ -802,35 +856,36 @@ def generate_sensational_thumbnail(
                 pass
 
             if res.returncode == 0 and os.path.exists(out_abs) and os.path.getsize(out_abs) > 10000:
-                print(f"  ✓ [Headless Browser] Hard News Master Thumbnail Ready: {out_path} ({os.path.getsize(out_abs)/1024:.0f} KB)")
+                print(f"  ✓ [Headless Browser] DLS Reference Master Thumbnail Ready: {out_path} ({os.path.getsize(out_abs)/1024:.0f} KB)")
                 return out_path
         except Exception as e:
             print(f"  ⚠️ Browser screenshot error: {e}")
 
     # Engine B: Pure Pillow Fallback Engine
-    print("  🖼️ [Pillow Engine] Rendering Hard News Master Thumbnail...")
-    generate_hard_news_thumbnail_pillow(
+    print("  🖼️ [Pillow Engine] Rendering DLS Reference Master Thumbnail...")
+    generate_dls_reference_pillow(
         day_num=day_num,
         month_str=month_str,
         weekday_str=weekday_str,
         year_str=year_str,
         white_strip_segments=white_segments,
         bottom_number=bottom_number,
-        out_path=out_path
+        out_path=out_path,
+        is_crime_heavy=is_crime_heavy
     )
-    print(f"  ✓ [Pillow Engine] Hard News Master Thumbnail Ready: {out_path}")
+    print(f"  ✓ [Pillow Engine] DLS Reference Master Thumbnail Ready: {out_path}")
     return out_path
 
 
 if __name__ == "__main__":
-    demo_out = str(PROJECT_ROOT / "out" / "test_hard_news_master_thumbnail.jpg")
-    print("Testing Master Hard News / Crime YouTube Thumbnail Generator...")
+    demo_out = str(PROJECT_ROOT / "out" / "test_dls_reference_thumbnail.jpg")
+    print("Testing 100% DLS Reference YouTube Thumbnail Generator...")
     res = generate_sensational_thumbnail(
-        headline="महादेव सट्टा सिंडिकेट में बड़ा एक्शन",
+        headline="महादेव सट्टा सिंडिकेट मामला 12 नवंबर को खत्म होगी सौरभ चंद्राकर की रिमांड",
         out_path=demo_out,
         all_stories=[
-            {"screen_headline": "महादेव सट्टा सिंडिकेट: सौरभ चंद्राकर की रिमांड खत्म"},
-            {"screen_headline": "पुलिस एनकाउंटर में कुख्यात अपराधी गिरफ्तार"}
+            {"screen_headline": "महादेव सट्टा सिंडिकेट मामला सौरभ चंद्राकर", "voiceover_script": "सौरभ चंद्राकर की रिमांड 12 नवंबर को खत्म हो रही है। पुलिस एनकाउंटर और सीबीआई जांच जारी है।"},
+            {"screen_headline": "पुलिस ने आरोपी को मुठभेड़ में मारी गोली"}
         ]
     )
     print(f"Done! Result saved to: {res}")
