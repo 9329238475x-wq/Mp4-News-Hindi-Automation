@@ -128,11 +128,12 @@ for attempt in range(1, 4):
         buf = io.StringIO()
         try:
             with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
-                files, _ = api.kernels_output(kernel_id, path=str(out_dir), force=True, quiet=True)
+                res = api.kernels_output(kernel_id, path=str(out_dir), force=True, quiet=True)
+                files = res.get("files", []) if isinstance(res, dict) else (res if isinstance(res, (list, tuple)) else [])
         finally:
             builtins.open = _orig_open
 
-        print(f"✓ Downloaded {len(files) if files else 0} output files to {out_dir}", flush=True)
+        print(f"✓ Downloaded output files to {out_dir}", flush=True)
         break
     except Exception as e:
         print(f"Notice during download (attempt {attempt}/3): {e}", flush=True)
