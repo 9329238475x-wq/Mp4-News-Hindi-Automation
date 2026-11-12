@@ -26,6 +26,31 @@ load_dotenv()
 
 from story_metadata_helper import save_story_folder_metadata
 from text_repair_helper import repair_hindi_tts_text, sanitize_headline_safety
+
+def ensure_card_headline_entity_highlight(lines: list) -> list:
+    """
+    Ensures that Line 3 (index 2) of the 4-line broadcast card has **entity** marked
+    for rendering in the iconic broadcast yellow highlight box.
+    """
+    if len(lines) < 3:
+        return lines
+    line3 = lines[2]
+    if "**" in line3:
+        return lines
+
+    postpositions = [' की ', ' ने ', ' पर ', ' को ', ' से ', ' का ', ' के ', ' द्वारा ']
+    for pp in postpositions:
+        if pp in line3:
+            parts = line3.split(pp, 1)
+            entity_words = parts[0].strip().split()
+            if 1 <= len(entity_words) <= 4:
+                lines[2] = f"**{parts[0].strip()}**{pp}{parts[1].strip()}"
+                return lines
+    words = line3.strip().split()
+    if len(words) >= 2:
+        lines[2] = f"**{words[0]} {words[1]}** " + " ".join(words[2:])
+    return lines
+
 from groq_engine import GroqEngine
 from prompts import (
     STAGE1_SCRIPT_SYSTEM_PROMPT,
@@ -208,10 +233,11 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
         for bp in bulletin_points[:3]:
             raw_headlines.append(bp)
 
-    cleaned_headlines = [sanitize_headline_safety(h).replace("**", "").replace("*", "") for h in raw_headlines if h]
+    # Sanitize headlines while preserving ** markers for frontend yellow highlight boxes
+    cleaned_headlines = [sanitize_headline_safety(h) for h in raw_headlines if h]
     if len(cleaned_headlines) < 3:
         cleaned_headlines.append(screen_hl)
-    cleaned_headlines = [sanitize_headline_safety(h) for h in cleaned_headlines]
+    cleaned_headlines = ensure_card_headline_entity_highlight(cleaned_headlines)
 
     print(f"   ✅ [स्टेज 2 पूर्ण] {len(cleaned_headlines)} स्क्रीन हेडलाइंस तैयार!", flush=True)
     for h_idx, h in enumerate(cleaned_headlines, 1):
