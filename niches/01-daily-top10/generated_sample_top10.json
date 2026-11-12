@@ -26,7 +26,7 @@
           {
             "path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
             "is_scraped": true,
-            "credit_source": "गूगल न्यूज़ भारत"
+            "credit_source": "ईटीवी भारत"
           },
           {
             "path": "out/story_01/news real image/context_img_1_01_01.jpg",
@@ -48,7 +48,7 @@
         ],
         "local_visual_path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
         "is_scraped_news": true,
-        "credit_source": "गूगल न्यूज़ भारत"
+        "credit_source": "ईटीवी भारत"
       },
       {
         "chunk_index": 2,
@@ -65,7 +65,7 @@
           {
             "path": "out/story_01/news real image/scraped_news_img_1_02.jpg",
             "is_scraped": true,
-            "credit_source": "गूगल न्यूज़ भारत"
+            "credit_source": "ईटीवी भारत"
           },
           {
             "path": "out/story_01/news real image/context_img_1_02_01.jpg",
@@ -87,7 +87,7 @@
         ],
         "local_visual_path": "out/story_01/news real image/scraped_news_img_1_02.jpg",
         "is_scraped_news": true,
-        "credit_source": "गूगल न्यूज़ भारत"
+        "credit_source": "ईटीवी भारत"
       },
       {
         "chunk_index": 3,
@@ -102,11 +102,6 @@
         "meme_keyword_en": null,
         "visual_images": [
           {
-            "path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
-            "is_scraped": true,
-            "credit_source": "गूगल न्यूज़ भारत"
-          },
-          {
             "path": "out/story_01/news real image/context_img_1_03_01.jpg",
             "is_scraped": false,
             "credit_source": null,
@@ -117,16 +112,22 @@
             "is_scraped": false,
             "credit_source": null,
             "keyword": "Tamil Nadu police investigation"
+          },
+          {
+            "path": "out/story_01/news real image/context_img_1_03_03.jpg",
+            "is_scraped": false,
+            "credit_source": null,
+            "keyword": "Online fund transfer screenshot"
           }
         ],
         "local_visual_paths": [
-          "out/story_01/news real image/scraped_news_img_1_01.jpg",
           "out/story_01/news real image/context_img_1_03_01.jpg",
-          "out/story_01/news real image/context_img_1_03_02.jpg"
+          "out/story_01/news real image/context_img_1_03_02.jpg",
+          "out/story_01/news real image/context_img_1_03_03.jpg"
         ],
-        "local_visual_path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
-        "is_scraped_news": true,
-        "credit_source": "गूगल न्यूज़ भारत"
+        "local_visual_path": "out/story_01/news real image/context_img_1_03_01.jpg",
+        "is_scraped_news": false,
+        "credit_source": null
       },
       {
         "chunk_index": 4,
@@ -141,11 +142,6 @@
         "meme_keyword_en": null,
         "visual_images": [
           {
-            "path": "out/story_01/news real image/scraped_news_img_1_02.jpg",
-            "is_scraped": true,
-            "credit_source": "गूगल न्यूज़ भारत"
-          },
-          {
             "path": "out/story_01/news real image/context_img_1_04_01.jpg",
             "is_scraped": false,
             "credit_source": null,
@@ -156,16 +152,22 @@
             "is_scraped": false,
             "credit_source": null,
             "keyword": "IP address tracking screen"
+          },
+          {
+            "path": "out/story_01/news real image/context_img_1_04_03.jpg",
+            "is_scraped": false,
+            "credit_source": null,
+            "keyword": "Email header analysis"
           }
         ],
         "local_visual_paths": [
-          "out/story_01/news real image/scraped_news_img_1_02.jpg",
           "out/story_01/news real image/context_img_1_04_01.jpg",
-          "out/story_01/news real image/context_img_1_04_02.jpg"
+          "out/story_01/news real image/context_img_1_04_02.jpg",
+          "out/story_01/news real image/context_img_1_04_03.jpg"
         ],
-        "local_visual_path": "out/story_01/news real image/scraped_news_img_1_02.jpg",
-        "is_scraped_news": true,
-        "credit_source": "गूगल न्यूज़ भारत"
+        "local_visual_path": "out/story_01/news real image/context_img_1_04_01.jpg",
+        "is_scraped_news": false,
+        "credit_source": null
       },
       {
         "chunk_index": 5,
@@ -180,11 +182,6 @@
         "meme_keyword_en": null,
         "visual_images": [
           {
-            "path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
-            "is_scraped": true,
-            "credit_source": "गूगल न्यूज़ भारत"
-          },
-          {
             "path": "out/story_01/news real image/context_img_1_05_01.jpg",
             "is_scraped": false,
             "credit_source": null,
@@ -195,16 +192,22 @@
             "is_scraped": false,
             "credit_source": null,
             "keyword": "Two factor authentication interface"
+          },
+          {
+            "path": "out/story_01/news real image/context_img_1_05_03.jpg",
+            "is_scraped": false,
+            "credit_source": null,
+            "keyword": "Rural Development IT office"
           }
         ],
         "local_visual_paths": [
-          "out/story_01/news real image/scraped_news_img_1_01.jpg",
           "out/story_01/news real image/context_img_1_05_01.jpg",
-          "out/story_01/news real image/context_img_1_05_02.jpg"
+          "out/story_01/news real image/context_img_1_05_02.jpg",
+          "out/story_01/news real image/context_img_1_05_03.jpg"
         ],
-        "local_visual_path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
-        "is_scraped_news": true,
-        "credit_source": "गूगल न्यूज़ भारत"
+        "local_visual_path": "out/story_01/news real image/context_img_1_05_01.jpg",
+        "is_scraped_news": false,
+        "credit_source": null
       }
     ],
     "bulletin_points": [
@@ -288,13 +291,20 @@
     "videos": [],
     "all_real_images": [
       "out/story_01/news real image/scraped_news_img_1_01.jpg",
-      "out/story_01/news real image/scraped_news_img_1_02.jpg",
       "out/story_01/news real image/context_img_1_01_01.jpg",
       "out/story_01/news real image/context_img_1_01_02.jpg",
-      "out/story_01/news real image/context_img_1_01_03.jpg",
+      "out/story_01/news real image/scraped_news_img_1_02.jpg",
       "out/story_01/news real image/context_img_1_02_01.jpg",
       "out/story_01/news real image/context_img_1_02_02.jpg",
-      "out/story_01/news real image/context_img_1_02_03.jpg"
+      "out/story_01/news real image/context_img_1_03_01.jpg",
+      "out/story_01/news real image/context_img_1_03_02.jpg",
+      "out/story_01/news real image/context_img_1_03_03.jpg",
+      "out/story_01/news real image/context_img_1_04_01.jpg",
+      "out/story_01/news real image/context_img_1_04_02.jpg",
+      "out/story_01/news real image/context_img_1_04_03.jpg",
+      "out/story_01/news real image/context_img_1_05_01.jpg",
+      "out/story_01/news real image/context_img_1_05_02.jpg",
+      "out/story_01/news real image/context_img_1_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / गूगल न्यूज़ भारत क्राइम",
     "thumbnail_path": "out/story_01/thumbnail_01.jpg"

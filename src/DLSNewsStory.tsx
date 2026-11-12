@@ -217,9 +217,9 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
       // Chunks >= 90 frames (~3s) display 2 images (~1.5s to 2s each)
       const maxPossibleSlots = chunkSlotImages.length;
       const numSlots =
-        chunkDur >= 160 && maxPossibleSlots >= 3
+        chunkDur >= 105 && maxPossibleSlots >= 3
           ? 3
-          : chunkDur >= 90 && maxPossibleSlots >= 2
+          : chunkDur >= 60 && maxPossibleSlots >= 2
           ? 2
           : 1;
 

@@ -310,6 +310,8 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
         "story_number": s_num,
         "category": stage1_data["category"],
         "is_suicide_story": stage1_data.get("is_suicide_story", False),
+        "source": story.get("source", "न्यूज़ डेस्क"),
+        "real_publisher": story.get("real_publisher", story.get("source", "न्यूज़ डेस्क")),
         "screen_headline": primary_headline,
         "screen_headlines": cleaned_headlines,
         "chunks": cleaned_chunks,

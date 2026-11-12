@@ -316,121 +316,148 @@ def get_wikimedia_portrait(entity_name: str) -> str:
 
 
 
-PEXELS_API_KEY = (
-    os.environ.get("PEXELS_API_KEY")
-    or "BywMJlFjbshUGVoPCpKVDiTnItEnzefzmM4lp8PEG4NqE4RV5BGQ3Wo1"
-)
-PIXABAY_API_KEY = (
-    os.environ.get("PIXABAY_API_KEY")
-    or "58157735-61a43fc3f8d00358e748b5b15"
-)
+try:
+    from ddgs import DDGS
+except ImportError:
+    from duckduckgo_search import DDGS
+
+PUBLISHER_DOMAINS = {
+    "etvbharat": "ईटीवी भारत",
+    "lokmat": "लोकमत न्यूज़",
+    "jagran": "दैनिक जागरण",
+    "bhaskar": "दैनिक भास्कर",
+    "abplive": "एबीपी न्यूज़",
+    "zeenews": "ज़ी न्यूज़",
+    "ndtv": "NDTV",
+    "aajtak": "आज तक",
+    "indiatoday": "इंडिया टुडे",
+    "thehindu": "द हिंदू",
+    "indianexpress": "द इंडियन एक्सप्रेस",
+    "navbharattimes": "नवभारत टाइम्स",
+    "livehindustan": "लाइव हिन्दुस्तान",
+    "hindustan": "लाइव हिन्दुस्तान",
+    "news18": "News18 हिंदी",
+    "oneindia": "वनइंडिया",
+    "patrika": "राजस्थान पत्रिका",
+    "jansatta": "जनसत्ता",
+}
 
 
-def map_to_broadcast_stock_query(query: str, sentence: str = "") -> str:
+def resolve_publisher_name(url: str, default_source: str = "") -> str:
+    """लेख के URL डोमेन से असली पब्लिशर/न्यूज़ चैनल का नाम निकालना (गूगल न्यूज़ 100% निषिद्ध)"""
+    if url:
+        try:
+            from urllib.parse import urlparse
+            netloc = urlparse(url).netloc.lower()
+            for dom, name in PUBLISHER_DOMAINS.items():
+                if dom in netloc:
+                    return name
+        except Exception:
+            pass
+    if default_source:
+        clean_s = default_source.strip()
+        if "गूगल" not in clean_s and "google" not in clean_s.lower():
+            for bad_word in ["क्राइम", "अपराध", "सुरक्षा", "भ्रष्टाचार", "राजनीति", "राष्ट्रीय", "अनोखा", "ब्यूरो", "डेस्क"]:
+                clean_s = clean_s.replace(bad_word, "").strip()
+            if len(clean_s) > 1:
+                return clean_s
+    return "प्रेस कवरेज"
+
+
+def download_best_single_image(keyword: str, save_path: str) -> bool:
     """
-    कंटेक्स्ट या चंक टेक्स्ट से Pexels/Pixabay के लिए सटीक 16:9 ब्रॉडकास्ट स्टॉक कीवर्ड बनाना
+    1 कीवर्ड से सिर्फ 1 सबसे सटीक, HD और 16:9 भारतीय न्यूज़ फोटो डाउनलोड करने का फंक्शन
+    (DDGS Indian Region: in-en, Wide Landscape, Real Photo, Large)
+    - टॉप 4 लिंक्स चेक करता है।
+    - 1 वैध HD 16:9 तस्वीर सेव होते ही तुरंत 'break' करता है (Exact 1 Keyword = 1 Image).
     """
-    text = f"{query} {sentence}".lower()
+    if not keyword or len(keyword.strip()) < 3:
+        return False
 
-    if any(k in text for k in ["train", "railway", "track", "station", "पटरी", "ट्रेन", "रेलवे"]):
-        return "train tracks railway"
-    if any(k in text for k in ["chowki", "thana", "outpost", "investigation", "police station", "चौकी", "थाना", "जांच"]):
-        return "police investigation station"
-    if any(k in text for k in ["police", "cop", "dcp", "acp", "inspector", "पुलिस"]):
-        return "police car siren emergency"
-    if any(k in text for k in ["crime", "murder", "threat", "encounter", "shoot", "हत्या", "धमकी", "अपराध"]):
-        return "crime scene investigation"
-    if any(k in text for k in ["hospital", "ambulance", "doctor", "injured", "dead", "death", "अस्पताल", "घायल", "मौत"]):
-        return "ambulance emergency hospital"
-    if any(k in text for k in ["court", "judge", "lawyer", "case", "कोर्ट", "अदालत", "फैसला", "वकील"]):
-        return "courtroom gavel justice"
-    if any(k in text for k in ["fire", "blast", "explosion", "bomb", "आग", "धमाका", "विस्फोट"]):
-        return "firefighter emergency rescue"
-    if any(k in text for k in ["bribe", "money", "corruption", "cash", "रिश्वत", "घूस", "पैसे"]):
-        return "money currency handcuffs"
-    if any(k in text for k in ["protest", "strike", "rally", "crowd", "प्रदर्शन", "हंगामा"]):
-        return "crowd protest demonstration"
+    clean_kw = sanitize_keyword_master(keyword)
+    if not clean_kw:
+        clean_kw = keyword.strip()
 
-    clean = re.sub(r'[^a-zA-Z\s]', ' ', query).strip()
-    words = [w for w in clean.split() if len(w) > 2 and w.lower() not in ["lucknow", "police", "press", "conference", "para", "bhuvar", "thakurganj", "spain", "oviedo"]]
-    if words:
-        return " ".join(words[:3])
-    return "breaking news broadcast"
+    c_low = clean_kw.lower()
+    indian_locs = ["india", "bihar", "patna", "up", "uttar pradesh", "lucknow", "delhi", "mumbai", "madhya pradesh", "bhopal", "rajasthan", "jaipur", "bjp", "congress", "rjd", "sp"]
+    if not any(loc in c_low for loc in indian_locs):
+        search_query = f"{clean_kw} India"
+    else:
+        search_query = clean_kw
 
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+        "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+    }
 
-def search_pexels_stock_images(query: str, max_results: int = 4) -> list[str]:
-    """
-    Pexels API - 100% Widescreen Landscape (16:9) Professional Stock Photos
-    """
-    if not PEXELS_API_KEY:
-        return []
-    urls = []
     try:
-        headers = {"Authorization": PEXELS_API_KEY}
-        params = {"query": query, "orientation": "landscape", "per_page": max_results}
-        r = requests.get("https://api.pexels.com/v1/search", headers=headers, params=params, timeout=10)
-        if r.status_code == 200:
-            for p in r.json().get("photos", []):
-                w, h = p.get("width", 0), p.get("height", 0)
-                if w > 0 and h > 0 and (w / h) >= 1.25:
-                    src = p.get("src", {})
-                    u = src.get("large2x") or src.get("large") or src.get("original")
-                    if u and u not in urls:
-                        urls.append(u)
+        with DDGS() as ddgs:
+            results = ddgs.images(
+                search_query,
+                region="in-en",
+                safesearch="moderate",
+                size="Large",
+                type_image="photo",
+                layout="Wide",
+                max_results=4
+            )
+            for item in results:
+                img_url = item.get("image")
+                if not img_url or not img_url.startswith("http"):
+                    continue
+                u_low = img_url.lower()
+                if any(bad in u_low for bad in COMMERCE_AND_SPAM_BLOCKLIST):
+                    continue
+
+                try:
+                    domain = img_url.split('/')[2] if len(img_url.split('/')) > 2 else ""
+                    req_headers = dict(headers)
+                    if domain:
+                        req_headers["Referer"] = f"https://{domain}/"
+
+                    res = requests.get(img_url, headers=req_headers, timeout=8)
+                    if res.status_code == 200 and len(res.content) > 6000:
+                        img = Image.open(BytesIO(res.content))
+                        w, h = img.size
+                        if w >= 450 and h >= 260:
+                            aspect = w / h
+                            if 1.20 <= aspect <= 2.30:
+                                if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+                                    bg = Image.new("RGB", img.size, (255, 255, 255))
+                                    rgba = img.convert("RGBA")
+                                    bg.paste(rgba, mask=rgba.split()[3])
+                                    img = bg
+                                elif img.mode != "RGB":
+                                    img = img.convert("RGB")
+
+                                try:
+                                    extrema = img.convert("L").getextrema()
+                                    if extrema[1] - extrema[0] < 35:
+                                        continue
+                                except Exception:
+                                    pass
+
+                                try:
+                                    import numpy as np
+                                    arr = np.array(img)
+                                    if arr.ndim >= 3:
+                                        white_ratio = ((arr[:, :, 0] > 235) & (arr[:, :, 1] > 235) & (arr[:, :, 2] > 235)).mean()
+                                        if white_ratio > 0.48:
+                                            continue
+                                except Exception:
+                                    pass
+
+                                clean_img = crop_watermarks_smart(img, bottom_crop_ratio=0.08, top_crop_ratio=0.02)
+                                clean_img.save(save_path, "JPEG", quality=92)
+                                print(f"    ✓ [DDGS 16:9 HD] {os.path.basename(save_path)} ({w}x{h}, aspect {aspect:.2f}) <- '{search_query}'")
+                                return True
+                except Exception:
+                    continue
     except Exception as e:
-        print(f"    ⚠️ Pexels error ({query}): {e}")
-    return urls
+        print(f"    ⚠️ DDGS search error ('{search_query}'): {e}")
 
+    return False
 
-def search_pixabay_stock_images(query: str, max_results: int = 4) -> list[str]:
-    """
-    Pixabay API - 100% Horizontal Professional Photos
-    """
-    if not PIXABAY_API_KEY:
-        return []
-    urls = []
-    try:
-        params = {
-            "key": PIXABAY_API_KEY,
-            "q": query,
-            "image_type": "photo",
-            "orientation": "horizontal",
-            "per_page": max_results,
-            "safesearch": "true"
-        }
-        r = requests.get("https://pixabay.com/api/", params=params, timeout=10)
-        if r.status_code == 200:
-            for hit in r.json().get("hits", []):
-                w, h = hit.get("imageWidth", 0), hit.get("imageHeight", 0)
-                if w > 0 and h > 0 and (w / h) >= 1.25:
-                    u = hit.get("largeImageURL") or hit.get("webformatURL")
-                    if u and u not in urls:
-                        urls.append(u)
-    except Exception as e:
-        print(f"    ⚠️ Pixabay error ({query}): {e}")
-    return urls
-
-
-def search_clean_stock_images(query: str, sentence: str = "", max_results: int = 4) -> list[str]:
-    """
-    मास्टर स्टॉक इमेज इंजन (Pexels + Pixabay 16:9 Landscape):
-    DuckDuckGo 100% स्थायी रूप से बंद!
-    """
-    theme_query = map_to_broadcast_stock_query(query, sentence)
-    collected = search_pexels_stock_images(theme_query, max_results=max_results)
-    if len(collected) < max_results:
-        clean_kw = sanitize_keyword_master(query)
-        if clean_kw and clean_kw.lower() != theme_query.lower():
-            extra = search_pexels_stock_images(clean_kw, max_results=max_results - len(collected))
-            for u in extra:
-                if u not in collected:
-                    collected.append(u)
-    if len(collected) < 2:
-        pix_results = search_pixabay_stock_images(theme_query, max_results=max_results)
-        for u in pix_results:
-            if u not in collected:
-                collected.append(u)
-    return collected[:max_results]
 
 
 def crop_watermarks_smart(img: Image.Image, bottom_crop_ratio: float = 0.08, top_crop_ratio: float = 0.04) -> Image.Image:
@@ -551,43 +578,11 @@ def download_and_verify_image(img_url: str, dest_path: str, min_width: int = 600
 
 
 def get_story_credit_source(story: dict) -> str:
-    """मूल समाचार चैनल का प्रामाणिक नाम प्राप्त करना (साभार हेतु)"""
-    src = story.get("source")
-    if src and len(src.strip()) > 1:
-        return src.strip()
+    """मूल समाचार चैनल का प्रामाणिक नाम प्राप्त करना (साभार हेतु - 100% नो गूगल न्यूज़)"""
+    url = story.get("article_url", "") or story.get("url", "")
+    src = story.get("real_publisher") or story.get("source") or story.get("real_image_attribution") or ""
+    return resolve_publisher_name(url, src)
 
-    attr = story.get("real_image_attribution")
-    if attr and len(attr.strip()) > 1:
-        clean_attr = attr.replace("क्राइम", "").replace("ब्यूरो", "").strip()
-        if clean_attr:
-            return clean_attr
-
-    url = story.get("article_url", "") or ""
-    u_low = url.lower()
-    if "abplive" in u_low:
-        return "एबीपी न्यूज़"
-    elif "bhaskar" in u_low:
-        return "दैनिक भास्कर"
-    elif "ndtv" in u_low:
-        return "NDTV"
-    elif "jagran" in u_low:
-        return "दैनिक जागरण"
-    elif "zeenews" in u_low:
-        return "ज़ी न्यूज़"
-    elif "aajtak" in u_low:
-        return "आज तक"
-    elif "indiatoday" in u_low:
-        return "इंडिया टुडे"
-    elif "thehindu" in u_low:
-        return "द हिंदू"
-    elif "indianexpress" in u_low:
-        return "द इंडियन एक्सप्रेस"
-    elif "navbharattimes" in u_low:
-        return "नवभारत टाइम्स"
-    elif "etvbharat" in u_low:
-        return "ईटीवी भारत"
-
-    return "मूल समाचार कवरेज"
 
 
 def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> list[str]:
@@ -703,13 +698,12 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
     print(f"  📸 [Pool A - Authentic News Media] {len(scraped_pool)} प्रामाणिक समाचार तस्वीरें/GIFs चयनित (साभार: '{credit_source}')")
 
     # ─────────────────────────────────────────────────────────────────
-    # 2. POOL B: Pexels & Pixabay 16:9 ब्रॉडकास्ट स्टॉक फोटोज़ (प्रति चंक 3 कीवर्ड्स)
+    # 2. POOL B: DuckDuckGo (DDGS) 16:9 भारतीय प्रेस व संदर्भ फोटोज़ (प्रति चंक 3 कीवर्ड्स)
     # ─────────────────────────────────────────────────────────────────
     context_pool = []  # list of dicts: {"path": rel_path, "is_scraped": False, "credit_source": None}
     chunk_context_map = {}  # c_idx -> list of context image dicts
-    seen_urls = set()
 
-    print(f"  🎯 [Pool B - Pexels/Pixabay 16:9 Engine] सभी चंक्स के लिए 3-3 कीवर्ड्स से लैंडस्केप फोटोज़...")
+    print(f"  🎯 [Pool B - DDGS 16:9 Indian Photo Engine] सभी चंक्स के लिए 3-3 कीवर्ड्स से असली फोटोज़...")
 
     for c_idx, c in enumerate(chunks):
         c_kws = list(c.get("image_keywords_en", []))
@@ -721,33 +715,20 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
             c_kws.append(f"{c_kws[-1]} scene" if c_kws else "India national news coverage")
 
         chunk_context_map[c_idx] = []
-        c_sent = c.get("sentence", "")
 
         for kw_idx, kw in enumerate(c_kws[:3], 1):
             fn = f"context_img_{story_num}_{c_idx+1:02d}_{kw_idx:02d}.jpg"
             dp = os.path.join(news_dir, fn)
             rel_p = f"out/{story_dir_name}/news real image/{fn}".replace("\\", "/")
 
-            kw_downloaded = False
-            candidate_urls = search_clean_stock_images(kw, sentence=c_sent, max_results=5)
-            for u in candidate_urls:
-                if u in seen_urls:
-                    continue
-                seen_urls.add(u)
-                if download_and_verify_image(u, dp, min_width=500, min_height=280, is_meme=False):
-                    item = {
-                        "path": rel_p,
-                        "is_scraped": False,
-                        "credit_source": None,
-                        "keyword": kw,
-                    }
-                    context_pool.append(item)
-                    chunk_context_map[c_idx].append(item)
-                    kw_downloaded = True
-                    print(f"    ✓ [चंक {c_idx+1}.{kw_idx}] 16:9 Pexels: {fn} ('{kw}')")
-                    break
+            # 1 Keyword = 1 Exact HD Image Rule (Instant break on valid photo)
+            success = False
+            if not os.path.exists(dp) or os.path.getsize(dp) < 3000:
+                success = download_best_single_image(kw, dp)
+            else:
+                success = True
 
-            if not kw_downloaded and os.path.exists(dp) and os.path.getsize(dp) > 2000:
+            if success and os.path.exists(dp) and os.path.getsize(dp) > 3000:
                 item = {
                     "path": rel_p,
                     "is_scraped": False,
@@ -757,59 +738,66 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                 context_pool.append(item)
                 chunk_context_map[c_idx].append(item)
 
-            time.sleep(0.10)
+            time.sleep(0.15)
 
-    print(f"  🌐 [Pool B - Pexels Complete] {len(context_pool)} 16:9 स्टॉक तस्वीरें तैयार!")
+    print(f"  🌐 [Pool B - DDGS Complete] कुल {len(context_pool)} 16:9 प्रेस/वेब तस्वीरें तैयार!")
 
     # ─────────────────────────────────────────────────────────────────
-    # 3. CHUNK MULTI-SLOT VISUAL MAPPING (3 SLOTS PER CHUNK + REAL NEWS INTEGRATION)
+    # 3. CHUNK MULTI-SLOT VISUAL MAPPING (3 SLOTS PER CHUNK + ZERO REPEATS)
     # ─────────────────────────────────────────────────────────────────
     # नियम (User Specifications):
-    # 1. हर चंक में 3 विजुअल स्लॉट्स (~2 से 2.5 सेकंड प्रत्येक) होंगे।
-    # 2. यदि खबर से असली तस्वीरें (Real Images) मिली हैं (1, 2, 3, 4, 5, आदि):
-    #    - वे असली तस्वीरें चंक्स में अनिवार्य रूप से प्रमुखता से (साभार क्रेडिट के साथ) दिखाई जाएंगी।
-    #    - एक ही असली तस्वीर लगातार रिपीट नहीं होगी; स्टॉक तस्वीरों और असली तस्वीरों का संतुलित मिश्रण रहेगा।
-    # 3. यदि कोई असली तस्वीर नहीं मिली (0 Real Images):
-    #    - पूरा वीडियो चंक्स की 3-3 Pexels 16:9 स्टॉक तस्वीरों से बिना किसी रुकावट के बनेगा।
+    # 1. हर चंक में 3 विजुअल स्लॉट्स (~1.5 से 2.5 सेकंड प्रत्येक) होंगे।
+    # 2. मूल समाचार से मिली प्रामाणिक तस्वीरें (scraped_pool):
+    #    - चंक 1 के स्लॉट 1, चंक 2 के स्लॉट 1 आदि में क्रमबद्ध बांटी जाएंगी।
+    #    - ZERO REPETITION: एक बार दिखाई गई प्रामाणिक तस्वीर दोबारा रिपीट नहीं होगी!
+    # 3. शेष सभी स्लॉट्स DDGS 16:9 की ताज़ा व अनोखी तस्वीरों से भरे जाएंगे।
+    # 4. यदि 0 असली तस्वीरें हैं, तो 100% स्लॉट्स DDGS तस्वीरों से बिना रुकावट चलेंगे।
     num_scraped = len(scraped_pool)
-    all_assigned_media = []
+    all_assigned_media = set()
 
     for c_idx, c in enumerate(chunks):
         c["visual_intent"] = "REAL_PHOTO"
         c["meme_keyword_en"] = None
 
-        c_stock = chunk_context_map.get(c_idx, [])
-        # यदि इस चंक में स्टॉक तस्वीरें कम हों तो context_pool से बैकअप लें
-        backup_stock = [item for item in context_pool if item not in c_stock]
-        while len(c_stock) < 3 and backup_stock:
-            c_stock.append(backup_stock.pop(0))
-
         chunk_slots = []
+        c_stock = list(chunk_context_map.get(c_idx, []))
 
-        if num_scraped > 0:
-            # असली तस्वीरें उपलब्ध हैं
-            if num_scraped == 1:
-                # केवल 1 असली तस्वीर उपलब्ध है: अल्टरनेट चंक्स (1, 3, 5) पर लगाएं (लगातार रिपीट न हो)
-                if c_idx % 2 == 0:
-                    chunk_slots.append(scraped_pool[0])
-                    if len(c_stock) >= 1: chunk_slots.append(c_stock[0])
-                    if len(c_stock) >= 2: chunk_slots.append(c_stock[1])
-                else:
-                    # चंक 2, 4 आदि पूरी तरह फ्रेश स्टॉक तस्वीरों से चलेंगे
-                    chunk_slots.extend(c_stock[:3])
-            else:
-                # 2 या अधिक असली तस्वीरें उपलब्ध हैं: हर चंक को विशिष्ट असली तस्वीर + स्टॉक तस्वीरें
-                assigned_scraped = scraped_pool[c_idx % num_scraped]
-                chunk_slots.append(assigned_scraped)
-                if len(c_stock) >= 1: chunk_slots.append(c_stock[0])
-                if len(c_stock) >= 2: chunk_slots.append(c_stock[1])
+        # क्या इस चंक के लिए अप्रयुक्त असली तस्वीर उपलब्ध है?
+        if c_idx < num_scraped:
+            assigned_scraped = scraped_pool[c_idx]
+            chunk_slots.append(assigned_scraped)
+            all_assigned_media.add(assigned_scraped["path"])
+            # बाकी 2 स्लॉट्स इस चंक की DDGS तस्वीरों से भरें
+            for st in c_stock:
+                if len(chunk_slots) >= 3:
+                    break
+                if st["path"] not in all_assigned_media:
+                    chunk_slots.append(st)
+                    all_assigned_media.add(st["path"])
         else:
-            # 0 असली तस्वीरें: 100% Pexels 16:9 स्टॉक तस्वीरों से वीडियो बनेगा
-            chunk_slots.extend(c_stock[:3])
+            # सभी असली तस्वीरें पहले चंक्स में दिखाई जा चुकी हैं:
+            # यह चंक 100% अपनी ताज़ा व अप्रयुक्त DDGS तस्वीरों से चलेगा (Zero Repetition!)
+            for st in c_stock:
+                if len(chunk_slots) >= 3:
+                    break
+                if st["path"] not in all_assigned_media:
+                    chunk_slots.append(st)
+                    all_assigned_media.add(st["path"])
 
-        # यदि किसी कारणवश स्लॉट खाली रह जाए तो context_pool या scraped_pool से भरें
+        # यदि किसी कारणवश स्लॉट 3 से कम हैं, तो context_pool की अन्य अप्रयुक्त तस्वीरों से भरें
+        if len(chunk_slots) < 3:
+            for item in context_pool:
+                if len(chunk_slots) >= 3:
+                    break
+                if item["path"] not in all_assigned_media:
+                    chunk_slots.append(item)
+                    all_assigned_media.add(item["path"])
+
+        # अंतिम फॉलबैक (यदि कुल तस्वीरें ही 3 से कम हों)
         if not chunk_slots:
-            if context_pool:
+            if c_stock:
+                chunk_slots = c_stock[:3]
+            elif context_pool:
                 chunk_slots = context_pool[:3]
             elif scraped_pool:
                 chunk_slots = scraped_pool[:3]
@@ -820,34 +808,30 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
         c["is_scraped_news"] = chunk_slots[0]["is_scraped"] if chunk_slots else False
         c["credit_source"] = chunk_slots[0]["credit_source"] if chunk_slots else None
 
-        for s in chunk_slots:
-            if s["path"] not in all_assigned_media:
-                all_assigned_media.append(s["path"])
-
     # ─────────────────────────────────────────────────────────────────
-    # 4. COVER PHOTO (out/story_XX/news_img_X_01.jpg) & ALL REAL IMAGES
+    # 4. COVER PHOTO & 100% SYNCHRONIZED ALL_REAL_IMAGES LIST
     # ─────────────────────────────────────────────────────────────────
+    # ठीक वही तस्वीरें जो वास्तव में चंक्स में प्रदर्शित हो रही हैं
     unique_all_images = []
-    primary_choice = (scraped_pool[0]["path"] if scraped_pool else (context_pool[0]["path"] if context_pool else None))
-    if primary_choice:
-        unique_all_images.append(primary_choice)
+    for c in chunks:
+        for slot in c.get("visual_images", []):
+            p = slot.get("path")
+            if p and p not in unique_all_images:
+                unique_all_images.append(p)
 
-    for item in scraped_pool + context_pool:
-        p = item["path"]
-        if p not in unique_all_images and len(unique_all_images) < 8:
-            unique_all_images.append(p)
-
+    primary_choice = unique_all_images[0] if unique_all_images else None
     if primary_choice and not os.path.exists(root_primary_path):
         try:
             full_prim = os.path.join(BASE_DIR, *primary_choice.split("/"))
-            if os.path.exists(full_prim) and not full_prim.lower().endswith(".mp4"):
+            if os.path.exists(full_prim) and not full_prim.lower().endswith((".mp4", ".webm")):
                 import shutil
                 shutil.copyfile(full_prim, root_primary_path)
         except Exception:
             pass
 
-    print(f"  🎬 [अंतिम मैपिंग] चंक अनुक्रम: {len(chunks)} चंक्स को अल्टरनेट (Real -> Context -> Real) से मैप किया गया!")
+    print(f"  🎬 [अंतिम मैपिंग] {len(chunks)} चंक्स को कुल {len(unique_all_images)} 100% अनूठी तस्वीरों से मैप किया गया (Zero Repeats)!")
     return unique_all_images
+
 
 
 def download_all_assets(max_stories: int = None, target_count: int = 12, force: bool = False):

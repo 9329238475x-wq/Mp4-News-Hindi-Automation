@@ -314,6 +314,44 @@ def clean_news_text(raw: str) -> str:
     return "\n\n".join(cleaned)
 
 
+PUBLISHER_DOMAINS = {
+    "etvbharat": "ईटीवी भारत",
+    "lokmat": "लोकमत न्यूज़",
+    "jagran": "दैनिक जागरण",
+    "bhaskar": "दैनिक भास्कर",
+    "abplive": "एबीपी न्यूज़",
+    "zeenews": "ज़ी न्यूज़",
+    "ndtv": "NDTV",
+    "aajtak": "आज तक",
+    "indiatoday": "इंडिया टुडे",
+    "thehindu": "द हिंदू",
+    "indianexpress": "द इंडियन एक्सप्रेस",
+    "navbharattimes": "नवभारत टाइम्स",
+    "livehindustan": "लाइव हिन्दुस्तान",
+    "hindustan": "लाइव हिन्दुस्तान",
+    "news18": "News18 हिंदी",
+    "oneindia": "वनइंडिया",
+    "patrika": "राजस्थान पत्रिका",
+    "jansatta": "जनसत्ता",
+}
+
+
+def resolve_publisher_name(url: str, default_source: str = "") -> str:
+    """लेख के URL डोमेन से असली पब्लिशर/न्यूज़ चैनल का नाम निकालना (गूगल न्यूज़ 100% निषिद्ध)"""
+    if url:
+        try:
+            from urllib.parse import urlparse
+            netloc = urlparse(url).netloc.lower()
+            for dom, name in PUBLISHER_DOMAINS.items():
+                if dom in netloc:
+                    return name
+        except Exception:
+            pass
+    if default_source and "गूगल" not in default_source:
+        return default_source
+    return "प्रेस कवरेज"
+
+
 def extract_and_download_story_media(story_index: int, article_url: str, source_label: str = "") -> dict:
     """
     मूल समाचार वेबपेज से सभी असली चित्र (HD Images) और वीडियो खोजकर
@@ -707,11 +745,13 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
 
                 seen_titles.add(title)
                 seen_urls.add(link)
+                real_pub = resolve_publisher_name(link, feed_label)
                 story_item = {
                     "pillar_id": p_id,
                     "pillar_name": p_name,
                     "title": title,
-                    "source": feed_label,
+                    "source": real_pub,
+                    "real_publisher": real_pub,
                     "published_at": pub_date,
                     "url": link,
                     "word_count": word_count,
@@ -721,7 +761,7 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                 pillar_counts[p_id] += 1
                 source_counts[feed_label] = source_counts.get(feed_label, 0) + 1
                 found = True
-                print(f"   ✅ [पिलर कवर हुआ] {title[:60]}... ({word_count} शब्द | {feed_label})", flush=True)
+                print(f"   ✅ [पिलर कवर हुआ] {title[:60]}... ({word_count} शब्द | {real_pub})", flush=True)
                 time.sleep(0.3)
                 break
 
@@ -806,11 +846,13 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
 
                     seen_titles.add(title)
                     seen_urls.add(link)
+                    real_pub = resolve_publisher_name(link, feed_label)
                     story_item = {
                         "pillar_id": p_id,
                         "pillar_name": p_name,
                         "title": title,
-                        "source": feed_label,
+                        "source": real_pub,
+                        "real_publisher": real_pub,
                         "published_at": pub_date,
                         "url": link,
                         "word_count": word_count,
@@ -819,7 +861,7 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                     verified_stories.append(story_item)
                     pillar_counts[p_id] += 1
                     source_counts[feed_label] = source_counts.get(feed_label, 0) + 1
-                    print(f"   ✅ [अतिरिक्त खबर] {title[:60]}... ({word_count} शब्द | {feed_label})", flush=True)
+                    print(f"   ✅ [अतिरिक्त खबर] {title[:60]}... ({word_count} शब्द | {real_pub})", flush=True)
                     time.sleep(0.3)
 
     # -------------------------------------------------------------
@@ -867,17 +909,19 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                     if ft and wc >= 180 and is_strictly_indian_news(t, ft):
                         seen_titles.add(t)
                         seen_urls.add(u)
+                        real_pub = resolve_publisher_name(u, f_label)
                         verified_stories.append({
                             "pillar_id": "national_crisis",
                             "pillar_name": "📢 देश की बड़ी हलचल & जन-मुद्दा",
                             "title": t,
-                            "source": f_label,
+                            "source": real_pub,
+                            "real_publisher": real_pub,
                             "published_at": p,
                             "url": u,
                             "word_count": wc,
                             "full_text": ft
                         })
-                        print(f"   ✅ [फॉलबैक खबर] {t[:60]}... ({wc} शब्द | {f_label})", flush=True)
+                        print(f"   ✅ [फॉलबैक खबर] {t[:60]}... ({wc} शब्द | {real_pub})", flush=True)
 
     final_stories = verified_stories[:target_count]
 

@@ -114,7 +114,13 @@ STAGE2_HEADLINES_SYSTEM_PROMPT = r"""तुम एक राष्ट्री�
      - 'पुलिस चौकी में गाली-गलौज और धमकी का भी लगाया आरोप'
      - 'डीसीपी ने एसीपी बाजारखाला को सौंपी मामले की जांच'
 3. 🛡️ फैक्ट सुरक्षा (Zero Fact Inversion): पीड़ित और आरोपी के रोल कभी न बदलें (मृतक को झूठा आरोप लगाने वाला न बनाएं)।
-4. ✍️ शुद्ध व्याकरण: अधूरी या टूटी हेडलाइन न बनाएं ('गोली धमकी दी' के बजाय 'गोली मारने की धमकी दी')।
+4. ✍️ शुद्ध व्याकरण व पूर्ण क्रियाएं (FLAWLESS HINDI GRAMMAR):
+   - अधूरी या टूटी हेडलाइन न बनाएं:
+     - 'गोली धमकी दी' के बजाय 'गोली मारने की धमकी दी'।
+     - 'कुप्रबंधन की तंज' के बजाय 'कुप्रबंधन पर तंज'।
+     - 'प्राथमिकता देने की मांग' के बजाय 'प्राथमिकता देने की मांग की'।
+     - 'सरकार से मांग' के बजाय 'सरकार से की बड़ी मांग'।
+   - कारक चिन्हों ('का', 'की', 'के', 'पर', 'से', 'ने') का 100% सही प्रयोग करें।
 5. कोई विशेष चिन्ह (No Markdown): किसी भी हेडलाइन में ** या * या # का प्रयोग न करें।
 6. ⚖️ तथ्यात्मक संतुलन (BALANCED HEADLINE): हेडलाइन में मुख्य घटना को दबाकर केवल 'गाली-गलौज की शिकायत' न बनाएं, बल्कि संतुलित व गंभीर रखें (जैसे 'लखनऊ: 6 वीडियो बनाकर ड्राइवर ने की खुदकुशी, पुलिस पर आरोप' या 'ड्राइवर की संदिग्ध मौत, पुलिस पर प्रताड़ना का आरोप')।
 
@@ -172,6 +178,9 @@ STRICT MASTER RULES:
 5. 📍 MANDATORY CITY/LOCATION ANCHOR:
    - When referencing a police outpost, station, or landmark, ALWAYS append the actual city or state name from the story.
 6. 🚫 NO TRUNCATION: Never truncate names (e.g. write 'Uttar Pradesh', NEVER cut off to just 'Uttar').
+7. 📸 CONCRETE VISUAL NOUNS ONLY (ZERO ABSTRACT CONCEPTS):
+   - NEVER generate abstract concepts or metaphors like 'governance archive', 'mafia influence', 'administrative mismanagement', 'reform document'.
+   - EVERY single query MUST describe a concrete physical place, person, or tangible visual noun: e.g. '<State> Vidhan Sabha building', '<City> police patrolling car', '<City> High Court building', '<Party> office <City>', '<City> district hospital exterior'. Always specify the Indian city or state!
 
 OUTPUT ONLY IN VALID JSON FORMAT:
 {

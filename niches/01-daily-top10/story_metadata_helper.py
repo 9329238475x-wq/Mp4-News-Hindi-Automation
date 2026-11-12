@@ -8,6 +8,48 @@ Saves all story artifacts directly into each story's folder (out/story_XX/):
 import os
 import json
 
+PUBLISHER_DOMAINS = {
+    "etvbharat": "ईटीवी भारत",
+    "lokmat": "लोकमत न्यूज़",
+    "jagran": "दैनिक जागरण",
+    "bhaskar": "दैनिक भास्कर",
+    "abplive": "एबीपी न्यूज़",
+    "zeenews": "ज़ी न्यूज़",
+    "ndtv": "NDTV",
+    "aajtak": "आज तक",
+    "indiatoday": "इंडिया टुडे",
+    "thehindu": "द हिंदू",
+    "indianexpress": "द इंडियन एक्सप्रेस",
+    "navbharattimes": "नवभारत टाइम्स",
+    "livehindustan": "लाइव हिन्दुस्तान",
+    "hindustan": "लाइव हिन्दुस्तान",
+    "news18": "News18 हिंदी",
+    "oneindia": "वनइंडिया",
+    "patrika": "राजस्थान पत्रिका",
+    "jansatta": "जनसत्ता",
+}
+
+
+def resolve_publisher_name(url: str, default_source: str = "") -> str:
+    """लेख के URL डोमेन से असली पब्लिशर/न्यूज़ चैनल का नाम निकालना (गूगल न्यूज़ 100% निषिद्ध)"""
+    if url:
+        try:
+            from urllib.parse import urlparse
+            netloc = urlparse(url).netloc.lower()
+            for dom, name in PUBLISHER_DOMAINS.items():
+                if dom in netloc:
+                    return name
+        except Exception:
+            pass
+    if default_source:
+        clean_s = default_source.strip()
+        if "गूगल" not in clean_s and "google" not in clean_s.lower():
+            for bad_word in ["क्राइम", "अपराध", "सुरक्षा", "भ्रष्टाचार", "राजनीति", "राष्ट्रीय", "अनोखा", "ब्यूरो", "डेस्क"]:
+                clean_s = clean_s.replace(bad_word, "").strip()
+            if len(clean_s) > 1:
+                return clean_s
+    return "प्रेस कवरेज"
+
 
 def save_story_folder_metadata(story: dict, out_dir: str):
     """
@@ -31,7 +73,7 @@ def save_story_folder_metadata(story: dict, out_dir: str):
     lines = []
     lines.append("═" * 84)
     lines.append(f"📌 बुलेटिन खबर #{s_num:02d}: {story.get('screen_headline', '')}")
-    source_name = story.get("real_image_attribution") or story.get("source") or "न्यूज़ डेस्क"
+    source_name = story.get("real_publisher") or resolve_publisher_name(story.get("article_url") or story.get("url"), story.get("source") or story.get("real_image_attribution"))
     pub_time = story.get("published_at") or "24 घंटे के भीतर"
     lines.append(f"📂 श्रेणी: {story.get('category', 'न्यूज़')} | स्रोत: {source_name} | समय: {pub_time}")
     if story.get("article_url"):
@@ -86,7 +128,7 @@ def save_story_folder_metadata(story: dict, out_dir: str):
                 for s_i, slot in enumerate(v_imgs, 1):
                     s_path = slot.get("path")
                     s_is_scr = slot.get("is_scraped")
-                    s_badge = f"🔴 प्रामाणिक न्यूज़ मीडिया (साभार: {slot.get('credit_source') or source_name})" if s_is_scr else "🌐 16:9 Pexels स्टॉक फोटो"
+                    s_badge = f"🔴 प्रामाणिक न्यूज़ मीडिया (साभार: {slot.get('credit_source') or source_name})" if s_is_scr else "🌐 16:9 वेब न्यूज़ फोटो (DDGS)"
                     lines.append(f"          [स्लॉट {s_i}] {s_path} | {s_badge}")
             elif c.get("local_visual_path"):
                 lines.append(f"       📁 Mapped Photo     : {c.get('local_visual_path')}")
@@ -95,7 +137,7 @@ def save_story_folder_metadata(story: dict, out_dir: str):
                     cr = c.get("credit_source") or source_name
                     lines.append(f"       🏷️ Media Type        : 🔴 प्रामाणिक न्यूज़ मीडिया (साभार: {cr})")
                 else:
-                    lines.append(f"       🏷️ Media Type        : 🌐 16:9 ब्रॉडकास्ट स्टॉक फोटो (Pexels)")
+                    lines.append(f"       🏷️ Media Type        : 🌐 16:9 वेब न्यूज़ फोटो (DDGS)")
             lines.append("")
         lines.append("═" * 84)
 
