@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-🔥 Master Million-View DLS News / Fatafat News YouTube Thumbnail Generator (1280x720)
--------------------------------------------------------------------------------------
-100% matched to user's exact uploaded reference & adjustments:
-  1. Top-Left: Radiant Sunburst Blue Box [फटाफट न्यूज़ LIVE] with 3D Gold Frame & Gradient Text (Baloo 2)
-  2. Top-Center: Huge Red Date (e.g. 12 / 29) + Month (नवंबर / अक्टूबर) in Baloo 2 (Clean & Uncluttered, No Modi)
-  3. Top-Right: Weekday (e.g. गुरुवार in Baloo 2) + Year [2026] + [मुख्य] sitting directly above [समाचार] in 3D Blue
+🔥 Master Million-View DLS News / Superfast News YouTube Thumbnail Generator (1280x720)
+-----------------------------------------------------------------------------------------
+100% matched to user's exact uploaded reference & refinements:
+  1. Top-Left: Radiant Sunburst Blue Box with [सुपरफास्ट न्यूज़ LIVE] (Clean, no yellow inner border)
+  2. Top-Center: Huge Red Date (e.g. 12 / 29) + Month (नवंबर / अक्टूबर) in Baloo 2 (Clean & Uncluttered)
+  3. Top-Right: Weekday (e.g. गुरुवार) + Year [2026] + [मुख्य] sitting directly above [समाचार] in 3D Blue (Matra fully visible!)
   4. Middle Row:
      - Cyan Gradient Pill: [आज PM मोदी सरकार ने लिए 5 बड़े फैसले] in Baloo 2
-     - Right: [समाचार] vertically aligned right below [मुख्य] to form 'मुख्य समाचार' in Baloo 2
-  5. White Hook Strip: Multi-Color Underlined Keywords in Baloo 2
+     - Right: [समाचार] vertically aligned right below [मुख्य] to form 'मुख्य समाचार'
+  5. White Hook Strip: Enlarged Multi-Color Underlined Keywords in Baloo 2 (Fills the strip!)
   6. Bottom Red Banner:
      - Left: [क्राइम अलर्ट] TV Badge (Neon Cyan + Golden Yellow in Baloo 2)
      - Center: Giant 3D Golden [50 बड़ी खबरें] in Baloo 2, perfectly lowered & vertically centered!
@@ -143,12 +143,13 @@ def build_dls_reference_html(
 ) -> str:
     """
     Builds the pixel-perfect HTML/CSS layout:
-    - Baloo 2 for ALL Hindi text, weekdays, mukhya samachar, pills, white strip, and giant headline
+    - [सुपरफास्ट न्यूज़ LIVE] on sunburst rays without inner yellow border
+    - Baloo 2 for all Devanagari text
     - Poppins-Black for date digits and year pill
-    - [मुख्य] sits directly vertically aligned above [समाचार]
+    - [मुख्य] with unclipped 'ु' matra, directly above [समाचार]
+    - White strip text enlarged (51px) to fill height
     - [क्राइम अलर्ट] badge on bottom-left
-    - No Modi, No 5 Bade Elan
-    - [50 बड़ी खबरें] is vertically centered in the red banner with proper clearance from the top border!
+    - [50 बड़ी खबरें] vertically centered in the red banner
     """
     font_baloo_uri = Path(FONT_BALOO).resolve().as_uri()
     font_poppins_uri = Path(FONT_POPPINS).resolve().as_uri()
@@ -214,7 +215,7 @@ def build_dls_reference_html(
     background: linear-gradient(180deg, #fffde6 0%, #fff7a0 55%, #ffe940 100%);
   }
 
-  /* A. Top-Left Blue Ray Box (फटाफट न्यूज LIVE) */
+  /* A. Top-Left Blue Ray Box (सुपरफास्ट न्यूज़ LIVE - Yellow border removed!) */
   .brand-box {
     width: 360px;
     height: 305px;
@@ -222,7 +223,6 @@ def build_dls_reference_html(
     overflow: hidden;
     background: radial-gradient(circle at 50% 50%, #205ee8 0%, #0d38a0 55%, #051a58 100%);
     border-right: 5px solid #ffe600;
-    border-bottom: 4px solid #ffe600;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -252,32 +252,28 @@ def build_dls_reference_html(
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border: 4px solid #ffe600;
-    border-radius: 18px;
-    padding: 6px 20px 8px 20px;
-    background: rgba(3, 15, 54, 0.80);
-    box-shadow: 0 0 20px rgba(255, 230, 0, 0.4), inset 0 0 14px rgba(255, 230, 0, 0.3);
+    padding: 4px 10px;
   }
 
   .brand-text-1 {
     paint-order: stroke fill;
-    font-size: 78px;
+    font-size: 72px;
     font-weight: 900;
     line-height: 0.95;
     color: #fff200;
-    -webkit-text-stroke: 3px #543000;
+    -webkit-text-stroke: 3.5px #4a2200;
     text-shadow: 3px 3px 0 #000, 0 0 16px rgba(255, 242, 0, 0.6);
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     font-family: 'BalooLocal', sans-serif;
   }
 
   .brand-text-2 {
     paint-order: stroke fill;
-    font-size: 88px;
+    font-size: 86px;
     font-weight: 900;
     line-height: 0.95;
     color: #fff200;
-    -webkit-text-stroke: 3px #543000;
+    -webkit-text-stroke: 3.5px #4a2200;
     text-shadow: 3px 3px 0 #000, 0 0 16px rgba(255, 242, 0, 0.6);
     letter-spacing: 1px;
     margin-bottom: 6px;
@@ -297,7 +293,7 @@ def build_dls_reference_html(
     font-family: 'PoppinsHeavy', sans-serif;
   }
 
-  /* B. Top-Center Date & Month (Clean & Prominent) */
+  /* B. Top-Center Date & Month */
   .date-container {
     flex: 1;
     position: relative;
@@ -332,15 +328,16 @@ def build_dls_reference_html(
     font-family: 'BalooLocal', sans-serif;
   }
 
-  /* C. Top-Right Day, Year & MUKHYA (Directly above SAMACHAR!) */
+  /* C. Top-Right Day, Year & MUKHYA (Matra clipping 100% fixed) */
   .top-right-box {
     width: 270px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding: 10px 8px 6px 8px;
+    justify-content: flex-start;
+    padding: 10px 8px 0 8px;
     margin-right: 16px;
+    overflow: visible;
   }
 
   .day-and-year-row {
@@ -349,6 +346,7 @@ def build_dls_reference_html(
     justify-content: center;
     gap: 10px;
     width: 100%;
+    margin-bottom: 6px;
   }
 
   .day-name {
@@ -372,19 +370,18 @@ def build_dls_reference_html(
     font-family: 'PoppinsHeavy', sans-serif;
   }
 
-  /* MUKHYA: 100% directly above SAMACHAR in 3D Royal Blue */
   .mukhya-top {
     paint-order: stroke fill;
-    font-size: 76px;
+    font-size: 78px;
     font-weight: 900;
-    line-height: 0.95;
+    line-height: 1.15;
     color: #0044cc;
     -webkit-text-stroke: 3.5px #ffffff;
-    text-shadow: 3px 3px 0 #001f5b, 5px 5px 10px rgba(0,0,0,0.35);
+    text-shadow: 3px 3px 0 #001f5b, 5px 5px 12px rgba(0,0,0,0.35);
     text-align: center;
     letter-spacing: 0.5px;
     font-family: 'BalooLocal', sans-serif;
-    margin-bottom: 2px;
+    margin-top: 4px;
     width: 100%;
   }
 
@@ -433,7 +430,6 @@ def build_dls_reference_html(
     margin-left: 6px;
   }
 
-  /* SAMACHAR: Right below MUKHYA */
   .samachar-right-box {
     width: 270px;
     display: flex;
@@ -443,7 +439,7 @@ def build_dls_reference_html(
 
   .samachar-right {
     paint-order: stroke fill;
-    font-size: 76px;
+    font-size: 78px;
     font-weight: 900;
     line-height: 1;
     color: #003bbb;
@@ -456,7 +452,7 @@ def build_dls_reference_html(
   }
 
   /* ═══════════════════════════════════════════════════════════
-     3. MIDDLE STRIP 2: WHITE HOOK STRIP (Y: 405 to 505px)
+     3. MIDDLE STRIP 2: WHITE HOOK STRIP (Enlarged prominent text)
      ═══════════════════════════════════════════════════════════ */
   .white-strip {
     position: absolute;
@@ -470,10 +466,10 @@ def build_dls_reference_html(
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 16px;
-    font-size: 44px;
+    padding: 0 12px;
+    font-size: 51px; /* Enlarged from 44px to fill the patti! */
     font-weight: 900;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.2px;
     box-shadow: 0 4px 14px rgba(0,0,0,0.25);
     z-index: 15;
     white-space: nowrap;
@@ -484,12 +480,12 @@ def build_dls_reference_html(
   .hook-item {
     margin-right: 14px;
     text-decoration: underline;
-    text-underline-offset: 5px;
-    text-decoration-thickness: 3px;
+    text-underline-offset: 6px;
+    text-decoration-thickness: 3.5px;
   }
 
   /* ═══════════════════════════════════════════════════════════
-     4. BOTTOM STRIP: MASTER RED BANNER (Y: 505 to 720px, Height: 215px)
+     4. BOTTOM STRIP: MASTER RED BANNER (Centered Baloo 2 text)
      ═══════════════════════════════════════════════════════════ */
   .bottom-red-banner {
     position: absolute;
@@ -506,7 +502,7 @@ def build_dls_reference_html(
     z-index: 15;
   }
 
-  /* Left Badge: क्राइम अलर्ट Badge */
+  /* Left Crime Alert Badge */
   .crime-alert-badge {
     width: 160px;
     height: 145px;
@@ -547,14 +543,14 @@ def build_dls_reference_html(
     margin-top: 2px;
   }
 
-  /* Giant 3D Golden Text: 50 बड़ी खबरें with Baloo 2 font & PERFECT VERTICAL CENTERING! */
+  /* Centered 50 बड़ी खबरें in Baloo 2 */
   .giant-headline-container {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'BalooLocal', sans-serif;
-    padding-top: 20px; /* Perfectly lowered into the dead center of the red strip */
+    padding-top: 20px;
   }
 
   .giant-number {
@@ -587,11 +583,11 @@ def build_dls_reference_html(
 <body>
   <!-- 1. TOP SECTION -->
   <div class="top-section">
-    <!-- Top-Left Blue Ray Box -->
+    <!-- Top-Left Blue Ray Box with "सुपरफास्ट न्यूज़ LIVE" (No yellow patti frame) -->
     <div class="brand-box">
       <div class="brand-rays"></div>
       <div class="brand-inner-frame">
-        <div class="brand-text-1">फटाफट</div>
+        <div class="brand-text-1">सुपरफास्ट</div>
         <div class="brand-text-2">न्यूज</div>
         <div class="brand-live-pill">LIVE</div>
       </div>
@@ -603,7 +599,7 @@ def build_dls_reference_html(
       <div class="month-name">__MONTH_STR__</div>
     </div>
 
-    <!-- Top-Right Day, Year & MUKHYA (Directly above Samachar) -->
+    <!-- Top-Right Day, Year & MUKHYA (Directly above Samachar, Matra fully clear) -->
     <div class="top-right-box">
       <div class="day-and-year-row">
         <div class="day-name">__WEEKDAY_STR__</div>
@@ -680,21 +676,20 @@ def generate_dls_reference_pillow(
 
     # Top-Left Blue Brand Box
     draw.rectangle([0, 0, 360, 305], fill=(13, 56, 160), outline=(255, 230, 0), width=5)
-    draw.rounded_rectangle([25, 20, 335, 285], radius=16, fill=(3, 15, 54), outline=(255, 230, 0), width=4)
 
     # Fonts
     f_baloo = ImageFont.truetype(FONT_BALOO, 72) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
     f_huge_date = ImageFont.truetype(FONT_POPPINS, 210) if os.path.exists(FONT_POPPINS) else ImageFont.load_default()
     f_month = ImageFont.truetype(FONT_BALOO, 110) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
     f_day = ImageFont.truetype(FONT_BALOO, 50) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
-    f_strip = ImageFont.truetype(FONT_BALOO, 42) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
+    f_strip = ImageFont.truetype(FONT_BALOO, 48) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
     f_baloo_num = ImageFont.truetype(FONT_BALOO, 170) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
     f_baloo_word = ImageFont.truetype(FONT_BALOO, 140) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
 
-    draw.text((70, 35), "फटाफट", fill=(255, 242, 0), font=f_baloo, stroke_width=3, stroke_fill=(84, 48, 0))
-    draw.text((105, 115), "न्यूज", fill=(255, 242, 0), font=f_baloo, stroke_width=3, stroke_fill=(84, 48, 0))
-    draw.rounded_rectangle([120, 220, 240, 260], radius=6, fill=(229, 9, 20), outline=(255, 255, 255), width=2)
-    draw.text((145, 224), "LIVE", fill=(255, 255, 255), font=f_day)
+    draw.text((45, 45), "सुपरफास्ट", fill=(255, 242, 0), font=f_baloo, stroke_width=3, stroke_fill=(74, 34, 0))
+    draw.text((105, 125), "न्यूज", fill=(255, 242, 0), font=f_baloo, stroke_width=3, stroke_fill=(74, 34, 0))
+    draw.rounded_rectangle([120, 230, 240, 270], radius=6, fill=(229, 9, 20), outline=(255, 255, 255), width=2)
+    draw.text((145, 234), "LIVE", fill=(255, 255, 255), font=f_day)
 
     # Huge Date & Month
     draw.text((375, 25), day_num, fill=(229, 0, 0), font=f_huge_date, stroke_width=8, stroke_fill=(255, 230, 0))
@@ -715,7 +710,7 @@ def generate_dls_reference_pillow(
 
     # 3. Middle White Strip (Y: 405-505)
     draw.rectangle([0, 405, THUMB_W, 505], fill=(255, 255, 255), outline=(0, 0, 0), width=3)
-    x_cursor = 30
+    x_cursor = 25
     color_map = {
         "#d00000": (208, 0, 0),
         "#0055cc": (0, 85, 204),
@@ -726,11 +721,11 @@ def generate_dls_reference_pillow(
         txt = seg.get("text", "") + " "
         c_hex = seg.get("color", "#000000")
         c_rgb = color_map.get(c_hex, (0, 0, 0))
-        draw.text((x_cursor, 425), txt, fill=c_rgb, font=f_strip)
-        bbox = draw.textbbox((x_cursor, 425), txt, font=f_strip)
+        draw.text((x_cursor, 420), txt, fill=c_rgb, font=f_strip)
+        bbox = draw.textbbox((x_cursor, 420), txt, font=f_strip)
         if not seg.get("no_underline", False):
-            draw.line([(x_cursor, 480), (bbox[2] - 5, 480)], fill=c_rgb, width=3)
-        x_cursor = bbox[2] + 14
+            draw.line([(x_cursor, 482), (bbox[2] - 5, 482)], fill=c_rgb, width=3.5)
+        x_cursor = bbox[2] + 16
 
     # 4. Bottom Red Banner (Y: 505-720)
     for y in range(505, 720):
@@ -765,12 +760,14 @@ def generate_sensational_thumbnail(
     channel_name: str = "MP4 NEWS"
 ) -> str:
     """
-    Main Entrypoint: Generates the Master DLS News / Fatafat News YouTube Thumbnail
+    Main Entrypoint: Generates the Master DLS News / Superfast News YouTube Thumbnail
     100% matched to user's layout & typography specifications:
-    - Baloo 2 for [50 बड़ी खबरें] centered in red banner
-    - Baloo 2 for Din, Mukhya, Samachar, Cyan pill & White strip
-    - [मुख्य] directly above [समाचार]
+    - [सुपरफास्ट न्यूज़ LIVE] on sunburst rays without inner yellow border
+    - Baloo 2 for all Hindi text
+    - [मुख्य] with unclipped 'ु' matra, directly above [समाचार]
+    - White strip text enlarged (51px) to fill height
     - [क्राइम अलर्ट] badge on bottom left
+    - [50 बड़ी खबरें] vertically centered in the red banner
     - PM Modi and [5 बड़े ऐलान] removed
     """
     now = datetime.now()
@@ -847,7 +844,7 @@ def generate_sensational_thumbnail(
 
 if __name__ == "__main__":
     demo_out = str(PROJECT_ROOT / "out" / "test_dls_reference_thumbnail.jpg")
-    print("Testing 100% Customized YouTube Thumbnail Generator...")
+    print("Testing 100% Customized Superfast News YouTube Thumbnail Generator...")
     res = generate_sensational_thumbnail(
         headline="आज के मुख्य समाचार 50 बड़ी खबरें",
         out_path=demo_out,
