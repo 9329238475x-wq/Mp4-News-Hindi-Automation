@@ -242,6 +242,18 @@ def sanitize_keyword_master(kw: str) -> str:
     if 'keshav' in clean.lower() and 'maurya' in clean.lower() and 'prasad' not in clean.lower():
         clean = re.sub(r'keshav\s+maurya', 'Keshav Prasad Maurya BJP', clean, flags=re.IGNORECASE)
 
+    # 0. YOUTUBE MONETIZATION GUARD: 100% Violent/Graphic/Anatomical Keyword Replacement
+    VIOLENT_KEYWORDS_MAP = {
+        r'\b(crime\s+scene|crime-scene)\b': 'police investigation barricade',
+        r'\b(suspect\s+leg|injured\s+leg|broken\s+leg|gunshot\s+leg|bullet\s+leg|\blegs?\b)\b': 'police station building',
+        r'\b(killings|killing|dead\s+body|dead\s+bodies|corpse|cadaver|laash|massacre|murder|murders)\b': 'police patrolling vehicle',
+        r'\b(blood|bloody|bloodstain|bloodstained)\b': 'police checkpoint barricade',
+        r'\b(shooting|gunshot|gunfight|encounter)\b': 'police barricade checkpoint',
+        r'\b(suicide|hanging)\b': 'police station exterior',
+    }
+    for v_pat, v_sub in VIOLENT_KEYWORDS_MAP.items():
+        clean = re.sub(v_pat, v_sub, clean, flags=re.IGNORECASE)
+
     c_low = clean.lower()
 
     # 1. विशिष्ट लोकेशन एंकरिंग: 'Shahdara' के साथ लखनऊ जोड़ना (ताकि दिल्ली पुलिस न आए)
@@ -266,9 +278,10 @@ def sanitize_keyword_master(kw: str) -> str:
         clean = 'Lucknow Police press conference Jitendra Srivastava'
         c_low = clean.lower()
 
-    # 3. स्थानीय पुलिस व थानों को लखनऊ / यूपी संदर्भ से जोड़ना
-    if any(p in c_low for p in ['chowki', 'thana', 'outpost', 'barricade', 'station']) and not any(loc in c_low for loc in ['uttar pradesh', 'bareilly', 'india', 'delhi', 'lucknow']):
-        clean = f"Lucknow Police {clean}"
+    # 3. स्थानीय पुलिस व थानों को भारतीय संदर्भ से जोड़ना
+    indian_states_cities = ['uttar pradesh', 'bareilly', 'india', 'delhi', 'lucknow', 'chennai', 'tamil nadu', 'bihar', 'patna', 'mumbai', 'bengaluru', 'karnataka', 'madhya pradesh', 'bhopal', 'rajasthan', 'jaipur', 'kolkata', 'punjab', 'haryana', 'chandigarh', 'gujarat', 'ahmedabad', 'hyderabad', 'telangana', 'andhra']
+    if any(p in c_low for p in ['chowki', 'thana', 'outpost', 'barricade', 'station']) and not any(loc in c_low for loc in indian_states_cities):
+        clean = f"India Police {clean}"
     elif any(leg in c_low for leg in ['legislator', 'legislators', 'mla', 'mlas']) and 'bjp' not in c_low:
         clean = "Uttar Pradesh BJP MLAs"
     elif any(ven in c_low for ven in ['venue', 'hall', 'swayamvar']) and 'rally' not in c_low:
@@ -368,7 +381,7 @@ def download_best_single_image(keyword: str, save_path: str) -> bool:
     """
     1 कीवर्ड से सिर्फ 1 सबसे सटीक, HD और 16:9 भारतीय न्यूज़ फोटो डाउनलोड करने का फंक्शन
     (DDGS Indian Region: in-en, Wide Landscape, Real Photo, Large)
-    - टॉप 4 लिंक्स चेक करता है।
+    - प्राथमिक क्वेरी से 0 फोटो आने पर स्वतः सेफ फॉलबैक क्वेरी चलाकर 100% फोटो डाउनलोड सुनिश्चित करता है।
     - 1 वैध HD 16:9 तस्वीर सेव होते ही तुरंत 'break' करता है (Exact 1 Keyword = 1 Image).
     """
     if not keyword or len(keyword.strip()) < 3:
@@ -379,82 +392,92 @@ def download_best_single_image(keyword: str, save_path: str) -> bool:
         clean_kw = keyword.strip()
 
     c_low = clean_kw.lower()
-    indian_locs = ["india", "bihar", "patna", "up", "uttar pradesh", "lucknow", "delhi", "mumbai", "madhya pradesh", "bhopal", "rajasthan", "jaipur", "bjp", "congress", "rjd", "sp"]
+    indian_locs = ["india", "bihar", "patna", "up", "uttar pradesh", "lucknow", "delhi", "mumbai", "madhya pradesh", "bhopal", "rajasthan", "jaipur", "bjp", "congress", "rjd", "sp", "chennai", "tamil nadu", "bengaluru", "karnataka"]
     if not any(loc in c_low for loc in indian_locs):
-        search_query = f"{clean_kw} India"
+        primary_query = f"{clean_kw} India"
     else:
-        search_query = clean_kw
+        primary_query = clean_kw
+
+    # Multi-tier fallback queries to guarantee 100% download success
+    words = clean_kw.split()
+    short_kw = " ".join(words[:3]) if len(words) > 3 else clean_kw
+    queries_to_try = [primary_query]
+    if short_kw != clean_kw and f"{short_kw} India" not in queries_to_try:
+        queries_to_try.append(f"{short_kw} India")
+    queries_to_try.append("India national news press coverage")
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
         "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
     }
 
-    try:
-        with DDGS() as ddgs:
-            results = ddgs.images(
-                search_query,
-                region="in-en",
-                safesearch="moderate",
-                size="Large",
-                type_image="photo",
-                layout="Wide",
-                max_results=4
-            )
-            for item in results:
-                img_url = item.get("image")
-                if not img_url or not img_url.startswith("http"):
-                    continue
-                u_low = img_url.lower()
-                if any(bad in u_low for bad in COMMERCE_AND_SPAM_BLOCKLIST):
-                    continue
+    for search_query in queries_to_try:
+        try:
+            with DDGS() as ddgs:
+                results = ddgs.images(
+                    search_query,
+                    region="in-en",
+                    safesearch="moderate",
+                    size="Large",
+                    type_image="photo",
+                    layout="Wide",
+                    max_results=6
+                )
+                for item in results:
+                    img_url = item.get("image")
+                    if not img_url or not img_url.startswith("http"):
+                        continue
+                    u_low = img_url.lower()
+                    if any(bad in u_low for bad in COMMERCE_AND_SPAM_BLOCKLIST):
+                        continue
 
-                try:
-                    domain = img_url.split('/')[2] if len(img_url.split('/')) > 2 else ""
-                    req_headers = dict(headers)
-                    if domain:
-                        req_headers["Referer"] = f"https://{domain}/"
+                    try:
+                        domain = img_url.split('/')[2] if len(img_url.split('/')) > 2 else ""
+                        req_headers = dict(headers)
+                        if domain:
+                            req_headers["Referer"] = f"https://{domain}/"
 
-                    res = requests.get(img_url, headers=req_headers, timeout=8)
-                    if res.status_code == 200 and len(res.content) > 6000:
-                        img = Image.open(BytesIO(res.content))
-                        w, h = img.size
-                        if w >= 450 and h >= 260:
-                            aspect = w / h
-                            if 1.20 <= aspect <= 2.30:
-                                if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
-                                    bg = Image.new("RGB", img.size, (255, 255, 255))
-                                    rgba = img.convert("RGBA")
-                                    bg.paste(rgba, mask=rgba.split()[3])
-                                    img = bg
-                                elif img.mode != "RGB":
-                                    img = img.convert("RGB")
+                        res = requests.get(img_url, headers=req_headers, timeout=8)
+                        if res.status_code == 200 and len(res.content) > 6000:
+                            img = Image.open(BytesIO(res.content))
+                            w, h = img.size
+                            if w >= 450 and h >= 260:
+                                aspect = w / h
+                                if 1.20 <= aspect <= 2.30:
+                                    if img.mode in ("RGBA", "LA") or (img.mode == "P" and "transparency" in img.info):
+                                        bg = Image.new("RGB", img.size, (255, 255, 255))
+                                        rgba = img.convert("RGBA")
+                                        bg.paste(rgba, mask=rgba.split()[3])
+                                        img = bg
+                                    elif img.mode != "RGB":
+                                        img = img.convert("RGB")
 
-                                try:
-                                    extrema = img.convert("L").getextrema()
-                                    if extrema[1] - extrema[0] < 35:
-                                        continue
-                                except Exception:
-                                    pass
-
-                                try:
-                                    import numpy as np
-                                    arr = np.array(img)
-                                    if arr.ndim >= 3:
-                                        white_ratio = ((arr[:, :, 0] > 235) & (arr[:, :, 1] > 235) & (arr[:, :, 2] > 235)).mean()
-                                        if white_ratio > 0.48:
+                                    try:
+                                        extrema = img.convert("L").getextrema()
+                                        if extrema[1] - extrema[0] < 35:
                                             continue
-                                except Exception:
-                                    pass
+                                    except Exception:
+                                        pass
 
-                                clean_img = crop_watermarks_smart(img, bottom_crop_ratio=0.08, top_crop_ratio=0.02)
-                                clean_img.save(save_path, "JPEG", quality=92)
-                                print(f"    ✓ [DDGS 16:9 HD] {os.path.basename(save_path)} ({w}x{h}, aspect {aspect:.2f}) <- '{search_query}'")
-                                return True
-                except Exception:
-                    continue
-    except Exception as e:
-        print(f"    ⚠️ DDGS search error ('{search_query}'): {e}")
+                                    try:
+                                        import numpy as np
+                                        arr = np.array(img)
+                                        if arr.ndim >= 3:
+                                            white_ratio = ((arr[:, :, 0] > 235) & (arr[:, :, 1] > 235) & (arr[:, :, 2] > 235)).mean()
+                                            if white_ratio > 0.48:
+                                                continue
+                                    except Exception:
+                                        pass
+
+                                    clean_img = crop_watermarks_smart(img, bottom_crop_ratio=0.08, top_crop_ratio=0.02)
+                                    clean_img.save(save_path, "JPEG", quality=92)
+                                    print(f"    ✓ [DDGS 16:9 HD] {os.path.basename(save_path)} ({w}x{h}, aspect {aspect:.2f}) <- '{search_query}'")
+                                    return True
+                    except Exception:
+                        continue
+        except Exception as e:
+            print(f"    ⚠️ DDGS search error ('{search_query}'): {e}")
+            continue
 
     return False
 
@@ -698,12 +721,13 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
     print(f"  📸 [Pool A - Authentic News Media] {len(scraped_pool)} प्रामाणिक समाचार तस्वीरें/GIFs चयनित (साभार: '{credit_source}')")
 
     # ─────────────────────────────────────────────────────────────────
-    # 2. POOL B: DuckDuckGo (DDGS) 16:9 भारतीय प्रेस व संदर्भ फोटोज़ (प्रति चंक 3 कीवर्ड्स)
+    # 2. POOL B: DuckDuckGo (DDGS) 16:9 भारतीय प्रेस व संदर्भ फोटोज़ (सटीक स्लॉट संख्या)
     # ─────────────────────────────────────────────────────────────────
     context_pool = []  # list of dicts: {"path": rel_path, "is_scraped": False, "credit_source": None}
     chunk_context_map = {}  # c_idx -> list of context image dicts
 
-    print(f"  🎯 [Pool B - DDGS 16:9 Indian Photo Engine] सभी चंक्स के लिए 3-3 कीवर्ड्स से असली फोटोज़...")
+    num_scraped = len(scraped_pool)
+    print(f"  🎯 [Pool B - DDGS 16:9 Indian Photo Engine] {len(chunks)} चंक्स के लिए सटीक स्लॉट संख्या में तस्वीरें...")
 
     for c_idx, c in enumerate(chunks):
         c_kws = list(c.get("image_keywords_en", []))
@@ -714,9 +738,12 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
         while len(c_kws) < 3:
             c_kws.append(f"{c_kws[-1]} scene" if c_kws else "India national news coverage")
 
+        # यदि इस चंक में स्क्रैप्ड असली फोटो स्लॉट 1 पर लगेगी, तो इसे केवल 2 DDGS फोटो चाहिए।
+        # यदि कोई स्क्रैप्ड फोटो नहीं है, तो इसे पूरे 3 DDGS फोटो चाहिए।
+        slots_needed = 2 if c_idx < num_scraped else 3
         chunk_context_map[c_idx] = []
 
-        for kw_idx, kw in enumerate(c_kws[:3], 1):
+        for kw_idx, kw in enumerate(c_kws[:slots_needed], 1):
             fn = f"context_img_{story_num}_{c_idx+1:02d}_{kw_idx:02d}.jpg"
             dp = os.path.join(news_dir, fn)
             rel_p = f"out/{story_dir_name}/news real image/{fn}".replace("\\", "/")
@@ -743,16 +770,8 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
     print(f"  🌐 [Pool B - DDGS Complete] कुल {len(context_pool)} 16:9 प्रेस/वेब तस्वीरें तैयार!")
 
     # ─────────────────────────────────────────────────────────────────
-    # 3. CHUNK MULTI-SLOT VISUAL MAPPING (3 SLOTS PER CHUNK + ZERO REPEATS)
+    # 3. CHUNK MULTI-SLOT VISUAL MAPPING (3 SLOTS PER CHUNK + STRICT CHUNK BINDING)
     # ─────────────────────────────────────────────────────────────────
-    # नियम (User Specifications):
-    # 1. हर चंक में 3 विजुअल स्लॉट्स (~1.5 से 2.5 सेकंड प्रत्येक) होंगे।
-    # 2. मूल समाचार से मिली प्रामाणिक तस्वीरें (scraped_pool):
-    #    - चंक 1 के स्लॉट 1, चंक 2 के स्लॉट 1 आदि में क्रमबद्ध बांटी जाएंगी।
-    #    - ZERO REPETITION: एक बार दिखाई गई प्रामाणिक तस्वीर दोबारा रिपीट नहीं होगी!
-    # 3. शेष सभी स्लॉट्स DDGS 16:9 की ताज़ा व अनोखी तस्वीरों से भरे जाएंगे।
-    # 4. यदि 0 असली तस्वीरें हैं, तो 100% स्लॉट्स DDGS तस्वीरों से बिना रुकावट चलेंगे।
-    num_scraped = len(scraped_pool)
     all_assigned_media = set()
 
     for c_idx, c in enumerate(chunks):
@@ -762,12 +781,12 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
         chunk_slots = []
         c_stock = list(chunk_context_map.get(c_idx, []))
 
-        # क्या इस चंक के लिए अप्रयुक्त असली तस्वीर उपलब्ध है?
+        # क्या इस चंक के लिए अप्रयुक्त असली स्क्रैप्ड तस्वीर उपलब्ध है?
         if c_idx < num_scraped:
             assigned_scraped = scraped_pool[c_idx]
             chunk_slots.append(assigned_scraped)
             all_assigned_media.add(assigned_scraped["path"])
-            # बाकी 2 स्लॉट्स इस चंक की DDGS तस्वीरों से भरें
+            # बाकी स्लॉट्स ठीक इसी चंक की अपनी DDGS तस्वीरों से भरें
             for st in c_stock:
                 if len(chunk_slots) >= 3:
                     break
@@ -775,8 +794,7 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                     chunk_slots.append(st)
                     all_assigned_media.add(st["path"])
         else:
-            # सभी असली तस्वीरें पहले चंक्स में दिखाई जा चुकी हैं:
-            # यह चंक 100% अपनी ताज़ा व अप्रयुक्त DDGS तस्वीरों से चलेगा (Zero Repetition!)
+            # 100% अपनी ताज़ा व अप्रयुक्त DDGS तस्वीरों से चलेगा (Zero Repetition!)
             for st in c_stock:
                 if len(chunk_slots) >= 3:
                     break
@@ -793,14 +811,9 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                     chunk_slots.append(item)
                     all_assigned_media.add(item["path"])
 
-        # अंतिम फॉलबैक (यदि कुल तस्वीरें ही 3 से कम हों)
-        if not chunk_slots:
-            if c_stock:
-                chunk_slots = c_stock[:3]
-            elif context_pool:
-                chunk_slots = context_pool[:3]
-            elif scraped_pool:
-                chunk_slots = scraped_pool[:3]
+        # यदि फिर भी 3 से कम हैं, तो उपलब्ध स्लॉट दोहराएं
+        while len(chunk_slots) < 3 and chunk_slots:
+            chunk_slots.append(chunk_slots[-1])
 
         c["visual_images"] = chunk_slots
         c["local_visual_paths"] = [s["path"] for s in chunk_slots]

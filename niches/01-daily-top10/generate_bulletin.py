@@ -79,6 +79,18 @@ def sanitize_keyword_master(kw: str) -> str:
     if 'keshav' in clean.lower() and 'maurya' in clean.lower() and 'prasad' not in clean.lower():
         clean = re.sub(r'keshav\s+maurya', 'Keshav Prasad Maurya BJP', clean, flags=re.IGNORECASE)
 
+    # 0. YOUTUBE MONETIZATION GUARD: 100% Violent/Graphic/Anatomical Keyword Replacement
+    VIOLENT_KEYWORDS_MAP = {
+        r'\b(crime\s+scene|crime-scene)\b': 'police investigation barricade',
+        r'\b(suspect\s+leg|injured\s+leg|broken\s+leg|gunshot\s+leg|bullet\s+leg|\blegs?\b)\b': 'police station building',
+        r'\b(killings|killing|dead\s+body|dead\s+bodies|corpse|cadaver|laash|massacre|murder|murders)\b': 'police patrolling vehicle',
+        r'\b(blood|bloody|bloodstain|bloodstained)\b': 'police checkpoint barricade',
+        r'\b(shooting|gunshot|gunfight|encounter)\b': 'police barricade checkpoint',
+        r'\b(suicide|hanging)\b': 'police station exterior',
+    }
+    for v_pat, v_sub in VIOLENT_KEYWORDS_MAP.items():
+        clean = re.sub(v_pat, v_sub, clean, flags=re.IGNORECASE)
+
     c_low = clean.lower()
 
     # केवल यदि शाहदरा का ज़िक्र हो और लखनऊ का मामला हो

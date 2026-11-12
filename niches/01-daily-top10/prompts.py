@@ -117,6 +117,10 @@ STAGE2_HEADLINES_SYSTEM_PROMPT = r"""तुम एक राष्ट्री�
 4. ✍️ शुद्ध व्याकरण व पूर्ण क्रियाएं (FLAWLESS HINDI GRAMMAR):
    - अधूरी या टूटी हेडलाइन न बनाएं:
      - 'गोली धमकी दी' के बजाय 'गोली मारने की धमकी दी'।
+     - कभी भी 'पोलिस' न लिखें, हमेशा मानक 'पुलिस' लिखें।
+     - सीधा 'गोली मारी' लिखने के बजाय यूट्यूब मोनेटाइजेशन-सेफ शब्द लिखें (जैसे 'पैर में गोली मारकर किया गिरफ्तार' या 'मुठभेड़ के बाद आरोपी गिरफ्तार')।
+     - हेडलाइन के अंत में क्रिया अधूरी न छोड़ें: 'अनुशासन रखने का निर्देश' के बजाय 'अनुशासन रखने के निर्देश दिए' लिखें।
+     - बहुवचन व्याकरण सही रखें: 'कई विधायक पर' नहीं, 'कई विधायकों पर' लिखें।
      - 'कुप्रबंधन की तंज' के बजाय 'कुप्रबंधन पर तंज'।
      - 'प्राथमिकता देने की मांग' के बजाय 'प्राथमिकता देने की मांग की'।
      - 'सरकार से मांग' के बजाय 'सरकार से की बड़ी मांग'।
@@ -181,6 +185,12 @@ STRICT MASTER RULES:
 7. 📸 CONCRETE VISUAL NOUNS ONLY (ZERO ABSTRACT CONCEPTS):
    - NEVER generate abstract concepts or metaphors like 'governance archive', 'mafia influence', 'administrative mismanagement', 'reform document'.
    - EVERY single query MUST describe a concrete physical place, person, or tangible visual noun: e.g. '<State> Vidhan Sabha building', '<City> police patrolling car', '<City> High Court building', '<Party> office <City>', '<City> district hospital exterior'. Always specify the Indian city or state!
+8. 🚫 ZERO VIOLENT / GRAPHIC / ANATOMICAL WORDS (YOUTUBE MONETIZATION GUARD):
+   - NEVER generate violent, bloody, gruesome, or anatomical words in image search keywords, such as:
+     'crime scene', 'killings', 'dead body', 'dead', 'corpse', 'murder', 'blood', 'injured leg', 'suspect leg', 'shooting', 'bullet', 'encounter', 'suicide', 'hanging'.
+   - DDGS searches Indian news portals, so searching 'crime scene' or 'suspect leg' fetches graphic blood or wounds, which causes YouTube Yellow Dollar or Age Restriction!
+   - ALWAYS substitute with safe institutional or context visuals:
+     e.g., '<City> police barricade checkpoint', '<City> police patrolling vehicle', '<City> police station building', '<City> high court building', '<City> district hospital building'.
 
 OUTPUT ONLY IN VALID JSON FORMAT:
 {
