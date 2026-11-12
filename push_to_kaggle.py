@@ -52,12 +52,19 @@ kernel_slug = "mp4-news-hindi-omnivoice-pipeline"
 kernel_id = f"{kaggle_user}/{kernel_slug}"
 
 print(f"🚀 Deploying kernel to Kaggle ({kernel_id})...", flush=True)
-try:
-    push_res = api.kernels_push(str(ROOT))
-    print(f"✓ Kernel push result: versionNumber={getattr(push_res, 'versionNumber', 'unknown')}", flush=True)
-except Exception as e:
-    print(f"❌ Failed to push kernel via SDK: {e}", flush=True)
-    sys.exit(1)
+push_res = None
+for push_attempt in range(1, 6):
+    try:
+        push_res = api.kernels_push(str(ROOT))
+        print(f"✓ Kernel push result: versionNumber={getattr(push_res, 'versionNumber', 'unknown')}", flush=True)
+        break
+    except Exception as e:
+        print(f"⚠️ Push attempt {push_attempt}/5 encountered error: {e}", flush=True)
+        if push_attempt < 5:
+            time.sleep(4 * push_attempt)
+        else:
+            print("❌ Failed to push kernel after 5 attempts.", flush=True)
+            sys.exit(1)
 
 print("\n🎉 KERNEL TRIGGERED ON KAGGLE!", flush=True)
 print(f"🔗 Live Progress: https://www.kaggle.com/code/{kernel_id}", flush=True)

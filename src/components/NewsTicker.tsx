@@ -67,18 +67,18 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({
     <div
       style={{
         position: "absolute",
-        bottom: 20,
-        left: 22,
-        right: 22,
-        height: 94,
+        bottom: 18,
+        left: 20,
+        right: 20,
+        height: 96,
         display: "flex",
         alignItems: "stretch",
         zIndex: 100,
         overflow: "hidden",
         borderRadius: 16,
-        border: "3.5px solid #e50914",
+        border: "3.5px solid #ff3344",
         boxShadow:
-          "0 14px 44px rgba(0, 0, 0, 0.92), 0 0 32px rgba(229, 9, 20, 0.45)",
+          "0 14px 44px rgba(0, 0, 0, 0.95), 0 0 32px rgba(211, 0, 11, 0.55)",
       }}
     >
       {/* ─── LEFT: ANIMATED TV NEWS BADGE [ताज़ा अपडेट्स] (100% CLEAN - ZERO EMOJIS) ─── */}
@@ -87,15 +87,15 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({
           position: "relative",
           overflow: "hidden",
           background:
-            "linear-gradient(135deg, #e50914 0%, #b80009 50%, #850005 100%)",
+            "linear-gradient(135deg, #180003 0%, #3d0006 50%, #180003 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           padding: "0 46px",
           flexShrink: 0,
-          boxShadow: `4px 0 24px rgba(229, 9, 20, ${badgeGlow}), inset 0 1px 0 rgba(255, 255, 255, 0.5)`,
+          boxShadow: `4px 0 24px rgba(229, 9, 20, ${badgeGlow}), inset 0 1px 0 rgba(255, 255, 255, 0.35)`,
           zIndex: 10,
-          borderRight: "3px solid #b80009",
+          borderRight: "3.5px solid #fbbf24",
         }}
       >
         {/* Metallic Light Sweep Glint Ray */}
@@ -119,16 +119,15 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({
         <span
           style={{
             color: "#ffffff",
-            fontSize: 33,
+            fontSize: 34,
             fontWeight: 900,
             fontFamily: "'Noto Sans Devanagari', sans-serif",
             letterSpacing: "1.2px",
-            whiteSpace: "nowrap",
             transform: `scale(${textScale})`,
             transformOrigin: "center center",
             display: "inline-block",
             textShadow:
-              "0 2px 8px rgba(0, 0, 0, 0.9), 0 0 14px rgba(255, 255, 255, 0.4)",
+              "0 2px 8px rgba(0, 0, 0, 0.9), 0 0 14px rgba(251, 191, 36, 0.45)",
             zIndex: 2,
           }}
         >
@@ -136,16 +135,16 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({
         </span>
       </div>
 
-      {/* ─── SCROLLING MARQUEE TRACK (100% WHITE STRIP) ─── */}
+      {/* ─── SCROLLING MARQUEE TRACK (100% BROADCAST RED PATTI + BOLD WHITE TEXT) ─── */}
       <div
         style={{
           flex: 1,
-          background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
+          background: "linear-gradient(180deg, #d3000b 0%, #aa0007 50%, #820004 100%)",
           display: "flex",
           alignItems: "center",
           overflow: "hidden",
           position: "relative",
-          boxShadow: "inset 0 3px 6px rgba(0, 0, 0, 0.08)",
+          boxShadow: "inset 0 3px 8px rgba(0, 0, 0, 0.35)",
         }}
       >
         <div
@@ -155,11 +154,11 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({
             whiteSpace: "nowrap",
             transform: `translateX(${scrollOffset}px)`,
             willChange: "transform",
-            fontSize: 32,
+            fontSize: 36,
             fontWeight: 900,
             fontFamily: "'Noto Sans Devanagari', 'Segoe UI', sans-serif",
-            color: "#b80009",
-            letterSpacing: "0.5px",
+            color: "#ffffff",
+            letterSpacing: "0.6px",
           }}
         >
           {[0, 1, 2, 3].map((cycle) => (
@@ -170,23 +169,23 @@ export const NewsTicker: React.FC<NewsTickerProps> = ({
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: 18,
-                    paddingRight: 46,
+                    gap: 20,
+                    paddingRight: 50,
                   }}
                 >
                   <span
                     style={{
-                      color: "#0f172a",
-                      fontSize: 18,
-                      opacity: 0.85,
+                      color: "#fde047",
+                      fontSize: 22,
+                      filter: "drop-shadow(0 1px 3px rgba(0, 0, 0, 0.8))",
                     }}
                   >
                     ●
                   </span>
                   <span
                     style={{
-                      color: "#b80009",
-                      textShadow: "0 1px 1px rgba(0, 0, 0, 0.10)",
+                      color: "#ffffff",
+                      textShadow: "0 2px 4px rgba(0, 0, 0, 0.75)",
                     }}
                   >
                     {item}

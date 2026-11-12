@@ -129,13 +129,13 @@ export const TV_COLORS = {
   equalizerRed: "#ef4444",
   
   // Bottom Ticker
-  tickerRedBox: "linear-gradient(135deg, #e50914 0%, #b20710 100%)",
-  tickerTrackBg: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
-  tickerBorderTop: "rgba(0, 240, 255, 0.35)",
-  tickerStarGold: "#fbbf24",
-  tickerTextWhite: "#b80009",
-  tickerTextRed: "#b80009",
-  tickerTextHighlight: "#00f0ff",
+  tickerRedBox: "linear-gradient(135deg, #180003 0%, #3b0007 50%, #180003 100%)",
+  tickerTrackBg: "linear-gradient(180deg, #d3000b 0%, #aa0007 50%, #820004 100%)",
+  tickerBorderTop: "rgba(255, 77, 79, 0.45)",
+  tickerStarGold: "#fde047",
+  tickerTextWhite: "#ffffff",
+  tickerTextRed: "#d3000b",
+  tickerTextHighlight: "#fde047",
 
   // Studio Background
   bgDark1: "#040711",
