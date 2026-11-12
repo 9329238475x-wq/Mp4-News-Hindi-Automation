@@ -924,7 +924,12 @@ def download_all_assets(max_stories: int = None, target_count: int = 12, force: 
                     photo_path=full_thumb_photo,
                     out_path=thumb_out,
                     category=story.get("category", "क्राइम"),
+                    story=story,
+                    all_stories=stories,
                 )
+                if num == 1:
+                    root_thumb = os.path.join(OUT_DIR, "thumbnail_01.jpg")
+                    shutil.copy2(thumb_out, root_thumb)
                 story["thumbnail_path"] = f"out/story_{num:02d}/thumbnail_{num:02d}.jpg"
                 updated = True
         except Exception as th_err:
