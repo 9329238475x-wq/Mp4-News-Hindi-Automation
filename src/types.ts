@@ -149,13 +149,13 @@ export const DLS_COLORS = TV_COLORS;
 export const DLS_TIMING = {
   fps: 30,
   prePaddingSeconds: 0,
-  postPaddingSeconds: 0,
+  postPaddingSeconds: 1.2, // 1.2s natural breathing room after speech ends
   transitionSeconds: 0,
   defaultAudioSeconds: 20,
   introFrames: 93, // 3.10 seconds of Subscribe-video.mp4 (exclusively on first story)
 
   get prePaddingFrames() { return 0; },
-  get postPaddingFrames() { return 0; },
+  get postPaddingFrames() { return 36; }, // 36 frames (1.2s buffer)
   get transitionFrames() { return 0; },
 } as const;
 
@@ -163,9 +163,12 @@ export const getStoryDurationFrames = (
   story: DLSStory,
   isFirstStory: boolean = false
 ): number => {
-  // 1ms प्रिसिजन: ऑडियो खत्म होते ही वीडियो उसी फ्रेम पर समाप्त (Zero extra silence/dead air)
+  // Professional Broadcast Timing:
+  // Adds 36 frames (1.2s) of natural breathing pause at the end of the voiceover
+  // so the anchor never gets cut off mid-word or mid-sentence!
   const durSeconds = story.audio_duration || DLS_TIMING.defaultAudioSeconds;
-  const baseFrames = Math.ceil(durSeconds * DLS_TIMING.fps);
+  const postPadding = DLS_TIMING.postPaddingFrames;
+  const baseFrames = Math.ceil(durSeconds * DLS_TIMING.fps) + postPadding;
   return isFirstStory ? baseFrames + DLS_TIMING.introFrames : baseFrames;
 };
 

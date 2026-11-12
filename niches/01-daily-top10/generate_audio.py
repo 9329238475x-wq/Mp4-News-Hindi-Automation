@@ -198,7 +198,7 @@ def normalize_broadcast_audio(file_path: str):
     cmd = [
         "ffmpeg", "-y",
         "-i", file_path,
-        "-af", "areverse,silenceremove=start_periods=1:start_duration=0.05:start_threshold=-38dB,areverse,loudnorm=I=-11:TP=-0.5:LRA=5",
+        "-af", "loudnorm=I=-14:TP=-1.0:LRA=7",
         "-ar", "48000",
         "-ac", "2",
         "-b:a", "192k",
@@ -214,7 +214,13 @@ def normalize_broadcast_audio(file_path: str):
 
 
 def synthesize_omnivoice(text: str, output_mp3_path: str) -> bool:
-    """OmniVoice GPU से बिना क्लोन के शुद्ध हिंदी ऑडियो तैयार करना"""
+    """
+    OmniVoice GPU से बिना कटे 100% पूर्ण और स्पष्ट हिंदी ऑडियो तैयार करना:
+    1. लंबे पैराग्राफ को वाक्यों (Sentences) में विभाजित करके सिंथेसाइज करना ताकि कोई शब्द न कटे।
+    2. वाक्यों के बीच 220ms का स्वाभाविक विराम (Natural Pause)।
+    3. ऑडियो के अंत में 500ms का रूम टोन / नेचुरल डिके ताकि अंतिम शब्द कभी अधूरा न कटे।
+    4. 1.20x स्पीड + 48kHz ब्रॉडकास्ट स्टीरियो MP3 (बिना किसी आक्रामक ट्रिमिंग के)।
+    """
     ov_data = get_omnivoice_model()
     if not ov_data:
         return False
@@ -223,40 +229,78 @@ def synthesize_omnivoice(text: str, output_mp3_path: str) -> bool:
     import numpy as np
     import soundfile as sf
     import torch
+    import re
 
-    print(f"  🎙️ [OmniVoice] सिंथेसाइजिंग ({len(text.split())} शब्द, भाषा: Hindi)...", flush=True)
+    clean_text = text.replace("**", "").replace("*", "").replace('"', '').strip()
+    words = clean_text.split()
+    print(f"  🎙️ [OmniVoice GPU] सिंथेसाइजिंग ({len(words)} शब्द, भाषा: Hindi)...", flush=True)
     t0 = time.time()
 
-    # OmniVoice direct Hindi inference without voice clone (no ref_audio)
-    gen_kwargs = {
-        "text": text,
-        "language": "hi",
-        "num_step": 25,
-    }
+    # Split text into distinct sentences by Devanagari '।' or '.' or '!' or '?'
+    raw_sentences = [s.strip() for s in re.split(r'[।!?|\n]+', clean_text) if s.strip()]
+    if not raw_sentences:
+        raw_sentences = [clean_text]
+
+    # Combine very short fragments (< 6 words) to avoid excessive small segments
+    sentences = []
+    curr = ""
+    for s in raw_sentences:
+        if curr:
+            curr += "। " + s
+        else:
+            curr = s
+        if len(curr.split()) >= 10:
+            sentences.append(curr + "।")
+            curr = ""
+    if curr:
+        sentences.append(curr + ("।" if not curr.endswith("।") else ""))
+
+    print(f"  🎙️ [OmniVoice GPU] वाक्य-दर-वाक्य सिंथेसिस ({len(sentences)} वाक्य)...", flush=True)
+
+    audio_segments = []
+    pause_samples = int(0.22 * sr)  # 220ms natural pause between sentences
+    pause_array = np.zeros(pause_samples, dtype=np.float32)
 
     try:
-        audio = model.generate(**gen_kwargs)
-        raw_wav = audio[0] if isinstance(audio, (list, tuple)) and len(audio) > 0 else audio
+        for s_idx, sent in enumerate(sentences, 1):
+            gen_kwargs = {
+                "text": sent,
+                "language": "hi",
+                "num_step": 25,
+            }
+            audio = model.generate(**gen_kwargs)
+            raw_wav = audio[0] if isinstance(audio, (list, tuple)) and len(audio) > 0 else audio
 
-        if isinstance(raw_wav, torch.Tensor):
-            wav = raw_wav.detach().cpu().float().numpy()
-        elif isinstance(raw_wav, np.ndarray):
-            wav = raw_wav.astype(np.float32)
-        else:
-            wav = np.array(raw_wav, dtype=np.float32)
+            if isinstance(raw_wav, torch.Tensor):
+                wav = raw_wav.detach().cpu().float().numpy()
+            elif isinstance(raw_wav, np.ndarray):
+                wav = raw_wav.astype(np.float32)
+            else:
+                wav = np.array(raw_wav, dtype=np.float32)
 
-        wav = np.squeeze(wav)
-        if wav.ndim > 1:
-            wav = wav.mean(axis=0 if wav.shape[0] < wav.shape[1] else 1)
+            wav = np.squeeze(wav)
+            if wav.ndim > 1:
+                wav = wav.mean(axis=0 if wav.shape[0] < wav.shape[1] else 1)
+
+            audio_segments.append(wav)
+            if s_idx < len(sentences):
+                audio_segments.append(pause_array)
+
+        # Add 500ms trailing natural decay buffer at the end so the final word NEVER cuts off!
+        end_buffer = np.zeros(int(0.50 * sr), dtype=np.float32)
+        audio_segments.append(end_buffer)
+
+        # Concatenate all sentence segments
+        full_wav = np.concatenate(audio_segments)
 
         temp_wav = output_mp3_path.replace(".mp3", "_temp.wav")
-        sf.write(temp_wav, wav, sr)
+        sf.write(temp_wav, full_wav, sr)
 
-        # Convert to 48kHz Stereo broadcast MP3 at 1.25x speed with trailing silence trimming & pitch preservation
+        # Convert to 48kHz Stereo broadcast MP3 at 1.20x speed without destructive silenceremove
         cmd = [
             "ffmpeg", "-y",
             "-i", temp_wav,
-            "-af", "areverse,silenceremove=start_periods=1:start_duration=0.05:start_threshold=-38dB,areverse,atempo=1.25",
+            "-af", "atempo=1.20",
             "-ar", "48000",
             "-ac", "2",
             "-b:a", "192k",
@@ -266,11 +310,12 @@ def synthesize_omnivoice(text: str, output_mp3_path: str) -> bool:
         if os.path.exists(temp_wav):
             os.remove(temp_wav)
 
-        print(f"  ✓ [OmniVoice] ऑडियो तैयार ({time.time() - t0:.1f}s): {output_mp3_path}")
+        print(f"  ✓ [OmniVoice GPU] 100% पूर्ण ऑडियो तैयार ({time.time() - t0:.1f}s): {output_mp3_path}")
         return True
     except Exception as e:
         print(f"  ⚠️ OmniVoice generation error: {e}")
         return False
+
 
 
 def load_script_from_file(script_path: str) -> str:
