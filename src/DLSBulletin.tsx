@@ -10,8 +10,8 @@ import { DLSBulletinProps, DLS_TIMING, getStoryDurationFrames } from "./types";
 
 export const DLSBulletin: React.FC<DLSBulletinProps> = ({
   stories,
-  channelName = "Mp4 News हिन्दी",
-  channelTagline = "सच्चाई सबसे पहले",
+  channelName = "Uncut भारत",
+  channelTagline = "100% निडर • निष्पक्ष • सच",
 }) => {
   // Collect all headlines for the continuous bottom ticker
   const allHeadlines = stories.map((s) => s.screen_headline);

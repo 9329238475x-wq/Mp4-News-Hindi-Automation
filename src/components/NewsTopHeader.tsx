@@ -24,8 +24,8 @@ interface NewsTopHeaderProps {
 }
 
 export const NewsTopHeader: React.FC<NewsTopHeaderProps> = ({
-  channelName = "Mp4 News हिन्दी",
-  tagline = "सच्चाई सबसे पहले",
+  channelName = "Uncut भारत",
+  tagline = "100% निडर • निष्पक्ष • सच",
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -89,9 +89,9 @@ export const NewsTopHeader: React.FC<NewsTopHeaderProps> = ({
   // ─── 5. Dynamic Rotating Tagline (Switches every 150 frames = 5s) ───
   const rotatingTaglines = [
     tagline,
+    "100% निडर • निष्पक्ष • सच",
     "देश का नंबर 1 बुलेटिन",
-    "हर खबर पर सबसे सटीक नज़र",
-    "सच्चाई सबसे पहले",
+    "सत्य से कोई समझौता नहीं",
   ];
   const taglineIndex = Math.floor(frame / 150) % rotatingTaglines.length;
   const currentTagline = rotatingTaglines[taglineIndex];
@@ -167,7 +167,7 @@ export const NewsTopHeader: React.FC<NewsTopHeaderProps> = ({
             }}
           />
 
-          {/* LEFT TAB: MP4 NEWS (Red Glossy Background, Pure White Ultra-Bold Text) */}
+          {/* LEFT TAB: UNCUT (Red Glossy Background, Pure White Ultra-Bold Text) */}
           <div
             style={{
               position: "relative",
@@ -176,8 +176,8 @@ export const NewsTopHeader: React.FC<NewsTopHeaderProps> = ({
               color: "#ffffff",
               fontWeight: 900,
               fontSize: 34,
-              padding: "11px 32px",
-              letterSpacing: "2px",
+              padding: "11px 28px",
+              letterSpacing: "3px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -213,10 +213,31 @@ export const NewsTopHeader: React.FC<NewsTopHeaderProps> = ({
                 pointerEvents: "none",
               }}
             />
-            MP4 NEWS
+            {/* Mini 3D UB Brand Tag */}
+            <span
+              style={{
+                background: "linear-gradient(135deg, #ffe600 0%, #ff9900 100%)",
+                color: "#990000",
+                fontSize: 20,
+                fontWeight: 900,
+                padding: "3px 9px",
+                borderRadius: 7,
+                letterSpacing: "0.5px",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.8)",
+                fontFamily: "'Segoe UI', 'Impact', sans-serif",
+                marginRight: 6,
+                textShadow: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              UB
+            </span>
+            UNCUT
           </div>
 
-          {/* RIGHT TAB: हिन्दी (Enamel White Background, Deep Red Text) */}
+          {/* RIGHT TAB: भारत (Enamel White Background, Deep Red Text) */}
           <div
             style={{
               position: "relative",
@@ -225,7 +246,7 @@ export const NewsTopHeader: React.FC<NewsTopHeaderProps> = ({
               color: "#cc0000",
               fontWeight: 900,
               fontSize: 36,
-              padding: "11px 32px",
+              padding: "11px 30px",
               letterSpacing: "1px",
               display: "flex",
               alignItems: "center",
@@ -248,7 +269,7 @@ export const NewsTopHeader: React.FC<NewsTopHeaderProps> = ({
                 pointerEvents: "none",
               }}
             />
-            हिन्दी
+            भारत
           </div>
         </div>
 

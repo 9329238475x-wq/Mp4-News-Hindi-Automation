@@ -27,7 +27,7 @@ interface FullScreenMemeOverlayProps {
 
 export const FullScreenMemeOverlay: React.FC<FullScreenMemeOverlayProps> = ({
   imageSrc,
-  channelName = "Mp4 News हिन्दी",
+  channelName = "Uncut भारत",
   durationInFrames,
 }) => {
   const frame = useCurrentFrame();

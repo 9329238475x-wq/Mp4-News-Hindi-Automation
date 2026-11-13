@@ -408,8 +408,8 @@ export const DLSNewsStory: React.FC<DLSStoryProps> = ({
   story,
   storyIndex,
   totalStories,
-  channelName = "Mp4 News हिन्दी",
-  channelTagline = "सच्चाई सबसे पहले",
+  channelName = "Uncut भारत",
+  channelTagline = "100% निडर • निष्पक्ष • सच",
   allHeadlines = [],
   globalStartFrame = 0,
 }) => {

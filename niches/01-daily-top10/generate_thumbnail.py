@@ -803,7 +803,7 @@ def generate_sensational_thumbnail(
     category: str = "क्राइम",
     story: dict = None,
     all_stories: list = None,
-    channel_name: str = "MP4 NEWS"
+    channel_name: str = "Uncut भारत"
 ) -> str:
     """
     Main Entrypoint: Generates the Master Superfast News YouTube Thumbnail

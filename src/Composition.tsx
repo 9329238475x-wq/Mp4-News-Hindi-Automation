@@ -17,8 +17,8 @@ const loadedStories: DLSStory[] =
     : defaultDLSBulletin.stories;
 
 const fullBulletinProps = {
-  channelName: "Mp4 News हिन्दी",
-  channelTagline: "सच्चाई सबसे पहले",
+  channelName: "Uncut भारत",
+  channelTagline: "100% निडर • निष्पक्ष • सच",
   stories: loadedStories,
 };
 

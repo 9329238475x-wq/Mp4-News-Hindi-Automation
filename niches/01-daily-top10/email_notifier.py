@@ -44,10 +44,10 @@ def send_upload_notification(
     studio_url = f"https://studio.youtube.com/video/{video_id}/edit"
     now_str = datetime.now().strftime("%d %B %Y, %I:%M %p IST")
 
-    subject = f"🚀 [MP4 NEWS] YouTube Video Uploaded Successfully! ({video_id})"
+    subject = f"🚀 [Uncut भारत] YouTube Video Uploaded Successfully! ({video_id})"
 
     # Plain-text version for basic email clients
-    plain_text = f"""MP4 NEWS हिन्दी - YouTube Upload Report
+    plain_text = f"""Uncut भारत - YouTube Upload Report
 ==============================================
 Status: Success ✅
 Upload Time: {now_str}
@@ -62,7 +62,7 @@ Links:
 - Watch Video: {watch_url}
 - YouTube Studio Edit: {studio_url}
 
-MP4 News Automated Broadcast Engine
+Uncut भारत Automated Broadcast Engine
 """
 
     # Rich HTML version for modern email clients / smartphone screens
@@ -179,7 +179,7 @@ MP4 News Automated Broadcast Engine
 <body>
   <div class="container">
     <div class="header">
-      <h1>🚀 MP4 NEWS हिन्दी</h1>
+      <h1>🚀 Uncut भारत</h1>
       <p>YouTube Video Successfully Uploaded & Published</p>
     </div>
     
@@ -220,7 +220,7 @@ MP4 News Automated Broadcast Engine
     </div>
     
     <div class="footer">
-      Automated by MP4 News Hindi Broadcast Engine • Sicreat-automation
+      Automated by Uncut भारत Broadcast Engine • Sicreat-automation
     </div>
   </div>
 </body>

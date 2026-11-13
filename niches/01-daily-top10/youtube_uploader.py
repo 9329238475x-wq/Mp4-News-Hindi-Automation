@@ -237,7 +237,7 @@ def publish_broadcast_to_youtube(
     4. Sends instant notification to user's Gmail with clickable links.
     """
     print("\n" + "═" * 70)
-    print("🚀 [MP4 NEWS] INITIATING AUTOMATED YOUTUBE UPLOAD & PUBLISH")
+    print("🚀 [UNCUT भारत] INITIATING AUTOMATED YOUTUBE UPLOAD & PUBLISH")
     print("═" * 70)
 
     # 1. Generate SEO Metadata Package

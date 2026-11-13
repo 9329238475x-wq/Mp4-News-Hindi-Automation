@@ -17,7 +17,7 @@ interface NextStoryTransitionProps {
 }
 
 export const NextStoryTransition: React.FC<NextStoryTransitionProps> = ({
-  channelName = "Mp4 News हिन्दी",
+  channelName = "Uncut भारत",
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();

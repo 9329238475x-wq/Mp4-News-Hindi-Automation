@@ -21,8 +21,8 @@ interface SubscribeIntroProps {
 }
 
 export const SubscribeIntro: React.FC<SubscribeIntroProps> = ({
-  channelName = "Mp4 News हिन्दी",
-  channelTagline = "सच्चाई सबसे पहले",
+  channelName = "Uncut भारत",
+  channelTagline = "100% निडर • निष्पक्ष • सच",
 }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
@@ -114,7 +114,7 @@ export const SubscribeIntro: React.FC<SubscribeIntroProps> = ({
             }}
           />
 
-          {/* Left Red Tab: MP4 */}
+          {/* Left Red Tab: UNCUT */}
           <div
             style={{
               background:
@@ -132,41 +132,45 @@ export const SubscribeIntro: React.FC<SubscribeIntroProps> = ({
               zIndex: 2,
             }}
           >
-            MP4
+            <span
+              style={{
+                background: "linear-gradient(135deg, #ffe600 0%, #ff9900 100%)",
+                color: "#990000",
+                fontSize: 16,
+                fontWeight: 900,
+                padding: "2px 7px",
+                borderRadius: 5,
+                marginRight: 6,
+                textShadow: "none",
+              }}
+            >
+              UB
+            </span>
+            UNCUT
           </div>
 
           {/* Vertical Divider */}
           <div style={{ width: 1.5, background: "rgba(0,0,0,0.2)", zIndex: 3 }} />
 
-          {/* Right White Tab: NEWS हिन्दी */}
+          {/* Right White Tab: भारत */}
           <div
             style={{
               background: "linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%)",
               color: "#cc0000",
               fontWeight: 900,
-              fontSize: 25,
+              fontSize: 27,
               padding: "9px 20px",
               letterSpacing: "1px",
               display: "flex",
               alignItems: "center",
               gap: 8,
-              fontFamily: "'Segoe UI', 'Impact', sans-serif",
+              fontFamily: "'Noto Sans Devanagari', 'Segoe UI', sans-serif",
               textShadow: "none",
               position: "relative",
               zIndex: 2,
             }}
           >
-            <span>NEWS</span>
-            <span
-              style={{
-                color: "#111111",
-                fontFamily: "'Segoe UI', 'Noto Sans Devanagari', sans-serif",
-                fontSize: 23,
-                fontWeight: 900,
-              }}
-            >
-              हिन्दी
-            </span>
+            भारत
           </div>
         </div>
 

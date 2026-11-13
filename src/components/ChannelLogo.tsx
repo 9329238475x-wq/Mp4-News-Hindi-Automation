@@ -93,7 +93,7 @@ export const ChannelLogo: React.FC<ChannelLogoProps> = ({
             zIndex: 2,
           }}
         >
-          {isPill1 ? "MP4" : "MP4 NEWS"}
+          {isPill1 ? "UB" : "UNCUT"}
         </div>
 
         {/* Vertical Divider Line */}
@@ -126,7 +126,7 @@ export const ChannelLogo: React.FC<ChannelLogoProps> = ({
         >
           {isPill1 ? (
             <>
-              <span style={{ color: "#cc0000" }}>NEWS</span>
+              <span style={{ color: "#cc0000" }}>UNCUT</span>
               <span
                 style={{
                   color: "#111111",
@@ -134,7 +134,7 @@ export const ChannelLogo: React.FC<ChannelLogoProps> = ({
                   fontSize: 58,
                 }}
               >
-                हिन्दी
+                भारत
               </span>
             </>
           ) : (
@@ -144,7 +144,7 @@ export const ChannelLogo: React.FC<ChannelLogoProps> = ({
                 fontFamily: "'Segoe UI', 'Noto Sans Devanagari', sans-serif",
               }}
             >
-              हिन्दी
+              भारत
             </span>
           )}
         </div>

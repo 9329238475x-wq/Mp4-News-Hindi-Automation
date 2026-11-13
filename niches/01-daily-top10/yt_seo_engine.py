@@ -124,7 +124,9 @@ def generate_vidiq_viral_tags(all_stories: list = None, max_chars: int = 495) ->
         "superfast news",
         "hindi news live",
         "breaking news hindi",
-        "mp4 news",
+        "uncut bharat",
+        "uncut bharat news",
+        "ub news",
         "crime alert",
         "taza samachar",
         "top news hindi",
@@ -273,7 +275,7 @@ def build_high_class_viral_title(all_stories: list = None, bottom_number: str = 
 
 def build_master_description(
     all_stories: list = None,
-    channel_name: str = "MP4 NEWS हिन्दी",
+    channel_name: str = "Uncut भारत",
     bottom_number: str = "50"
 ) -> str:
     """
@@ -298,7 +300,7 @@ def build_master_description(
         f"Today Breaking News - आज {day} {month} {year} ({weekday}) के दिनभर के सभी मुख्य समाचार और देश की {bottom_number} बड़ी खबरें।\n\n"
         f"इस विशेष बुलेटिन में देखिए क्राइम, प्रशासन की सख्त कार्रवाई, सुप्रीम कोर्ट के बड़े फैसले, "
         f"ED और CBI की छापेमारी, और सनसनीखेज मामलों की निष्पक्ष, तथ्यपरक और तेज रिपोर्टिंग सिर्फ {channel_name} पर।\n\n"
-        f"ताज़ा खबरों के नियमित अपडेट्स के लिए चैनल को तुरंत सब्सक्राइब करें: https://youtube.com/@MP4NEWS\n\n"
+        f"ताज़ा खबरों के नियमित अपडेट्स के लिए चैनल को तुरंत सब्सक्राइब करें: https://youtube.com/@UncutBharat\n\n"
         "==================================================\n"
     )
 
@@ -334,9 +336,9 @@ def build_master_description(
     # ZONE 4: Channel Info & Official Links (NO EMOJIS)
     zone4 = (
         "सोशल मीडिया एवं संपर्क:\n"
-        "• YouTube: https://youtube.com/@MP4NEWS\n"
-        "• WhatsApp Channel: https://whatsapp.com/channel/MP4NEWS\n"
-        "• Telegram: https://t.me/MP4NewsHindi\n"
+        "• YouTube: https://youtube.com/@UncutBharat\n"
+        "• WhatsApp Channel: https://whatsapp.com/channel/UncutBharat\n"
+        "• Telegram: https://t.me/UncutBharat\n"
         "• Business & Press Inquiry: 9329238475x@gmail.com\n\n"
     )
 
@@ -355,7 +357,7 @@ def build_master_description(
         "#BreakingNews",
         "#SuperfastNews",
         f"#{bottom_number}BadiKhabrein",
-        "#MP4News",
+        "#UncutBharat",
         "#CrimeAlert",
         "#TodayNewsHindi",
         "#TazaKhabar",

@@ -19,7 +19,7 @@ if hasattr(sys.stderr, "reconfigure"):
 ROOT = Path(__file__).resolve().parent
 
 print("=" * 65, flush=True)
-print("🚀 [MP4 NEWS HINDI] KAGGLE HIGH-PERFORMANCE BROADCAST ENGINE TRIGGER", flush=True)
+print("🚀 [UNCUT भारत] KAGGLE HIGH-PERFORMANCE BROADCAST ENGINE TRIGGER", flush=True)
 print("=" * 65, flush=True)
 
 # 1. Configure Kaggle Credentials from env or file
