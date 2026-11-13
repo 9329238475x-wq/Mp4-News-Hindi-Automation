@@ -295,12 +295,12 @@ def build_master_description(
 
     stories = all_stories or []
 
-    # ZONE 1: High-Class Opening Hook & Overview (NO EMOJIS)
+    # ZONE 1: High-Class Opening Hook & Overview (NO EMOJIS, ZERO LINKS)
     zone1 = (
         f"Today Breaking News - आज {day} {month} {year} ({weekday}) के दिनभर के सभी मुख्य समाचार और देश की {bottom_number} बड़ी खबरें।\n\n"
         f"इस विशेष बुलेटिन में देखिए क्राइम, प्रशासन की सख्त कार्रवाई, सुप्रीम कोर्ट के बड़े फैसले, "
         f"ED और CBI की छापेमारी, और सनसनीखेज मामलों की निष्पक्ष, तथ्यपरक और तेज रिपोर्टिंग सिर्फ {channel_name} पर।\n\n"
-        f"ताज़ा खबरों के नियमित अपडेट्स के लिए चैनल को तुरंत सब्सक्राइब करें: https://youtube.com/@UncutBharat\n\n"
+        f"ताज़ा खबरों के नियमित अपडेट्स के लिए {channel_name} चैनल को अभी सब्सक्राइब करें।\n\n"
         "==================================================\n"
     )
 
@@ -333,13 +333,12 @@ def build_master_description(
         "- Desh Duniya Ki Badi Khabrein Today\n\n"
     )
 
-    # ZONE 4: Channel Info & Official Links (NO EMOJIS)
+    # ZONE 4: Channel Info & Contact (NO LINKS, NO EMOJIS)
     zone4 = (
-        "सोशल मीडिया एवं संपर्क:\n"
-        "• YouTube: https://youtube.com/@UncutBharat\n"
-        "• WhatsApp Channel: https://whatsapp.com/channel/UncutBharat\n"
-        "• Telegram: https://t.me/UncutBharat\n"
-        "• Business & Press Inquiry: 9329238475x@gmail.com\n\n"
+        "चैनल एवं संपर्क विवरण:\n"
+        f"• चैनल: {channel_name}\n"
+        "• यूट्यूब हैंडल: @UncutBharat\n"
+        "• ईमेल संपर्क: 9329238475x@gmail.com\n\n"
     )
 
     # ZONE 5: Journalism & Legal Fair Use Disclaimer (NO EMOJIS)
@@ -378,6 +377,11 @@ def build_master_description(
 
     # Strict emoji cleanse
     full_desc = clean_no_emojis(full_desc)
+
+    # STRICT ZERO-LINK ENFORCEMENT: Remove all URLs / web links (as requested by user)
+    full_desc = re.sub(r"https?://\S+", "", full_desc)
+    full_desc = re.sub(r"www\.\S+", "", full_desc)
+    full_desc = re.sub(r"\b\w+\.(?:com|org|net|in|io|me|co)\b/\S*", "", full_desc)
 
     # Enforce strictly <= 4,950 characters (YouTube allows 5,000 max)
     if len(full_desc) > 4950:
