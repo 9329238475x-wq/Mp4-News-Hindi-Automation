@@ -783,7 +783,7 @@ def generate_dls_reference_pillow(
         draw.text((x_cursor, 420), txt, fill=c_rgb, font=f_strip)
         bbox = draw.textbbox((x_cursor, 420), txt, font=f_strip)
         if not no_ul:
-            draw.line([(x_cursor, 482), (bbox[2] - 5, 482)], fill=c_rgb, width=3.5)
+            draw.line([(x_cursor, 482), (bbox[2] - 5, 482)], fill=c_rgb, width=4)
         x_cursor = bbox[2] + 16
 
     # 4. Bottom Red Banner (Y: 505-720)
