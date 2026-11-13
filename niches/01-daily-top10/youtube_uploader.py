@@ -127,7 +127,7 @@ def upload_video_resumable(
         "snippet": {
             "title": title,
             "description": description,
-            "tags": tags,
+            "tags": [],  # Intentionally kept completely empty as per user request
             "categoryId": category_id
         },
         "status": {
@@ -233,19 +233,19 @@ def publish_broadcast_to_youtube(
     # 1. Generate SEO Metadata Package
     seo_pkg = generate_youtube_seo_package(all_stories=all_stories, bottom_number="50")
     print(f"  ✓ SEO Package Ready: '{seo_pkg['title']}'")
-    print(f"  ✓ Tags: {seo_pkg['tags_count']} tags ({seo_pkg['tags_char_count']} chars)")
+    print(f"  ✓ Video Upload Tags Box: KEPT EMPTY (as instructed)")
     print(f"  ✓ Description: {seo_pkg['desc_length']} chars (Zero Emojis, Zero Timestamps)")
 
     # 2. Authenticate
     youtube = get_authenticated_youtube_service(client_secrets_file, token_file)
 
-    # 3. Resumable Upload
+    # 3. Resumable Upload (tags box kept 100% empty)
     video_id = upload_video_resumable(
         youtube=youtube,
         video_path=video_path,
         title=seo_pkg["title"],
         description=seo_pkg["description"],
-        tags=seo_pkg["tags"],
+        tags=[],
         category_id=seo_pkg["categoryId"],
         privacy_status=privacy_status
     )
