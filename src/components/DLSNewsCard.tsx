@@ -144,12 +144,12 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
   });
 
   // Geometry:
-  // Center: left 480, top 250, width 960, height 460
+  // Center: left 480, top 235, width 960, height 485
   // Side:   left 1110, top 240, width 730, height 551 (Matches Media Showcase at top: 240, height: 551!)
   const currentLeft = interpolate(slideProgress, [0, 1], [480, 1110]);
-  const currentTop = interpolate(slideProgress, [0, 1], [250, 240]);
+  const currentTop = interpolate(slideProgress, [0, 1], [235, 240]);
   const currentWidth = interpolate(slideProgress, [0, 1], [960, 730]);
-  const currentHeight = interpolate(slideProgress, [0, 1], [460, 551]);
+  const currentHeight = interpolate(slideProgress, [0, 1], [485, 551]);
 
   // ─── 2. TARAJU (SEESAW) FOCUS ORCHESTRATION ───
   const tarajuOpacity = interpolate(expandProgress, [0, 0.35, 1], [1, 0, 0], {
@@ -195,8 +195,8 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
     ];
   }
 
-  // Ensure Line 3 has yellow-highlight entity marker
-  if (raw4Lines[2]) {
+  // Only wrap entity in ** if line 3 is very short (legacy 2-3 words) and lacks **
+  if (raw4Lines[2] && !raw4Lines[2].includes("**") && raw4Lines[2].split(/\s+/).length <= 5) {
     raw4Lines[2] = ensureEntityHighlight(raw4Lines[2]);
   }
 
@@ -205,11 +205,17 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
   const lineTypingDuration = 14;
   const cursorBlink = Math.floor(frame / 6) % 2 === 0;
 
-  // Font size interpolation between Center & Side
-  const fontSize1 = Math.round(interpolate(slideProgress, [0, 1], [46, 40]));
-  const fontSize2 = Math.round(interpolate(slideProgress, [0, 1], [50, 44]));
-  const fontSize3 = Math.round(interpolate(slideProgress, [0, 1], [50, 44]));
-  const fontSize4 = Math.round(interpolate(slideProgress, [0, 1], [50, 44]));
+  // Dynamic responsive font sizing so 7-10 word headlines fit cleanly with zero vertical overlap
+  const maxLineLen = Math.max(...raw4Lines.map((l) => (l ? l.replace(/\*\*/g, "").length : 0)), 15);
+  let baseFSize = 36;
+  if (maxLineLen > 38) baseFSize = 28;
+  else if (maxLineLen > 28) baseFSize = 32;
+  else baseFSize = 36;
+
+  const fontSize1 = Math.round(interpolate(slideProgress, [0, 1], [baseFSize, baseFSize - 4]));
+  const fontSize2 = Math.round(interpolate(slideProgress, [0, 1], [baseFSize + 2, baseFSize - 2]));
+  const fontSize3 = Math.round(interpolate(slideProgress, [0, 1], [baseFSize + 2, baseFSize - 2]));
+  const fontSize4 = Math.round(interpolate(slideProgress, [0, 1], [baseFSize + 2, baseFSize - 2]));
   const fontSizes = [fontSize1, fontSize2, fontSize3, fontSize4];
 
   // Helper to render a single line with typing & yellow highlight box
