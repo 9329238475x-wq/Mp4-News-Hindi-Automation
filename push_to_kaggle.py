@@ -169,6 +169,54 @@ if mp4_files:
     for mp4 in mp4_files:
         print(f"\n🎬 RENDERED BROADCAST VIDEO: {mp4}", flush=True)
         print(f"📊 Size: {mp4.stat().st_size / (1024*1024):.2f} MB", flush=True)
+
+    # ═════════════════════════════════════════════════════════════════════
+    # AUTOMATED YOUTUBE UPLOAD & GMAIL NOTIFICATION
+    # ═════════════════════════════════════════════════════════════════════
+    latest_mp4 = sorted(mp4_files, key=lambda f: f.stat().st_mtime, reverse=True)[0]
+    
+    # Locate Master Thumbnail
+    possible_thumbs = [
+        out_dir / "test_dls_reference_thumbnail.jpg",
+        out_dir / "story_01" / "thumbnail_01.jpg",
+        out_dir / "thumbnail_01.jpg"
+    ]
+    thumb_path = next((str(t) for t in possible_thumbs if t.exists()), "")
+
+    # Load Story Metadata
+    stories = []
+    sample_json = ROOT / "niches" / "01-daily-top10" / "generated_sample_top10.json"
+    story_1_json = out_dir / "story_01" / "story_1_data.json"
+    if story_1_json.exists():
+        try:
+            with open(story_1_json, "r", encoding="utf-8") as f:
+                stories = [json.load(f)]
+        except Exception:
+            pass
+    elif sample_json.exists():
+        try:
+            with open(sample_json, "r", encoding="utf-8") as f:
+                stories = json.load(f)
+        except Exception:
+            pass
+
+    try:
+        sys.path.insert(0, str(ROOT / "niches" / "01-daily-top10"))
+        from youtube_uploader import publish_broadcast_to_youtube
+        print("\n" + "═" * 65, flush=True)
+        print("🚀 AUTOMATICALLY PUBLISHING BROADCAST VIDEO TO YOUTUBE...", flush=True)
+        print("═" * 65, flush=True)
+
+        upload_res = publish_broadcast_to_youtube(
+            video_path=str(latest_mp4),
+            thumbnail_path=thumb_path,
+            all_stories=stories,
+            privacy_status="unlisted",
+            notify_email=True
+        )
+        print(f"✅ YOUTUBE PUBLISH COMPLETE: {upload_res.get('watch_url')}", flush=True)
+    except Exception as up_err:
+        print(f"⚠️ YouTube upload encountered notice: {up_err}", flush=True)
 else:
     print("\nℹ️ No .mp4 found directly. Listing downloaded files:", flush=True)
     for f in out_dir.iterdir():

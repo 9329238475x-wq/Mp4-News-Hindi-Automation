@@ -27,7 +27,7 @@ jobs:
 
       - name: Install Cloud Dependencies
         run: |
-          pip install --upgrade kaggle requests six certifi urllib3
+          pip install --upgrade kaggle requests six certifi urllib3 google-api-python-client google-auth-oauthlib beautifulsoup4 python-dotenv
 
       - name: Configure Kaggle API Credentials
         run: |
@@ -48,6 +48,10 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           STORY_NUMBER: ${{ inputs.story_number }}
           FORCE_REFRESH_NEWS: ${{ inputs.force_refresh_news }}
+          YOUTUBE_TOKEN_JSON: ${{ secrets.YOUTUBE_TOKEN_JSON }}
+          DUBSTUDIO_EMAIL: ${{ secrets.DUBSTUDIO_EMAIL }}
+          DUBSTUDIO_TO_EMAIL: ${{ secrets.DUBSTUDIO_TO_EMAIL }}
+          DUBSTUDIO_APP_PASS: ${{ secrets.DUBSTUDIO_APP_PASS }}
         run: |
           python push_to_kaggle.py
 
