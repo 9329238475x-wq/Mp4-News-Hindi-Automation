@@ -233,8 +233,8 @@ def publish_broadcast_to_youtube(
     # 1. Generate SEO Metadata Package
     seo_pkg = generate_youtube_seo_package(all_stories=all_stories, bottom_number="50")
     print(f"  ✓ SEO Package Ready: '{seo_pkg['title']}'")
-    print(f"  ✓ Tags: {len(seo_pkg['tags'])} tags ({seo_pkg['tags_char_count']} chars)")
-    print(f"  ✓ Description: {seo_pkg['desc_length']} chars with {seo_pkg['chapters_count']} chapters")
+    print(f"  ✓ Tags: {seo_pkg['tags_count']} tags ({seo_pkg['tags_char_count']} chars)")
+    print(f"  ✓ Description: {seo_pkg['desc_length']} chars (Zero Emojis, Zero Timestamps)")
 
     # 2. Authenticate
     youtube = get_authenticated_youtube_service(client_secrets_file, token_file)
@@ -270,8 +270,8 @@ def publish_broadcast_to_youtube(
             title=seo_pkg["title"],
             privacy_status=privacy_status,
             thumbnail_status=thumb_status,
-            tags_count=len(seo_pkg["tags"]),
-            chapters_count=seo_pkg["chapters_count"],
+            tags_count=seo_pkg["tags_count"],
+            chapters_count=len(all_stories) if all_stories else 50,
             video_path=video_path
         )
 
@@ -308,3 +308,4 @@ if __name__ == "__main__":
         print("Usage:")
         print("  python youtube_uploader.py --auth-only")
         print("  python youtube_uploader.py --video <path_to.mp4> --thumbnail <path_to.jpg> --privacy unlisted")
+
