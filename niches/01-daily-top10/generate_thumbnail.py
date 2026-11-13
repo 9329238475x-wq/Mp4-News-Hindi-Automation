@@ -46,69 +46,113 @@ HINDI_MONTHS = [
 ]
 
 
-def extract_thumbnail_hook_segments(all_stories: list = None, headline: str = "", story: dict = None) -> tuple:
+def extract_thumbnail_hook_segments(
+    all_stories: list = None,
+    headline: str = "",
+    story: dict = None,
+    bottom_number: str = "50"
+) -> tuple:
     """
-    Extracts high-CTR underlined keywords for the white strip and cyan pill text.
-    Category-aware:
-    - If hard news / crime (Mahadev Satta, encounter, arrest, remand): crime triggers
-    - Otherwise: citizen utility / festival triggers (sona-chandi, karwa chauth, LPG gas, etc.)
-    Returns (segments_list, is_crime_heavy)
+    Extracts high-CTR underlined keywords for the white strip and dynamic text for cyan pill.
+    Strictly aligned with MP4 NEWS (क्राइम अलर्ट / हार्ड न्यूज़ / एक्शन / सनसनीखेज खुलासे) category:
+    - Never uses festival/kitchen triggers (e.g. सोना-चांदी, करवा चौथ, LPG)
+    - Dynamically scans actual scraped stories (screen_headline, original_title, voiceover)
+    - Extracts 4 high-impact keywords with alternating colors + trailing count text
+    - Returns (white_segments, cyan_pill_html)
     """
     text_corpus = (headline or "")
     if story:
         text_corpus += " " + (story.get("screen_headline") or story.get("original_title") or "")
         text_corpus += " " + (story.get("voiceover_script") or "")
     if all_stories:
-        for s in all_stories[:8]:
+        for s in all_stories:
             text_corpus += " " + (s.get("screen_headline") or s.get("original_title") or "")
             text_corpus += " " + (s.get("voiceover_script") or "")
 
     low = text_corpus.lower()
+
+    # Dynamic Hard News / Crime Pattern Dictionary
+    PATTERNS = [
+        (["महादेव", "सट्टा", "सट्टेबाजी", "बेटिंग"], "महादेव सट्टा,"),
+        (["सौरभ", "चंद्राकर"], "सौरभ चंद्राकर,"),
+        (["एनकाउंटर", "मुठभेड़"], "बड़ा एनकाउंटर,"),
+        (["गोली", "फायरिंग", "हत्या", "मर्डर", "वारदात"], "सनसनीखेज मर्डर,"),
+        (["ईडी", "ed"], "ED की बड़ी रेड,"),
+        (["सीबीआई", "cbi"], "CBI का शिकंजा,"),
+        (["एनआईए", "nia"], "NIA छापेमारी,"),
+        (["गिरफ्तार", "हिरासत", "दबोचा", "अरेस्ट", "पकड़ा"], "बड़ी गिरफ्तारी,"),
+        (["रिमांड", "कस्टडी"], "रिमांड पर फैसला,"),
+        (["सुप्रीम कोर्ट", "शीर्ष अदालत"], "सुप्रीम कोर्ट सख्त,"),
+        (["हाईकोर्ट", "कोर्ट", "अदालत"], "कोर्ट का बड़ा फैसला,"),
+        (["माफिया", "गैंगस्टर", "बिश्नोई", "डॉन"], "माफिया पर एक्शन,"),
+        (["बुलडोजर", "ध्वस्त"], "बुलडोजर कार्रवाई,"),
+        (["घोटाला", "फर्जीवाड़ा"], "बड़ा घोटाला उजागर,"),
+        (["करोड़"], "6000 करोड़ के राज,"),
+        (["जेल", "सलाखें"], "जेल की सलाखों में,"),
+        (["निगरानी", "सत्यापन", "अभियान", "बेल"], "अपराधियों पर शिकंजा,"),
+        (["अलर्ट", "आतंकी", "सुरक्षा"], "हाई अलर्ट जारी,"),
+        (["छापेमारी", "दबिश"], "बड़ी छापेमारी,")
+    ]
+
+    matched_keywords = []
+    for triggers, kw in PATTERNS:
+        if any(t in low for t in triggers):
+            if kw not in matched_keywords:
+                matched_keywords.append(kw)
+        if len(matched_keywords) >= 4:
+            break
+
+    # Hard news fallbacks (Pure Crime / Hard News, NEVER vegetables/festivals!)
+    crime_fallbacks = [
+        "महादेव सट्टा,",
+        "पुलिस एनकाउंटर,",
+        "ED की रेड,",
+        "6000 करोड़ का राज,"
+    ]
+    for fb in crime_fallbacks:
+        if len(matched_keywords) >= 4:
+            break
+        if fb not in matched_keywords:
+            matched_keywords.append(fb)
+
+    # Pick top 3-4 distinct punchy keywords (max total chars <= 40 to fit perfectly)
+    selected_kws = []
+    total_len = 0
+    for kw in matched_keywords:
+        if len(selected_kws) >= 3:
+            break
+        selected_kws.append(kw)
+        total_len += len(kw)
+
+    # 3 distinct vibrant colors: Black, Blue, Red
+    colors = ["#000000", "#0055cc", "#d00000"]
     segments = []
+    for i in range(len(selected_kws)):
+        segments.append({
+            "text": selected_kws[i],
+            "color": colors[i % len(colors)]
+        })
 
-    # Check if bulletin is crime-heavy
-    is_crime_heavy = any(w in low for w in [
-        "सट्टा", "महादेव", "एनकाउंटर", "हत्या", "माफिया", "रिमांड",
-        "गिरफ्तार", "ईडी", "सीबीआई", "मुठभेड़", "गोली", "अपराध"
-    ])
+    # Trailing segment (no underline, clean bold Baloo 2)
+    segments.append({
+        "text": f"समेत {bottom_number} बड़े अपडेट",
+        "color": "#000000",
+        "no_underline": True
+    })
 
-    if is_crime_heavy:
-        if any(w in low for w in ["सट्टा", "महादेव"]):
-            segments.append({"text": "महादेव सट्टा,", "color": "#000000"})
-        elif any(w in low for w in ["माफिया"]):
-            segments.append({"text": "माफिया पर एक्शन,", "color": "#000000"})
-        else:
-            segments.append({"text": "क्राइम अलर्ट,", "color": "#000000"})
-
-        if any(w in low for w in ["एनकाउंटर", "गोली", "मुठभेड़"]):
-            segments.append({"text": "पुलिस एनकाउंटर,", "color": "#0055cc"})
-        elif any(w in low for w in ["ईडी", "सीबीआई"]):
-            segments.append({"text": "ED की रेड,", "color": "#0055cc"})
-        else:
-            segments.append({"text": "बड़ी गिरफ्तारी,", "color": "#0055cc"})
-
-        if any(w in low for w in ["रिमांड"]):
-            segments.append({"text": "रिमांड पर फैसला,", "color": "#d00000"})
-        elif any(w in low for w in ["सुप्रीम कोर्ट", "कोर्ट"]):
-            segments.append({"text": "सुप्रीम कोर्ट सख्त,", "color": "#d00000"})
-        else:
-            segments.append({"text": "प्रशासन सख्त,", "color": "#d00000"})
-
-        if "करोड़" in low:
-            segments.append({"text": "6000 करोड़ राज", "color": "#008800"})
-        else:
-            segments.append({"text": "जांच में खुलासा", "color": "#008800"})
-
-        segments.append({"text": "समेत बड़े अपडेट", "color": "#000000", "no_underline": True})
+    # Dynamic Cyan Pill Text (Tailored to actual stories)
+    if any(w in low for w in ["सट्टा", "घोटाला", "करोड़"]):
+        cyan_pill_html = 'सट्टा सिंडिकेट व घोटालों पर: <span class="cyan-pill-highlight">खुले कई बड़े राज</span>'
+    elif any(w in low for w in ["ईडी", "सीबीआई", "रेड", "छापा", "दबिश"]):
+        cyan_pill_html = 'देशभर में ED-CBI की बड़ी रेड: <span class="cyan-pill-highlight">कई बड़े खुलासे</span>'
+    elif any(w in low for w in ["एनकाउंटर", "माफिया", "अपराधी", "मुठभेड़", "गोली"]):
+        cyan_pill_html = 'अपराधियों और माफिया पर प्रहार: <span class="cyan-pill-highlight">पुलिस का बड़ा एक्शन</span>'
+    elif any(w in low for w in ["कोर्ट", "रिमांड", "जेल", "अदालत"]):
+        cyan_pill_html = 'देशभर के सनसनीखेज मामलों में: <span class="cyan-pill-highlight">कोर्ट का बड़ा फैसला</span>'
     else:
-        # Reference keywords from user's preferred image
-        segments.append({"text": "सोना-चांदी,", "color": "#000000"})
-        segments.append({"text": "करवा चौथ,", "color": "#0055cc"})
-        segments.append({"text": "LPG गैस,", "color": "#d00000"})
-        segments.append({"text": "तूफान अर्नब", "color": "#008800"})
-        segments.append({"text": "समेत बड़े अपडेट", "color": "#000000", "no_underline": True})
+        cyan_pill_html = f'देशभर की {bottom_number} बड़ी घटनाओं पर: <span class="cyan-pill-highlight">प्रशासन का कड़ा एक्शन</span>'
 
-    return segments, is_crime_heavy
+    return segments, cyan_pill_html
 
 
 def find_browser_executable() -> str:
@@ -138,16 +182,16 @@ def build_dls_reference_html(
     weekday_str: str,
     year_str: str,
     white_strip_segments: list,
-    bottom_number: str = "50",
-    is_crime_heavy: bool = False
+    cyan_pill_html: str = "",
+    bottom_number: str = "50"
 ) -> str:
     """
     Builds the pixel-perfect HTML/CSS layout:
     - [सुपरफास्ट न्यूज़ LIVE] with lowered LIVE pill
     - Baloo 2 for all Devanagari text
     - Poppins-Black for date digits and year pill
-    - [मुख्य] placed JUST DIRECTLY ABOVE [समाचार]
-    - White strip text enlarged (51px) to fill height
+    - [मुख्य] placed JUST DIRECTLY ABOVE [समाचार] with unclipped 'ु' matra
+    - White strip text enlarged (51px) to fill height with hard-news triggers
     - [क्राइम अलर्ट] badge on bottom-left
     - [50 बड़ी खबरें] vertically centered in the red banner
     """
@@ -165,10 +209,8 @@ def build_dls_reference_html(
             white_spans.append(f'<span class="hook-item" style="color: {col}; text-decoration-color: {col};">{txt}</span>')
     white_strip_html = "".join(white_spans)
 
-    if is_crime_heavy:
-        cyan_pill_html = f'देशभर की {bottom_number} बड़ी खबरों के <span class="cyan-pill-highlight">5 बड़े खुलासे</span>'
-    else:
-        cyan_pill_html = 'आज PM मोदी सरकार ने लिए <span class="cyan-pill-highlight">5 बड़े फैसले</span>'
+    if not cyan_pill_html:
+        cyan_pill_html = f'देशभर की {bottom_number} बड़ी घटनाओं पर: <span class="cyan-pill-highlight">प्रशासन का कड़ा एक्शन</span>'
 
     template = """<!DOCTYPE html>
 <html lang="hi">
@@ -370,14 +412,14 @@ def build_dls_reference_html(
     font-family: 'PoppinsHeavy', sans-serif;
   }
 
-  /* MUKHYA: Absolute at bottom: 0px, sitting JUST ABOVE Samachar */
+  /* MUKHYA: Absolute at bottom: 12px, sitting JUST ABOVE Samachar with ZERO matra clipping */
   .mukhya-top {
     position: absolute;
-    bottom: 0px;
+    bottom: 12px;
     left: 0;
     width: 100%;
     paint-order: stroke fill;
-    font-size: 82px;
+    font-size: 80px;
     font-weight: 900;
     line-height: 1;
     color: #0044cc;
@@ -470,7 +512,7 @@ def build_dls_reference_html(
     align-items: center;
     justify-content: center;
     padding: 0 12px;
-    font-size: 51px;
+    font-size: 47px;
     font-weight: 900;
     letter-spacing: 0.2px;
     box-shadow: 0 4px 14px rgba(0,0,0,0.25);
@@ -663,6 +705,7 @@ def generate_dls_reference_pillow(
     white_strip_segments: list,
     bottom_number: str,
     out_path: str,
+    cyan_pill_html: str = "",
     is_crime_heavy: bool = False
 ) -> str:
     """Pure Pillow Engine Fallback"""
@@ -698,16 +741,16 @@ def generate_dls_reference_pillow(
     draw.text((375, 25), day_num, fill=(229, 0, 0), font=f_huge_date, stroke_width=8, stroke_fill=(255, 230, 0))
     draw.text((630, 45), month_str, fill=(229, 0, 0), font=f_month, stroke_width=4, stroke_fill=(255, 255, 255))
 
-    # Top-Right Day, Year, Mukhya
+    # Top-Right Day, Year, Mukhya (Lifted to y=212 for zero clipping)
     draw.text((1010, 20), weekday_str, fill=(0, 43, 73), font=f_day)
     draw.rounded_rectangle((1160, 24, 1260, 68), radius=6, fill=(255, 230, 0), outline=(0, 0, 0), width=2)
     draw.text((1175, 28), year_str, fill=(0, 0, 0), font=f_day)
-    draw.text((1060, 220), "मुख्य", fill=(0, 68, 204), font=f_baloo, stroke_width=3, stroke_fill=(255, 255, 255))
+    draw.text((1060, 212), "मुख्य", fill=(0, 68, 204), font=f_baloo, stroke_width=3, stroke_fill=(255, 255, 255))
 
     # 2. Middle Row: Cyan Pill + Samachar (Y: 305-405)
     draw.rectangle([0, 305, THUMB_W, 405], fill=(255, 233, 64))
     draw.rounded_rectangle([18, 315, 960, 395], radius=12, fill=(164, 237, 249), outline=(0, 85, 119), width=2)
-    pill_label = f"देशभर की {bottom_number} बड़ी खबरों के 5 बड़े खुलासे" if is_crime_heavy else "आज PM मोदी सरकार ने लिए 5 बड़े फैसले"
+    pill_label = re.sub(r'<[^>]+>', '', cyan_pill_html).strip() if cyan_pill_html else f"देशभर की {bottom_number} बड़ी घटनाओं पर: प्रशासन का कड़ा एक्शन"
     draw.text((36, 328), pill_label, fill=(0, 0, 0), font=f_strip)
     draw.text((1040, 312), "समाचार", fill=(0, 59, 187), font=f_baloo, stroke_width=3, stroke_fill=(255, 255, 255))
 
@@ -767,11 +810,12 @@ def generate_sensational_thumbnail(
     100% matched to user's layout & typography specifications:
     - [सुपरफास्ट न्यूज़ LIVE] with lowered LIVE pill
     - Baloo 2 for all Hindi text
-    - [मुख्य] sitting JUST DIRECTLY ABOVE [समाचार]
-    - White strip text enlarged (51px) to fill height
+    - [मुख्य] sitting JUST DIRECTLY ABOVE [समाचार] with zero matra clipping
+    - White strip text enlarged (51px) to fill height with hard-news triggers
     - [क्राइम अलर्ट] badge on bottom left
     - [50 बड़ी खबरें] vertically centered in the red banner
-    - PM Modi and [5 बड़े ऐलान] removed
+    - Dynamic Day, Date, Month & Year automatically computed from datetime.now()
+    - Dynamic Cyan Pill and White Strip keywords from actual scraped stories
     """
     now = datetime.now()
     day_num = str(now.day)
@@ -783,8 +827,13 @@ def generate_sensational_thumbnail(
     story_count = len(all_stories) if all_stories else (50 if "50" in headline else 10)
     bottom_number = "50"
 
-    # Extract category-aware keywords & check if crime heavy
-    white_segments, is_crime_heavy = extract_thumbnail_hook_segments(all_stories=all_stories, headline=headline, story=story)
+    # Extract dynamic hard-news keywords & dynamic cyan pill text from actual stories
+    white_segments, cyan_pill_html = extract_thumbnail_hook_segments(
+        all_stories=all_stories,
+        headline=headline,
+        story=story,
+        bottom_number=bottom_number
+    )
 
     # Engine A: Headless Chromium / Edge Screenshot (Vector Sharpness & 3D Lighting)
     browser = find_browser_executable()
@@ -796,8 +845,8 @@ def generate_sensational_thumbnail(
                 weekday_str=weekday_str,
                 year_str=year_str,
                 white_strip_segments=white_segments,
-                bottom_number=bottom_number,
-                is_crime_heavy=is_crime_heavy
+                cyan_pill_html=cyan_pill_html,
+                bottom_number=bottom_number
             )
             with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False, encoding="utf-8") as tf:
                 tf.write(html_content)
@@ -839,7 +888,7 @@ def generate_sensational_thumbnail(
         white_strip_segments=white_segments,
         bottom_number=bottom_number,
         out_path=out_path,
-        is_crime_heavy=is_crime_heavy
+        cyan_pill_html=cyan_pill_html
     )
     print(f"  ✓ [Pillow Engine] Superfast News Master Thumbnail Ready: {out_path}")
     return out_path
@@ -852,8 +901,10 @@ if __name__ == "__main__":
         headline="आज के मुख्य समाचार 50 बड़ी खबरें",
         out_path=demo_out,
         all_stories=[
-            {"screen_headline": "सोना चांदी भाव"},
-            {"screen_headline": "LPG गैस नियम"}
+            {"screen_headline": "महादेव सट्टा सिंडिकेट मामला: सौरभ चंद्राकर की रिमांड पर फैसला", "voiceover_script": "महादेव सट्टा सिंडिकेट में सौरभ चंद्राकर की रिमांड खत्म, खुलेंगे 6000 करोड़ के राज..."},
+            {"screen_headline": "रांची पुलिस ने बेल पर छूटे अपराधियों की निगरानी शुरू", "voiceover_script": "पुलिस चलाएगी विशेष सत्यापन अभियान, तैयार होगी अपराधियों की कुंडली..."},
+            {"screen_headline": "ED की बड़ी रेड: शराब घोटाले में कई ठिकानों पर छापेमारी", "voiceover_script": "ईडी की टीम ने तड़के मारा छापा, करोड़ों की संपत्ति जब्त..."},
+            {"screen_headline": "UP पुलिस का बड़ा एनकाउंटर: 50 हजार का इनामी बदमाश ढेर", "voiceover_script": "मुठभेड़ में पुलिस ने इनामी बदमाश को मार गिराया, भारी मात्रा में हथियार बरामद..."}
         ]
     )
     print(f"Done! Result saved to: {res}")
