@@ -10,7 +10,23 @@
 import React from "react";
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 
-export const DLSBreakingBadge: React.FC = () => {
+interface DLSBreakingBadgeProps {
+  leftText?: string;
+  rightText?: string;
+  leftBg?: string;
+  leftColor?: string;
+  rightBg?: string;
+  rightColor?: string;
+}
+
+export const DLSBreakingBadge: React.FC<DLSBreakingBadgeProps> = ({
+  leftText = "BREAKING",
+  rightText = "NEWS",
+  leftBg = "linear-gradient(180deg, #ff1a1a 0%, #cc0000 60%, #990000 100%)",
+  leftColor = "#ffffff",
+  rightBg = "linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%)",
+  rightColor = "#cc0000",
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -102,41 +118,40 @@ export const DLSBreakingBadge: React.FC = () => {
         }}
       />
 
-      {/* LEFT TAB: BREAKING (Red Background, White Text) */}
+      {/* LEFT TAB: BREAKING / DYNAMIC LABEL */}
       <div
         style={{
-          background:
-            "linear-gradient(180deg, #ff1a1a 0%, #cc0000 60%, #990000 100%)",
-          color: "#ffffff",
+          background: leftBg,
+          color: leftColor,
           fontWeight: 900,
-          fontSize: 32,
-          padding: "11px 36px",
-          letterSpacing: "2.5px",
+          fontSize: 30,
+          padding: "10px 32px",
+          letterSpacing: "2px",
           display: "flex",
           alignItems: "center",
-          fontFamily: "'Segoe UI', 'Impact', sans-serif",
+          fontFamily: "'Noto Sans Devanagari', 'Segoe UI', 'Impact', sans-serif",
           textShadow: "0 2px 6px rgba(0,0,0,0.8)",
         }}
       >
-        BREAKING
+        {leftText}
       </div>
 
-      {/* RIGHT TAB: NEWS (White Background, Red Text) */}
+      {/* RIGHT TAB: NEWS / DYNAMIC LABEL */}
       <div
         style={{
-          background: "linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%)",
-          color: "#cc0000",
+          background: rightBg,
+          color: rightColor,
           fontWeight: 900,
-          fontSize: 32,
-          padding: "11px 36px",
-          letterSpacing: "2.5px",
+          fontSize: 30,
+          padding: "10px 32px",
+          letterSpacing: "2px",
           display: "flex",
           alignItems: "center",
-          fontFamily: "'Segoe UI', 'Impact', sans-serif",
+          fontFamily: "'Noto Sans Devanagari', 'Segoe UI', 'Impact', sans-serif",
           textShadow: "none",
         }}
       >
-        NEWS
+        {rightText}
       </div>
     </div>
   );

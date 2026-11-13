@@ -1,34 +1,137 @@
 /**
- * DLS News – Master Animated Broadcast Chyron Card
- * 100% matches user's reference image (media_1794475292981_0f8c9df6.jpg):
- * 1. 4-Line Full Vertical Layout: Fills the entire card with zero empty space
- *    - Line 1: Case / Context with colon (e.g. महादेव सट्टा सिंडिकेट मामला:)
- *    - Line 2: Timeline / Action (e.g. 12 नवंबर को खत्म होगी)
- *    - Line 3: Entity in Yellow Box + Action (e.g. [सौरभ चंद्राकर] की रिमांड,)
- *    - Line 4: Consequence / Big Number (e.g. खुलेंगे 6000 करोड़ के राज!)
- * 2. Visual Architecture:
- *    - Broadcast Deep Crimson Red Gradient (#ba0009 -> #8b0004 -> #630002)
- *    - Double White Border: Outer 4px solid #ffffff + Inner 2px solid rgba(255,255,255,0.85) frame
- *    - Top [ BREAKING | NEWS ] 3D Flip Badge
- * 3. Positioning & Choreography:
- *    - Center Entrance (Frames 0-165): left: 480px, top: 250px, width: 960px, height: 460px
- *    - Side Transition (Frames 165+): left: 1110px, top: 240px, width: 730px, height: 551px
- *      (Mathematically aligned with Media Showcase on left at top: 240px, height: 551px!)
- * 4. Staggered Typewriter Reveal:
- *    - Sequential line-by-line typing with Hindi grapheme preservation & blinking cursor
+ * DLS News – Master Animated Sequential Broadcast Chyron Card
+ * 
+ * Features:
+ * 1. Sequential Multi-Headline Rotation:
+ *    - Instead of cramming all 4 headlines together, displays ONE headline at a time!
+ *    - Sequentially transitions across 3 to 4 distinct headlines throughout the story.
+ * 2. Dynamic 4-Theme Broadcast Palette:
+ *    - Headline 1: Crimson Ruby Red with Red/White [BREAKING | NEWS]
+ *    - Headline 2: Royal Cobalt Blue with Blue/Yellow [ताज़ा | अपडेट]
+ *    - Headline 3: Regal Royal Purple with Purple/Gold [बड़ा | खुलासा]
+ *    - Headline 4: Emerald Forest Green with Green/White [मुख्य | बिंदु]
+ * 3. 3D Flip & Pop Phase Animation:
+ *    - Smooth 3D perspective tumble, spring pop, and live glow transition on each headline change.
+ *    - Real-time Hindi typewriter text reveal with blinking cursor.
+ * 4. Center-to-Right Broadcast Choreography:
+ *    - Center Entrance (Frames 0-165): 960px width, 485px height (Dominant headline)
+ *    - Right Docking (Frames 165+): 730px width, 551px height (Balanced with Left Media Showcase)
  * 5. Taraju (Seesaw) Orchestration:
- *    - Smoothly fades back when Media Showcase expands, returns sharp on focus
+ *    - Dims and scales back when media showcase expands, returns crisp on focus.
  */
 import React from "react";
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { DLSBreakingBadge } from "./DLSBreakingBadge";
 
+export interface BroadcastCardTheme {
+  name: string;
+  gradient: string;
+  borderColor: string;
+  innerBorderColor: string;
+  boxShadow: string;
+  glowColor: string;
+  badgeLeftBg: string;
+  badgeLeftText: string;
+  badgeLeftLabel: string;
+  badgeRightBg: string;
+  badgeRightText: string;
+  badgeRightLabel: string;
+  accentPillBg: string;
+  accentPillText: string;
+  highlightBg: string;
+  highlightText: string;
+}
+
+export const BROADCAST_THEMES: BroadcastCardTheme[] = [
+  // 1. Ruby / Crimson Red (Classic Breaking News)
+  {
+    name: "Crimson Red",
+    gradient: "linear-gradient(180deg, #ba0009 0%, #8b0004 50%, #590002 100%)",
+    borderColor: "#ffffff",
+    innerBorderColor: "rgba(255, 255, 255, 0.85)",
+    boxShadow:
+      "0 18px 48px rgba(0, 0, 0, 0.88), 0 0 36px rgba(186, 0, 9, 0.7), inset 0 2px 0 rgba(255, 255, 255, 0.45)",
+    glowColor: "rgba(186, 0, 9, 0.75)",
+    badgeLeftBg: "linear-gradient(180deg, #ff1a1a 0%, #cc0000 60%, #990000 100%)",
+    badgeLeftText: "#ffffff",
+    badgeLeftLabel: "BREAKING",
+    badgeRightBg: "linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%)",
+    badgeRightText: "#cc0000",
+    badgeRightLabel: "NEWS",
+    accentPillBg: "rgba(255, 204, 0, 0.22)",
+    accentPillText: "#ffd700",
+    highlightBg: "#ffcc00",
+    highlightText: "#000000",
+  },
+  // 2. Royal Electric Navy / Cobalt Blue
+  {
+    name: "Cobalt Blue",
+    gradient: "linear-gradient(180deg, #0d47a1 0%, #002171 50%, #00103a 100%)",
+    borderColor: "#00f0ff",
+    innerBorderColor: "rgba(0, 240, 255, 0.8)",
+    boxShadow:
+      "0 18px 48px rgba(0, 0, 0, 0.88), 0 0 36px rgba(13, 71, 161, 0.8), inset 0 2px 0 rgba(0, 240, 255, 0.55)",
+    glowColor: "rgba(0, 240, 255, 0.7)",
+    badgeLeftBg: "linear-gradient(180deg, #002b55 0%, #001224 100%)",
+    badgeLeftText: "#00f0ff",
+    badgeLeftLabel: "ताज़ा",
+    badgeRightBg: "linear-gradient(180deg, #ffcc00 0%, #e6b800 100%)",
+    badgeRightText: "#00103a",
+    badgeRightLabel: "अपडेट",
+    accentPillBg: "rgba(0, 240, 255, 0.22)",
+    accentPillText: "#00f0ff",
+    highlightBg: "#00f0ff",
+    highlightText: "#00103a",
+  },
+  // 3. Regal Purple / Dark Violet
+  {
+    name: "Regal Purple",
+    gradient: "linear-gradient(180deg, #6a1b9a 0%, #4a148c 50%, #2a0845 100%)",
+    borderColor: "#ffd700",
+    innerBorderColor: "rgba(255, 215, 0, 0.85)",
+    boxShadow:
+      "0 18px 48px rgba(0, 0, 0, 0.88), 0 0 36px rgba(106, 27, 154, 0.8), inset 0 2px 0 rgba(255, 215, 0, 0.5)",
+    glowColor: "rgba(255, 215, 0, 0.7)",
+    badgeLeftBg: "linear-gradient(180deg, #4a148c 0%, #2a0845 100%)",
+    badgeLeftText: "#ffffff",
+    badgeLeftLabel: "बड़ा",
+    badgeRightBg: "linear-gradient(180deg, #ffd700 0%, #ffaa00 100%)",
+    badgeRightText: "#2a0845",
+    badgeRightLabel: "खुलासा",
+    accentPillBg: "rgba(255, 215, 0, 0.22)",
+    accentPillText: "#ffd700",
+    highlightBg: "#ffd700",
+    highlightText: "#2a0845",
+  },
+  // 4. Emerald Forest / Dark Jade
+  {
+    name: "Emerald Green",
+    gradient: "linear-gradient(180deg, #00695c 0%, #004d40 50%, #00251a 100%)",
+    borderColor: "#69f0ae",
+    innerBorderColor: "rgba(105, 240, 174, 0.85)",
+    boxShadow:
+      "0 18px 48px rgba(0, 0, 0, 0.88), 0 0 36px rgba(0, 105, 92, 0.8), inset 0 2px 0 rgba(105, 240, 174, 0.5)",
+    glowColor: "rgba(105, 240, 174, 0.7)",
+    badgeLeftBg: "linear-gradient(180deg, #004d40 0%, #00251a 100%)",
+    badgeLeftText: "#69f0ae",
+    badgeLeftLabel: "मुख्य",
+    badgeRightBg: "linear-gradient(180deg, #ffffff 0%, #e0e0e0 100%)",
+    badgeRightText: "#004d40",
+    badgeRightLabel: "बिंदु",
+    accentPillBg: "rgba(105, 240, 174, 0.22)",
+    accentPillText: "#69f0ae",
+    highlightBg: "#69f0ae",
+    highlightText: "#00251a",
+  },
+];
+
 interface DLSNewsCardProps {
   headline: string;
   headlines?: string[];
-  category: string;
+  category?: string;
   bulletPoints?: string[];
   expandProgress?: number;
+  totalStoryDurationFrames?: number;
 }
 
 // Unicode grapheme segmenter for authentic Hindi text splitting without breaking matras
@@ -40,93 +143,84 @@ const getHindiGraphemes = (text: string): string[] => {
   return Array.from(text);
 };
 
-// Auto-wrap entity in **...** if missing on Line 3
-const ensureEntityHighlight = (text: string): string => {
-  if (!text || text.includes("**")) return text;
-  const postpositions = [" की ", " ने ", " पर ", " को ", " से ", " का ", " के ", " द्वारा "];
-  for (const pp of postpositions) {
-    if (text.includes(pp)) {
-      const parts = text.split(pp);
-      const words = parts[0].trim().split(/\s+/);
-      if (words.length >= 1 && words.length <= 4) {
-        return `**${parts[0].trim()}**${pp}${parts.slice(1).join(pp).trim()}`;
-      }
-    }
-  }
-  const words = text.trim().split(/\s+/);
-  if (words.length >= 2) {
-    return `**${words[0]} ${words[1]}** ` + words.slice(2).join(" ");
-  }
-  return text;
-};
-
-// Smart fallback splitter: splits single headline text into 4 broadcast-card lines
-const splitTextInto4Lines = (rawText: string): string[] => {
-  const clean = (rawText || "")
-    .replace(/\n+/g, " ")
-    .replace(/\bट्रेन आगे\b/g, "ट्रेन के आगे")
-    .replace(/\bगोली धमकी\b/g, "गोली मारने की धमकी")
-    .replace(/\bडिसिपी\b/g, "डीसीपी")
-    .trim();
-
-  if (!clean) {
-    return ["ताज़ा बड़ी खबर:", "मुख्य घटनाक्रम जारी", "**प्रशासन** अलर्ट पर,", "जांच में बड़ा खुलासा!"];
-  }
-
-  // If text already has newlines
-  if (rawText && rawText.includes("\n")) {
-    const splitLines = rawText.split("\n").map((l) => l.trim()).filter(Boolean);
-    if (splitLines.length >= 4) return splitLines.slice(0, 4);
-    if (splitLines.length === 3) return [splitLines[0], splitLines[1], splitLines[2], ""];
-  }
-
-  // Check for colon (case / topic separator)
-  let topic = "";
-  let rest = clean;
-  if (clean.includes(":")) {
-    const idx = clean.indexOf(":");
-    topic = clean.slice(0, idx + 1).trim();
-    rest = clean.slice(idx + 1).trim();
-  } else if (clean.includes(" - ")) {
-    const idx = clean.indexOf(" - ");
-    topic = clean.slice(0, idx).trim() + ":";
-    rest = clean.slice(idx + 3).trim();
-  } else if (clean.includes(" | ")) {
-    const idx = clean.indexOf(" | ");
-    topic = clean.slice(0, idx).trim() + ":";
-    rest = clean.slice(idx + 3).trim();
-  }
-
-  const words = rest.split(/\s+/).filter(Boolean);
-
-  if (topic) {
-    const perLine = Math.max(2, Math.ceil(words.length / 3));
-    const l2 = words.slice(0, perLine).join(" ");
-    const l3 = words.slice(perLine, perLine * 2).join(" ");
-    const l4 = words.slice(perLine * 2).join(" ");
-    return [topic, l2, ensureEntityHighlight(l3), l4 || "बड़ा अपडेट जारी!"];
-  }
-
-  // No topic separator: partition all words into 4 lines
-  const perLine = Math.max(2, Math.ceil(words.length / 4));
-  const l1 = words.slice(0, perLine).join(" ") + ":";
-  const l2 = words.slice(perLine, perLine * 2).join(" ");
-  const l3 = words.slice(perLine * 2, perLine * 3).join(" ");
-  const l4 = words.slice(perLine * 3).join(" ");
-  return [l1, l2, ensureEntityHighlight(l3), l4 || "ताज़ा विवरण प्रतीक्षित!"];
-};
-
 export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
   headline,
   headlines = [],
   category: _category,
   bulletPoints = [],
   expandProgress = 0,
+  totalStoryDurationFrames = 750,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // ─── 1. CENTER-TO-RIGHT CHOREOGRAPHY ANIMATION ───
+  // ─── 1. RESOLVE ACTIVE SEQUENTIAL HEADLINES (3 TO 4 SEPARATE HEADLINES) ───
+  let activeHeadlines: string[] = [];
+  if (Array.isArray(headlines) && headlines.length > 0) {
+    activeHeadlines = headlines
+      .map((h) => (h || "").replace(/\*\*/g, "").replace(/\*/g, "").trim())
+      .filter((h) => h.length > 0);
+  }
+
+  if (activeHeadlines.length === 0) {
+    if (headline && headline.trim()) {
+      activeHeadlines = [headline.replace(/\*\*/g, "").replace(/\*/g, "").trim()];
+    } else if (bulletPoints && bulletPoints.length > 0) {
+      activeHeadlines = bulletPoints
+        .map((bp) => (bp || "").replace(/\*\*/g, "").replace(/\*/g, "").trim())
+        .filter(Boolean);
+    } else {
+      activeHeadlines = [
+        "भारत व्यापार मेले का भव्य उद्घाटन आज से शुरू",
+        "दिल्ली पुलिस ने प्रमुख मार्गों पर ट्रैफिक एडवाइजरी जारी की",
+        "मथुरा रोड और भैरों मार्ग पर रहेगा भारी जाम",
+        "व्यावसायिक आगंतुकों के लिए विशेष गेट और पार्किंग व्यवस्था",
+      ];
+    }
+  }
+
+  const numHeadlines = activeHeadlines.length;
+  const totalFrames = Math.max(200, totalStoryDurationFrames);
+  const phaseDuration = Math.max(1, Math.floor(totalFrames / numHeadlines));
+
+  // Determine current active headline index (0, 1, 2, or 3)
+  const currentIdx = Math.min(
+    numHeadlines - 1,
+    Math.floor(frame / phaseDuration)
+  );
+  const phaseFrame = frame - currentIdx * phaseDuration;
+  const currentHeadline = activeHeadlines[currentIdx] || "";
+  const currentTheme = BROADCAST_THEMES[currentIdx % BROADCAST_THEMES.length];
+
+  // ─── 2. HEADLINE TRANSITION ANIMATION (Smooth 3D Flip & Spring Pop on Phase Change) ───
+  const phaseSpring = spring({
+    frame: phaseFrame,
+    fps,
+    config: { damping: 13, mass: 0.7, stiffness: 120 },
+  });
+
+  const phaseRotateX = interpolate(phaseSpring, [0, 1], [-22, 0]);
+  const phaseScale = interpolate(phaseSpring, [0, 1], [0.91, 1.0]);
+  const phaseOpacity = interpolate(phaseSpring, [0, 1], [0.25, 1.0]);
+
+  // Typewriter animation within current phase (types out over 24 frames ~ 0.8s)
+  const typingDuration = 24;
+  const graphemes = getHindiGraphemes(currentHeadline);
+  const totalGraphemes = graphemes.length;
+  const visibleCount = Math.min(
+    totalGraphemes,
+    Math.floor(
+      interpolate(phaseFrame, [2, 2 + typingDuration], [0, totalGraphemes], {
+        extrapolateLeft: "clamp",
+        extrapolateRight: "clamp",
+      })
+    )
+  );
+  const isTyping = phaseFrame >= 2 && phaseFrame < 2 + typingDuration;
+  const cursorBlink = Math.floor(phaseFrame / 6) % 2 === 0;
+  const displayedText = graphemes.slice(0, visibleCount).join("");
+
+  // ─── 3. CENTER-TO-RIGHT CHOREOGRAPHY ANIMATION ───
   // A. Initial Center Entrance (Frames 0 to 30)
   const entranceSpring = spring({
     frame,
@@ -145,13 +239,25 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
 
   // Geometry:
   // Center: left 480, top 235, width 960, height 485
-  // Side:   left 1110, top 240, width 730, height 551 (Matches Media Showcase at top: 240, height: 551!)
+  // Side:   left 1110, top 240, width 730, height 551 (Matches Left Media Showcase!)
   const currentLeft = interpolate(slideProgress, [0, 1], [480, 1110]);
   const currentTop = interpolate(slideProgress, [0, 1], [235, 240]);
   const currentWidth = interpolate(slideProgress, [0, 1], [960, 730]);
   const currentHeight = interpolate(slideProgress, [0, 1], [485, 551]);
 
-  // ─── 2. TARAJU (SEESAW) FOCUS ORCHESTRATION ───
+  // Dynamic Font Size: Center is larger, Side is slightly more compact
+  const heroFontSize = Math.round(
+    interpolate(
+      slideProgress,
+      [0, 1],
+      [
+        currentHeadline.length > 35 ? 46 : 52,
+        currentHeadline.length > 35 ? 38 : 44,
+      ]
+    )
+  );
+
+  // ─── 4. TARAJU (SEESAW) FOCUS ORCHESTRATION ───
   const tarajuOpacity = interpolate(expandProgress, [0, 0.35, 1], [1, 0, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -160,207 +266,6 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-
-  // ─── 3. RESOLVE 4 BROADCAST LINES (Card Never Empty!) ───
-  // Phase handling: if 8 headlines provided, switch to Set 2 after frame 620
-  let raw4Lines: string[] = [];
-  let typingStartFrame = 8;
-
-  if (headlines && headlines.length >= 8) {
-    if (frame >= 620) {
-      raw4Lines = headlines.slice(4, 8);
-      typingStartFrame = 630;
-    } else {
-      raw4Lines = headlines.slice(0, 4);
-      typingStartFrame = 8;
-    }
-  } else if (headlines && headlines.length >= 3) {
-    raw4Lines = headlines.slice(0, 4);
-    while (raw4Lines.length < 4) raw4Lines.push("");
-  } else if (headline && headline.trim()) {
-    raw4Lines = splitTextInto4Lines(headline);
-  } else if (bulletPoints && bulletPoints.length >= 3) {
-    raw4Lines = [
-      bulletPoints[0] + ":",
-      bulletPoints[1] || "",
-      bulletPoints[2] || "",
-      bulletPoints[3] || "बड़ा खुलासा!",
-    ];
-  } else {
-    raw4Lines = [
-      "ताज़ा बड़ी खबर:",
-      "मामले में नया मोड़ आया",
-      "**पुलिस प्रशासन** अलर्ट पर,",
-      "खुलेंगे बड़े राज!",
-    ];
-  }
-
-  // Only wrap entity in ** if line 3 is very short (legacy 2-3 words) and lacks **
-  if (raw4Lines[2] && !raw4Lines[2].includes("**") && raw4Lines[2].split(/\s+/).length <= 5) {
-    raw4Lines[2] = ensureEntityHighlight(raw4Lines[2]);
-  }
-
-  // ─── 4. SEQUENTIAL HINDI TYPEWRITER ANIMATION ACROSS 4 LINES ───
-  // Each line types out in succession (14 frames per line = 56 frames ~ 1.85s)
-  const lineTypingDuration = 14;
-  const cursorBlink = Math.floor(frame / 6) % 2 === 0;
-
-  // Dynamic responsive font sizing so 7-10 word headlines fit cleanly with zero vertical overlap
-  const maxLineLen = Math.max(...raw4Lines.map((l) => (l ? l.replace(/\*\*/g, "").length : 0)), 15);
-  let baseFSize = 36;
-  if (maxLineLen > 38) baseFSize = 28;
-  else if (maxLineLen > 28) baseFSize = 32;
-  else baseFSize = 36;
-
-  const fontSize1 = Math.round(interpolate(slideProgress, [0, 1], [baseFSize, baseFSize - 4]));
-  const fontSize2 = Math.round(interpolate(slideProgress, [0, 1], [baseFSize + 2, baseFSize - 2]));
-  const fontSize3 = Math.round(interpolate(slideProgress, [0, 1], [baseFSize + 2, baseFSize - 2]));
-  const fontSize4 = Math.round(interpolate(slideProgress, [0, 1], [baseFSize + 2, baseFSize - 2]));
-  const fontSizes = [fontSize1, fontSize2, fontSize3, fontSize4];
-
-  // Helper to render a single line with typing & yellow highlight box
-  const renderLine = (lineIdx: number) => {
-    const rawLine = raw4Lines[lineIdx] || "";
-    if (!rawLine.trim()) return null;
-
-    const lineStart = typingStartFrame + lineIdx * lineTypingDuration;
-    const elapsed = Math.max(0, frame - lineStart);
-
-    // Entity highlight parsing
-    const match = rawLine.match(/\*\*([^*]+)\*\*/);
-    const plainText = rawLine.replace(/\*\*/g, "").trim();
-    const graphemes = getHindiGraphemes(plainText);
-    const totalGraphemes = graphemes.length;
-
-    const visibleCount = Math.min(
-      totalGraphemes,
-      Math.floor(
-        interpolate(elapsed, [0, lineTypingDuration], [0, totalGraphemes], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
-        })
-      )
-    );
-
-    const isCurrentlyTyping = elapsed > 0 && elapsed < lineTypingDuration;
-    const displayedGraphemes = graphemes.slice(0, visibleCount);
-    const displayedText = displayedGraphemes.join("");
-    const fSize = fontSizes[lineIdx] || 44;
-
-    if (!match) {
-      // Normal Line (Pure White Text)
-      return (
-        <div
-          key={lineIdx}
-          style={{
-            color: "#ffffff",
-            fontSize: fSize,
-            fontWeight: 900,
-            lineHeight: 1.28,
-            letterSpacing: lineIdx === 0 ? "0.6px" : "0.3px",
-            textShadow:
-              "0 2px 10px rgba(0, 0, 0, 0.95), 0 0 20px rgba(0, 0, 0, 0.8)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: "100%",
-            padding: "2px 8px",
-            minHeight: fSize * 1.3,
-            textAlign: "center",
-          }}
-        >
-          <span>{displayedText}</span>
-          {isCurrentlyTyping && (
-            <span
-              style={{
-                display: "inline-block",
-                width: 3.5,
-                height: fSize * 0.85,
-                backgroundColor: "#ffffff",
-                marginLeft: 6,
-                opacity: cursorBlink ? 1 : 0.1,
-                boxShadow: "0 0 8px #ffffff, 0 0 16px rgba(255, 255, 255, 0.85)",
-              }}
-            />
-          )}
-        </div>
-      );
-    }
-
-    // Line with Yellow Entity Highlight Box (matches media_1794475292981_0f8c9df6.jpg)
-    const entityText = match[1];
-    const entityIdx = plainText.indexOf(entityText);
-    const prefix = entityIdx > 0 ? plainText.slice(0, entityIdx) : "";
-    const suffix = plainText.slice(entityIdx + entityText.length);
-
-    const prefixLen = getHindiGraphemes(prefix).length;
-    const entityLen = getHindiGraphemes(entityText).length;
-
-    const visiblePrefix = displayedGraphemes.slice(0, prefixLen).join("");
-    const visibleEntity = displayedGraphemes
-      .slice(prefixLen, prefixLen + entityLen)
-      .join("");
-    const visibleSuffix = displayedGraphemes
-      .slice(prefixLen + entityLen)
-      .join("");
-
-    return (
-      <div
-        key={lineIdx}
-        style={{
-          color: "#ffffff",
-          fontSize: fSize,
-          fontWeight: 900,
-          lineHeight: 1.28,
-          letterSpacing: "0.3px",
-          textShadow:
-            "0 2px 10px rgba(0, 0, 0, 0.95), 0 0 20px rgba(0, 0, 0, 0.8)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexWrap: "wrap",
-          width: "100%",
-          padding: "2px 8px",
-          minHeight: fSize * 1.3,
-          textAlign: "center",
-        }}
-      >
-        {visiblePrefix && <span>{visiblePrefix}</span>}
-        {visibleEntity && (
-          <span
-            style={{
-              backgroundColor: "#ffcc00", // Vibrant Broadcast Yellow
-              color: "#000000",           // Jet Black Text
-              padding: "2px 12px",
-              borderRadius: 5,
-              fontWeight: 900,
-              margin: "0 6px",
-              display: "inline-block",
-              boxShadow: "0 3px 10px rgba(0, 0, 0, 0.5)",
-              lineHeight: 1.15,
-              textShadow: "none",
-            }}
-          >
-            {visibleEntity}
-          </span>
-        )}
-        {visibleSuffix && <span>{visibleSuffix}</span>}
-        {isCurrentlyTyping && (
-          <span
-            style={{
-              display: "inline-block",
-              width: 3.5,
-              height: fSize * 0.85,
-              backgroundColor: "#ffffff",
-              marginLeft: 6,
-              opacity: cursorBlink ? 1 : 0.1,
-              boxShadow: "0 0 8px #ffffff, 0 0 16px rgba(255, 255, 255, 0.85)",
-            }}
-          />
-        )}
-      </div>
-    );
-  };
 
   return (
     <div
@@ -377,36 +282,45 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
         alignItems: "center",
         fontFamily: "'Noto Sans Devanagari', 'Segoe UI', sans-serif",
         pointerEvents: tarajuOpacity < 0.1 ? "none" : "auto",
+        perspective: 1200,
       }}
     >
-      {/* ─── 1. TOP [ BREAKING | NEWS ] BADGE ─── */}
+      {/* ─── 1. TOP DYNAMIC 3D BADGE (Flips & Updates Colors with Each Headline) ─── */}
       <div
         style={{
           width: "100%",
           display: "flex",
           justifyContent: "center",
-          marginBottom: -14,
+          marginBottom: -16,
           position: "relative",
           zIndex: 20,
-          perspective: 1200,
         }}
       >
-        <DLSBreakingBadge />
+        <DLSBreakingBadge
+          key={`badge-${currentIdx}`}
+          leftText={currentTheme.badgeLeftLabel}
+          rightText={currentTheme.badgeRightLabel}
+          leftBg={currentTheme.badgeLeftBg}
+          leftColor={currentTheme.badgeLeftText}
+          rightBg={currentTheme.badgeRightBg}
+          rightColor={currentTheme.badgeRightText}
+        />
       </div>
 
-      {/* ─── 2. MAIN BROADCAST CARD CONTAINER (Deep Crimson Red Gradient + Double Border) ─── */}
+      {/* ─── 2. MAIN BROADCAST CARD CONTAINER (Dynamic Theme Gradient + Double Frame) ─── */}
       <div
         style={{
           width: "100%",
           height: currentHeight,
-          background:
-            "linear-gradient(180deg, #ba0009 0%, #8b0004 50%, #630002 100%)",
-          border: "4px solid #ffffff",
-          borderRadius: 18,
-          boxShadow:
-            "0 16px 44px rgba(0, 0, 0, 0.85), 0 0 32px rgba(186, 0, 9, 0.65), inset 0 2px 0 rgba(255, 255, 255, 0.45)",
+          background: currentTheme.gradient,
+          border: `4px solid ${currentTheme.borderColor}`,
+          borderRadius: 20,
+          boxShadow: currentTheme.boxShadow,
           position: "relative",
           overflow: "hidden",
+          transform: `scale(${phaseScale}) rotateX(${phaseRotateX}deg)`,
+          opacity: phaseOpacity,
+          transition: "background 0.5s ease, border 0.5s ease, box-shadow 0.5s ease",
         }}
       >
         {/* Subtle Diagonal Gloss Reflection */}
@@ -416,38 +330,178 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
             top: 0,
             left: 0,
             right: 0,
-            height: "40%",
+            height: "42%",
             background:
-              "linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, transparent 100%)",
+              "linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, transparent 100%)",
             pointerEvents: "none",
             zIndex: 2,
           }}
         />
 
-        {/* ─── 3. INNER INSET FRAMED BORDER (100% Matches Reference Screenshot) ─── */}
+        {/* Dynamic Subtle Sweep Ray Light */}
         <div
           style={{
             position: "absolute",
-            top: 12,
-            left: 12,
-            right: 12,
-            bottom: 12,
-            border: "2px solid rgba(255, 255, 255, 0.85)",
-            borderRadius: 12,
-            padding: "8px 14px",
+            top: -50,
+            bottom: -50,
+            left: "-60%",
+            width: "50%",
+            background:
+              "linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.15) 50%, transparent 100%)",
+            transform: `translateX(${(frame % 180) * 12}px) skewX(-25deg)`,
+            pointerEvents: "none",
+            zIndex: 3,
+          }}
+        />
+
+        {/* ─── 3. INNER INSET FRAMED BORDER (100% Broadcast News Style) ─── */}
+        <div
+          style={{
+            position: "absolute",
+            top: 14,
+            left: 14,
+            right: 14,
+            bottom: 14,
+            border: `2px solid ${currentTheme.innerBorderColor}`,
+            borderRadius: 14,
+            padding: "16px 22px",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "space-evenly",
+            justifyContent: "space-between",
             alignItems: "center",
             textAlign: "center",
             zIndex: 5,
           }}
         >
-          {/* 4 Stacked Lines Filling the Entire Vertical Height */}
-          {renderLine(0)}
-          {renderLine(1)}
-          {renderLine(2)}
-          {renderLine(3)}
+          {/* Top Status & Sequence Pill Indicator */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+              padding: "4px 8px",
+            }}
+          >
+            {/* Live Indicator Pill */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                backgroundColor: currentTheme.accentPillBg,
+                border: `1.5px solid ${currentTheme.borderColor}`,
+                borderRadius: 20,
+                padding: "3px 14px",
+                fontSize: 18,
+                fontWeight: 800,
+                color: currentTheme.accentPillText,
+                letterSpacing: "1px",
+              }}
+            >
+              <span
+                style={{
+                  width: 9,
+                  height: 9,
+                  borderRadius: "50%",
+                  backgroundColor: currentTheme.borderColor,
+                  boxShadow: `0 0 8px ${currentTheme.borderColor}`,
+                  display: "inline-block",
+                }}
+              />
+              अपडेट {currentIdx + 1} / {numHeadlines}
+            </div>
+
+            {/* Topic Category Tag */}
+            <div
+              style={{
+                fontSize: 16,
+                fontWeight: 800,
+                color: "rgba(255, 255, 255, 0.75)",
+                letterSpacing: "0.8px",
+                textTransform: "uppercase",
+              }}
+            >
+              {_category || "विशेष बुलेटिन"}
+            </div>
+          </div>
+
+          {/* ─── 4. THE ACTIVE HEADLINE (Hero Typography, Full Centered, Non-Crammed!) ─── */}
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              padding: "8px 12px",
+            }}
+          >
+            <div
+              style={{
+                color: "#ffffff",
+                fontSize: heroFontSize,
+                fontWeight: 900,
+                lineHeight: 1.35,
+                letterSpacing: "0.4px",
+                textAlign: "center",
+                wordBreak: "break-word",
+                textShadow:
+                  "0 4px 16px rgba(0, 0, 0, 0.95), 0 0 28px rgba(0, 0, 0, 0.85)",
+              }}
+            >
+              <span>{displayedText}</span>
+              {isTyping && (
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 4,
+                    height: heroFontSize * 0.85,
+                    backgroundColor: currentTheme.borderColor,
+                    marginLeft: 6,
+                    verticalAlign: "middle",
+                    opacity: cursorBlink ? 1 : 0.1,
+                    boxShadow: `0 0 10px ${currentTheme.borderColor}`,
+                  }}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Bottom Broadcast Progress Indicator Dots */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              paddingBottom: 4,
+            }}
+          >
+            {activeHeadlines.map((_, hIdx) => {
+              const isActive = hIdx === currentIdx;
+              const isPast = hIdx < currentIdx;
+              return (
+                <div
+                  key={hIdx}
+                  style={{
+                    width: isActive ? 28 : 10,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: isActive
+                      ? currentTheme.borderColor
+                      : isPast
+                      ? "rgba(255, 255, 255, 0.6)"
+                      : "rgba(255, 255, 255, 0.2)",
+                    boxShadow: isActive
+                      ? `0 0 10px ${currentTheme.borderColor}`
+                      : "none",
+                    transition: "all 0.3s ease",
+                  }}
+                />
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

@@ -315,6 +315,7 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
         category={story.category}
         bulletPoints={story.bullet_points}
         expandProgress={expandProgress}
+        totalStoryDurationFrames={durationInFrames}
       />
 
       {/* ─── 4.5. FULL-SCREEN DYNAMIC MEME OVERLAYS (Full-screen between Header & Ticker, Z-Index 45) ─── */}
