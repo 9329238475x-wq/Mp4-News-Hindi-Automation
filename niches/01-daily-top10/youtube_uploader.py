@@ -260,7 +260,17 @@ def publish_broadcast_to_youtube(
         privacy_status=privacy_status
     )
 
-    # 4. Attach Thumbnail
+    # 4. Attach Thumbnail (with automatic generation if missing)
+    if not thumbnail_path or not os.path.exists(thumbnail_path):
+        print("  🖼️ [Auto-Thumbnail] Thumbnail missing, generating automatically right now...")
+        try:
+            from generate_thumbnail import auto_generate_master_thumbnail
+            thumb_auto = os.path.join(os.path.dirname(video_path), "thumbnail_01.jpg")
+            thumbnail_path = auto_generate_master_thumbnail(out_path=thumb_auto, bottom_number="50")
+            print(f"  ✓ Automatically generated master thumbnail: {thumbnail_path}")
+        except Exception as e_th:
+            print(f"  ⚠️ Could not auto-generate thumbnail: {e_th}")
+
     thumb_ok = attach_custom_thumbnail(youtube, video_id, thumbnail_path)
     thumb_status = "Attached ✅" if thumb_ok else "Not attached ⚠️"
 

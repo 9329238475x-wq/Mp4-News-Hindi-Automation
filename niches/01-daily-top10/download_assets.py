@@ -916,22 +916,21 @@ def download_all_assets(max_stories: int = None, target_count: int = 12, force: 
             from generate_thumbnail import generate_sensational_thumbnail
             thumb_out = os.path.join(OUT_DIR, f"story_{num:02d}", f"thumbnail_{num:02d}.jpg")
             thumb_photo = fallback_img or (norm_downloaded[0] if downloaded else "")
-            if thumb_photo:
-                full_thumb_photo = os.path.join(BASE_DIR, *thumb_photo.split("/"))
-                hl_text = story.get("screen_headline") or story.get("original_title") or headline
-                generate_sensational_thumbnail(
-                    headline=hl_text,
-                    photo_path=full_thumb_photo,
-                    out_path=thumb_out,
-                    category=story.get("category", "क्राइम"),
-                    story=story,
-                    all_stories=stories,
-                )
-                if num == 1:
-                    root_thumb = os.path.join(OUT_DIR, "thumbnail_01.jpg")
-                    shutil.copy2(thumb_out, root_thumb)
-                story["thumbnail_path"] = f"out/story_{num:02d}/thumbnail_{num:02d}.jpg"
-                updated = True
+            full_thumb_photo = os.path.join(BASE_DIR, *thumb_photo.split("/")) if thumb_photo else ""
+            hl_text = story.get("screen_headline") or story.get("original_title") or headline
+            generate_sensational_thumbnail(
+                headline=hl_text,
+                photo_path=full_thumb_photo,
+                out_path=thumb_out,
+                category=story.get("category", "क्राइम"),
+                story=story,
+                all_stories=stories,
+            )
+            if num == 1:
+                root_thumb = os.path.join(OUT_DIR, "thumbnail_01.jpg")
+                shutil.copy2(thumb_out, root_thumb)
+            story["thumbnail_path"] = f"out/story_{num:02d}/thumbnail_{num:02d}.jpg"
+            updated = True
         except Exception as th_err:
             print(f"  ⚠️ Thumbnail generation skipped: {th_err}")
         time.sleep(0.3)

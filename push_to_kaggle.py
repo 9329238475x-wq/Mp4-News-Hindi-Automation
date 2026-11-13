@@ -177,9 +177,11 @@ if mp4_files:
     
     # Locate Master Thumbnail
     possible_thumbs = [
-        out_dir / "test_dls_reference_thumbnail.jpg",
+        out_dir / "thumbnail_01.jpg",
         out_dir / "story_01" / "thumbnail_01.jpg",
-        out_dir / "thumbnail_01.jpg"
+        out_dir / "thumbnail.jpg",
+        out_dir / "story_01" / "thumbnail.jpg",
+        out_dir / "test_dls_reference_thumbnail.jpg"
     ]
     thumb_path = next((str(t) for t in possible_thumbs if t.exists()), "")
 
@@ -200,20 +202,20 @@ if mp4_files:
         except Exception:
             pass
 
-    # Ensure Master Thumbnail exists; generate if missing
+    # Ensure Master Thumbnail exists; generate automatically if missing
     if not thumb_path or not os.path.exists(thumb_path):
         print("🖼️ Generating custom master thumbnail on-the-fly...", flush=True)
         try:
             sys.path.insert(0, str(ROOT / "niches" / "01-daily-top10"))
-            from generate_thumbnail import generate_superfast_news_thumbnail
+            import generate_thumbnail as gt
             thumb_target = str(out_dir / "thumbnail_01.jpg")
-            generate_superfast_news_thumbnail(
-                out_path=thumb_target,
-                all_stories=stories,
-                bottom_number="50"
-            )
-            if os.path.exists(thumb_target):
-                thumb_path = thumb_target
+            if hasattr(gt, "auto_generate_master_thumbnail"):
+                thumb_path = gt.auto_generate_master_thumbnail(out_path=thumb_target, bottom_number="50")
+            elif hasattr(gt, "generate_sensational_thumbnail"):
+                thumb_path = gt.generate_sensational_thumbnail(out_path=thumb_target, all_stories=stories, bottom_number="50")
+            elif hasattr(gt, "generate_superfast_news_thumbnail"):
+                thumb_path = gt.generate_superfast_news_thumbnail(out_path=thumb_target, all_stories=stories, bottom_number="50")
+            if thumb_path and os.path.exists(thumb_path):
                 print(f"✓ Master thumbnail ready: {thumb_path}", flush=True)
         except Exception as _th_e:
             print(f"⚠️ Thumbnail generation fallback notice: {_th_e}", flush=True)

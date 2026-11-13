@@ -797,13 +797,14 @@ def generate_dls_reference_pillow(
 
 
 def generate_sensational_thumbnail(
-    headline: str,
+    headline: str = "",
     photo_path: str = "",
     out_path: str = "out/thumbnail_01.jpg",
     category: str = "क्राइम",
     story: dict = None,
     all_stories: list = None,
-    channel_name: str = "Uncut भारत"
+    channel_name: str = "Uncut भारत",
+    bottom_number: str = "50"
 ) -> str:
     """
     Main Entrypoint: Generates the Master Superfast News YouTube Thumbnail
@@ -817,6 +818,11 @@ def generate_sensational_thumbnail(
     - Dynamic Day, Date, Month & Year automatically computed from datetime.now()
     - Dynamic Cyan Pill and White Strip keywords from actual scraped stories
     """
+    if not headline and all_stories:
+        headline = all_stories[0].get("screen_headline") or all_stories[0].get("title") or "आज के मुख्य समाचार 50 बड़ी खबरें"
+    if not headline:
+        headline = "आज के मुख्य समाचार 50 बड़ी खबरें"
+
     now = datetime.now()
     day_num = str(now.day)
     month_str = HINDI_MONTHS[now.month] if 1 <= now.month <= 12 else "नवंबर"
@@ -824,8 +830,8 @@ def generate_sensational_thumbnail(
     year_str = str(now.year)
 
     # Story count determines bottom number: 50 for 50-news bulletin, 10 for Top 10
-    story_count = len(all_stories) if all_stories else (50 if "50" in headline else 10)
-    bottom_number = "50"
+    if not bottom_number:
+        bottom_number = "50" if (not all_stories or len(all_stories) > 10 or "50" in headline) else str(len(all_stories))
 
     # Extract dynamic hard-news keywords & dynamic cyan pill text from actual stories
     white_segments, cyan_pill_html = extract_thumbnail_hook_segments(
@@ -894,17 +900,74 @@ def generate_sensational_thumbnail(
     return out_path
 
 
-if __name__ == "__main__":
-    demo_out = str(PROJECT_ROOT / "out" / "test_dls_reference_thumbnail.jpg")
-    print("Testing 100% Superfast News YouTube Thumbnail Generator...")
+# Compatibility alias for all callers
+generate_superfast_news_thumbnail = generate_sensational_thumbnail
+
+
+def auto_generate_master_thumbnail(out_path: str = "", bottom_number: str = "50") -> str:
+    """100% Fully Automated: Loads current bulletin stories and renders the master thumbnail"""
+    stories = []
+    candidates = [
+        PROJECT_ROOT / "niches" / "01-daily-top10" / "generated_sample_top10.json",
+        PROJECT_ROOT / "out" / "story_01" / "story_1_data.json",
+        PROJECT_ROOT / "out" / "story_1_data.json",
+    ]
+    for cand in candidates:
+        if cand.exists():
+            try:
+                with open(cand, "r", encoding="utf-8") as f:
+                    d = json.load(f)
+                    stories = d if isinstance(d, list) else d.get("stories", [d])
+                    if stories:
+                        break
+            except Exception:
+                pass
+
+    if not out_path:
+        out_path = str(PROJECT_ROOT / "out" / "thumbnail_01.jpg")
+
+    hl = ""
+    if stories:
+        hl = stories[0].get("screen_headline") or stories[0].get("title") or ""
+    if not hl:
+        hl = "आज के मुख्य समाचार 50 बड़ी खबरें"
+
+    print(f"🖼️ [Auto Thumbnail] Generating master broadcast thumbnail to: {out_path}")
     res = generate_sensational_thumbnail(
-        headline="आज के मुख्य समाचार 50 बड़ी खबरें",
-        out_path=demo_out,
-        all_stories=[
-            {"screen_headline": "महादेव सट्टा सिंडिकेट मामला: सौरभ चंद्राकर की रिमांड पर फैसला", "voiceover_script": "महादेव सट्टा सिंडिकेट में सौरभ चंद्राकर की रिमांड खत्म, खुलेंगे 6000 करोड़ के राज..."},
-            {"screen_headline": "रांची पुलिस ने बेल पर छूटे अपराधियों की निगरानी शुरू", "voiceover_script": "पुलिस चलाएगी विशेष सत्यापन अभियान, तैयार होगी अपराधियों की कुंडली..."},
-            {"screen_headline": "ED की बड़ी रेड: शराब घोटाले में कई ठिकानों पर छापेमारी", "voiceover_script": "ईडी की टीम ने तड़के मारा छापा, करोड़ों की संपत्ति जब्त..."},
-            {"screen_headline": "UP पुलिस का बड़ा एनकाउंटर: 50 हजार का इनामी बदमाश ढेर", "voiceover_script": "मुठभेड़ में पुलिस ने इनामी बदमाश को मार गिराया, भारी मात्रा में हथियार बरामद..."}
-        ]
+        headline=hl,
+        out_path=out_path,
+        all_stories=stories,
+        story=stories[0] if stories else None,
+        bottom_number=bottom_number
     )
-    print(f"Done! Result saved to: {res}")
+
+    # Automatically replicate to story_01 and root out/ so every consumer finds it immediately
+    out_dir = Path(out_path).resolve().parent
+    replicate_targets = [
+        out_dir / "thumbnail_01.jpg",
+        out_dir / "thumbnail.jpg",
+        out_dir / "story_01" / "thumbnail_01.jpg",
+        out_dir / "story_01" / "thumbnail.jpg",
+        PROJECT_ROOT / "out" / "thumbnail_01.jpg",
+        PROJECT_ROOT / "out" / "story_01" / "thumbnail_01.jpg",
+    ]
+    for target in replicate_targets:
+        try:
+            if str(target.resolve()) != str(Path(res).resolve()):
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(res, str(target))
+        except Exception:
+            pass
+
+    return res
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Uncut भारत Master Superfast YouTube Thumbnail Generator")
+    parser.add_argument("--out", default="", help="Output thumbnail path")
+    parser.add_argument("--number", default="50", help="Bottom big number (default 50)")
+    args = parser.parse_args()
+
+    result = auto_generate_master_thumbnail(out_path=args.out, bottom_number=args.number)
+    print(f"✅ Master Thumbnail Ready: {result}")
