@@ -802,6 +802,9 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
         needed = target_count - len(verified_stories)
         print(f"\n🔹 राउंड 2: कुल {target_count} पूरी करने के लिए शेष {needed} खबरें जोड़ी जा रही हैं...", flush=True)
 
+        max_pillar_r2 = max(2, (target_count // len(MASTER_7_PILLARS)) + 2)
+        max_source_r2 = max(2, target_count // 5 + 1)
+
         for pillar in MASTER_7_PILLARS:
             if len(verified_stories) >= target_count:
                 break
@@ -811,21 +814,21 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
             p_feeds = pillar["feeds"]
             p_keywords = pillar["keywords"]
 
-            # प्रति पिलर अधिकतम 2 खबरें
-            if pillar_counts[p_id] >= 2:
+            # प्रति पिलर अधिकतम सीमा (50 खबरों के लिए डायनामिक)
+            if pillar_counts[p_id] >= max_pillar_r2:
                 continue
 
             for feed_label, feed_url in p_feeds:
-                if len(verified_stories) >= target_count or pillar_counts[p_id] >= 2:
+                if len(verified_stories) >= target_count or pillar_counts[p_id] >= max_pillar_r2:
                     break
                 if is_blocked_source(feed_label) or is_blocked_source(feed_url):
                     continue
-                if source_counts.get(feed_label, 0) >= 2:
+                if source_counts.get(feed_label, 0) >= max_source_r2:
                     continue
 
                 items = get_feed_items(feed_url)
                 for it in items:
-                    if len(verified_stories) >= target_count or pillar_counts[p_id] >= 2:
+                    if len(verified_stories) >= target_count or pillar_counts[p_id] >= max_pillar_r2:
                         break
 
                     title = it["title"] if isinstance(it, dict) else (it.find("title").text.strip() if it.find("title") is not None else "")
@@ -903,7 +906,11 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
             ("एबीपी न्यूज़", "https://www.abplive.com/home/feed"),
             ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml"),
             ("दैनिक भास्कर", "https://www.bhaskar.com/rss-v1--category-1061.xml"),
-            ("गूगल न्यूज़ भारत", "https://news.google.com/rss/headlines/section/topic/NATION?hl=hi&gl=IN&ceid=IN:hi")
+            ("एनडीटीवी इंडिया", "https://feeds.feedburner.com/ndtvkhabar"),
+            ("न्यूज़18 हिंदी", "https://hindi.news18.com/rss/khabar.xml"),
+            ("आज तक राष्ट्रीय", "https://www.aajtak.in/rssfeeds/?id=home"),
+            ("गूगल न्यूज़ भारत", "https://news.google.com/rss/headlines/section/topic/NATION?hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ भारत मुख्य", "https://news.google.com/rss?hl=hi&gl=IN&ceid=IN:hi")
         ]
         for f_label, f_url in backup_feeds:
             if len(verified_stories) >= target_count:
@@ -1095,7 +1102,7 @@ def write_to_json_file(stories: list, output_path: str):
     print(f"📁 JSON डेटा सेव हुआ: {output_path}", flush=True)
 
 
-def main(target_count: int = 1):
+def main(target_count: int = 50):
     stories = fetch_master_bulletin(target_count=target_count)
     write_to_txt_file(stories, TXT_OUTPUT_PATH)
     write_to_json_file(stories, JSON_OUTPUT_PATH)
@@ -1104,7 +1111,7 @@ def main(target_count: int = 1):
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--max", type=int, default=1, help="अधिकतम कितनी खबरें फेच करनी हैं (Default: 1)")
+    parser.add_argument("--max", type=int, default=50, help="अधिकतम कितनी खबरें फेच करनी हैं (Default: 50)")
     args = parser.parse_args()
     main(target_count=args.max)
 

@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       story_number:
-        description: "Story Number (1 for single story, or 'all' for full bulletin)"
+        description: "Story Count / Number (50 for full 50 Badi Khabren bulletin, or 1 for single story test)"
         required: false
-        default: "1"
+        default: "50"
       force_refresh_news:
         description: "Fetch 100% fresh breaking news from live web"
         required: false
