@@ -233,11 +233,20 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
         for bp in bulletin_points[:3]:
             raw_headlines.append(bp)
 
-    # Sanitize headlines while preserving ** markers for frontend yellow highlight boxes
-    cleaned_headlines = [sanitize_headline_safety(h) for h in raw_headlines if h]
-    if len(cleaned_headlines) < 3:
-        cleaned_headlines.append(screen_hl)
-    cleaned_headlines = ensure_card_headline_entity_highlight(cleaned_headlines)
+    # Sanitize headlines: 100% clean, remove all markdown asterisks (**), trailing colons and punctuation
+    cleaned_headlines = []
+    for h in raw_headlines:
+        if not h:
+            continue
+        clean_h = sanitize_headline_safety(h)
+        clean_h = clean_h.replace("**", "").replace("*", "").rstrip(":").rstrip("।").strip()
+        if clean_h:
+            cleaned_headlines.append(clean_h)
+
+    if len(cleaned_headlines) < 4:
+        clean_screen_hl = screen_hl.replace("**", "").replace("*", "").rstrip(":").rstrip("।").strip()
+        while len(cleaned_headlines) < 4:
+            cleaned_headlines.append(clean_screen_hl)
 
     print(f"   ✅ [स्टेज 2 पूर्ण] {len(cleaned_headlines)} स्क्रीन हेडलाइंस तैयार!", flush=True)
     for h_idx, h in enumerate(cleaned_headlines, 1):
@@ -265,38 +274,72 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
 
     # चंक्स में मास्टर सैनिटाइज्ड इमेज कीवर्ड्स मैप करना (No years, No times, 2-4 words)
     kw_by_index = {item.get("chunk_index"): item.get("image_keywords_en", []) for item in chunk_img_kws}
+
+    # Extract dynamic story topic and location for smart contextual fallbacks
+    story_loc = story.get("location") or story.get("verified_location") or "India"
+    story_cat = story.get("category", "")
+    
+    # Clean broad keywords first so they can serve as primary context fallbacks
+    broad_kws = []
+    for bk in raw_broad_kws:
+        s_bk = sanitize_keyword_master(bk)
+        if s_bk and len(s_bk.split()) >= 2 and s_bk not in broad_kws:
+            broad_kws.append(s_bk)
+
     for c in cleaned_chunks:
         c_idx = c["chunk_index"]
         c_kws = kw_by_index.get(c_idx, [])
         sanitized_list = []
         for raw_k in c_kws:
             s_k = sanitize_keyword_master(raw_k)
-            if s_k and s_k not in sanitized_list:
+            # Never allow single-word garbage like 'news'
+            if s_k and len(s_k.split()) >= 2 and s_k not in sanitized_list:
                 sanitized_list.append(s_k)
-        if not sanitized_list:
-            sanitized_list = [f"{story.get('title', '')[:25]} news", "India press coverage", "police station building"]
-        # प्रत्येक चंक के लिए ठीक 3 विशिष्ट कीवर्ड्स सुनिश्चित करना
-        fallbacks = [
-            f"{story.get('title', '')[:25]} news",
-            "police investigation scene India",
-            "official building press conference",
-            "court law justice India"
-        ]
-        fb_idx = 0
-        while len(sanitized_list) < 3 and fb_idx < len(fallbacks):
-            fb_kw = sanitize_keyword_master(fallbacks[fb_idx])
-            if fb_kw and fb_kw not in sanitized_list:
+
+        # 1. Use broad story-specific keywords as primary fallback (matches exact topic, never hardcoded crime!)
+        for bk in broad_kws:
+            if len(sanitized_list) >= 3:
+                break
+            if bk not in sanitized_list and len(bk.split()) >= 2:
+                sanitized_list.append(bk)
+
+        # 2. Dynamic contextual fallbacks based on actual story category and location
+        context_fallbacks = []
+        if any(term in story_cat for term in ["व्यापार", "अर्थव्यवस्था", "मेला", "कारोबार"]):
+            context_fallbacks = [
+                f"{story_loc} trade fair exhibition hall",
+                f"{story_loc} business expo convention",
+                f"{story_loc} public event venue archive"
+            ]
+        elif any(term in story_cat for term in ["क्राइम", "अपराध", "कानून", "पुलिस"]):
+            context_fallbacks = [
+                f"{story_loc} police administration office",
+                f"{story_loc} district court justice building",
+                f"{story_loc} official press briefing"
+            ]
+        elif any(term in story_cat for term in ["राजनीति", "सरकार", "योजना", "जनहित"]):
+            context_fallbacks = [
+                f"{story_loc} government ministry secretariat",
+                f"{story_loc} official administrative conference",
+                f"{story_loc} public policy announcement"
+            ]
+        else:
+            context_fallbacks = [
+                f"{story_loc} official press conference",
+                f"{story_loc} public event archive",
+                f"{story_loc} administrative secretariat"
+            ]
+
+        fb_i = 0
+        while len(sanitized_list) < 3 and fb_i < len(context_fallbacks):
+            fb_kw = sanitize_keyword_master(context_fallbacks[fb_i])
+            if fb_kw and len(fb_kw.split()) >= 2 and fb_kw not in sanitized_list:
                 sanitized_list.append(fb_kw)
-            fb_idx += 1
+            fb_i += 1
+
         c["image_keywords_en"] = sanitized_list[:3]
         c["visual_intent"] = "REAL_PHOTO"
         c["meme_keyword_en"] = None
-
-    broad_kws = []
-    for bk in raw_broad_kws:
-        s_bk = sanitize_keyword_master(bk)
-        if s_bk and s_bk not in broad_kws:
-            broad_kws.append(s_bk)
 
     print(f"   ✅ [स्टेज 3 पूर्ण] सभी चंक्स को 100% असली व संक्षिप्त इमेज कीवर्ड्स मिले (+ {len(broad_kws)} ब्रॉड कीवर्ड्स)", flush=True)
 

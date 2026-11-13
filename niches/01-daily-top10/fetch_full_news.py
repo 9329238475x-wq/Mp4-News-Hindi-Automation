@@ -315,11 +315,23 @@ def clean_news_text(raw: str) -> str:
 
 
 PUBLISHER_DOMAINS = {
+    "theprint": "ThePrint Hindi",
+    "amarujala": "अमर उजाला",
+    "tv9hindi": "TV9 भारतवर्ष",
+    "tv9": "TV9 भारतवर्ष",
+    "bbc": "BBC News हिंदी",
+    "dw": "DW हिंदी",
+    "punjabkesari": "पंजाब केसरी",
+    "downtoearth": "डाउन टू अर्थ",
+    "moneycontrol": "मनीकंट्रोल हिंदी",
+    "cnbctv18": "CNBC आवाज़",
+    "firstpost": "Firstpost हिंदी",
     "etvbharat": "ईटीवी भारत",
     "lokmat": "लोकमत न्यूज़",
     "jagran": "दैनिक जागरण",
     "bhaskar": "दैनिक भास्कर",
     "abplive": "एबीपी न्यूज़",
+    "abp": "एबीपी न्यूज़",
     "zeenews": "ज़ी न्यूज़",
     "ndtv": "NDTV",
     "aajtak": "आज तक",
@@ -336,8 +348,20 @@ PUBLISHER_DOMAINS = {
 }
 
 
-def resolve_publisher_name(url: str, default_source: str = "") -> str:
-    """लेख के URL डोमेन से असली पब्लिशर/न्यूज़ चैनल का नाम निकालना (गूगल न्यूज़ 100% निषिद्ध)"""
+def resolve_publisher_name(url: str, default_source: str = "", title: str = "") -> str:
+    """लेख के URL डोमेन या शीर्षक से असली पब्लिशर/न्यूज़ चैनल का नाम निकालना (गूगल न्यूज़ 100% निषिद्ध)"""
+    # 1. शीर्षक में ' - ThePrint Hindi' या ' | दैनिक भास्कर' आदि की जांच
+    if title:
+        for dom, name in PUBLISHER_DOMAINS.items():
+            if dom in title.lower() or name.lower() in title.lower():
+                return name
+        for sep in [' - ', ' | ']:
+            if sep in title:
+                candidate = title.rsplit(sep, 1)[-1].strip()
+                if 2 <= len(candidate) <= 25 and "गूगल" not in candidate and "google" not in candidate.lower():
+                    return candidate
+
+    # 2. URL डोमेन की जांच
     if url:
         try:
             from urllib.parse import urlparse
@@ -347,7 +371,8 @@ def resolve_publisher_name(url: str, default_source: str = "") -> str:
                     return name
         except Exception:
             pass
-    if default_source and "गूगल" not in default_source:
+
+    if default_source and "गूगल" not in default_source and "google" not in default_source.lower():
         return default_source
     return "प्रेस कवरेज"
 
@@ -414,8 +439,8 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
             candidate_img_urls.append(src)
 
     # 1. प्राथमिक लीड तस्वीर (og:image, twitter:image, preload, image_src)
-    for prop in ["og:image", "twitter:image", "og:image:url", "thumbnail"]:
-        for tag in soup.find_all("meta", property=prop) + soup.find_all("meta", attrs={"name": prop}):
+    for prop in ["og:image", "og:image:secure_url", "twitter:image", "twitter:image:src", "og:image:url", "thumbnail", "image"]:
+        for tag in soup.find_all("meta", property=prop) + soup.find_all("meta", attrs={"name": prop}) + soup.find_all("meta", attrs={"itemprop": prop}):
             if tag and tag.get("content"):
                 add_img_candidate(tag["content"])
 
@@ -513,7 +538,10 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
         if img_counter > 8:
             break
         try:
-            r_img = requests.get(img_url, headers=HEADERS, timeout=12)
+            img_req_headers = dict(HEADERS)
+            img_req_headers["Referer"] = article_url
+            img_req_headers["Accept"] = "image/avif,image/webp,image/apng,image/*,*/*;q=0.8"
+            r_img = requests.get(img_url, headers=img_req_headers, timeout=12)
             if r_img.status_code != 200 or len(r_img.content) < 5000:
                 continue
 
@@ -745,7 +773,7 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
 
                 seen_titles.add(title)
                 seen_urls.add(link)
-                real_pub = resolve_publisher_name(link, feed_label)
+                real_pub = resolve_publisher_name(link, feed_label, title=title)
                 story_item = {
                     "pillar_id": p_id,
                     "pillar_name": p_name,
@@ -846,7 +874,7 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
 
                     seen_titles.add(title)
                     seen_urls.add(link)
-                    real_pub = resolve_publisher_name(link, feed_label)
+                    real_pub = resolve_publisher_name(link, feed_label, title=title)
                     story_item = {
                         "pillar_id": p_id,
                         "pillar_name": p_name,
@@ -909,7 +937,7 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                     if ft and wc >= 180 and is_strictly_indian_news(t, ft):
                         seen_titles.add(t)
                         seen_urls.add(u)
-                        real_pub = resolve_publisher_name(u, f_label)
+                        real_pub = resolve_publisher_name(u, f_label, title=t)
                         verified_stories.append({
                             "pillar_id": "national_crisis",
                             "pillar_name": "📢 देश की बड़ी हलचल & जन-मुद्दा",

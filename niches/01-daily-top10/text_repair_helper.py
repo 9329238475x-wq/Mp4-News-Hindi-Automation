@@ -22,6 +22,13 @@ def repair_hindi_tts_text(text: str) -> str:
 
     clean = text
 
+    # 0. Convert Devanagari numerals (०-९) to standard digits (0-9)
+    devanagari_nums = str.maketrans("०१२३४५६७८९", "0123456789")
+    clean = clean.translate(devanagari_nums)
+
+    # 0b. Convert date and number ranges like "14-27" or "14‑18" or "14–27" to "14 से 27" so TTS reads it naturally
+    clean = re.sub(r'(\d+)\s*[-‑–—]\s*(\d+)', r'\1 से \2', clean)
+
     # 1. Consecutive duplicate words (e.g. 'राज्यपाल राज्यपाल' -> 'राज्यपाल', 'ने ने' -> 'ने')
     clean = re.sub(r'(?<!\S)([\u0900-\u097Fa-zA-Z]+)[,.]?\s+\1(?!\S)', r'\1', clean)
 

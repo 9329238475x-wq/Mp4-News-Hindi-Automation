@@ -733,7 +733,7 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
         c_kws = list(c.get("image_keywords_en", []))
         if not c_kws:
             story_kws = story.get("visual_keywords_en") or story.get("visual_keywords") or []
-            c_kws = story_kws[c_idx*3 : (c_idx+1)*3] if story_kws else ["India news press coverage", "police station building", "court law order"]
+            c_kws = story_kws[c_idx*3 : (c_idx+1)*3] if story_kws else ["India news press coverage", "official press conference", "administrative headquarters"]
 
         while len(c_kws) < 3:
             c_kws.append(f"{c_kws[-1]} scene" if c_kws else "India national news coverage")
