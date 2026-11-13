@@ -348,6 +348,10 @@ SUCCESS_HTML = """<!DOCTYPE html>
 # FLASK ROUTES
 # ═════════════════════════════════════════════════════════════════════════════
 
+# In-memory store to keep flow with its code_verifier across redirect
+FLOW_CACHE = {}
+
+
 @app.route("/")
 def index():
     channel = get_existing_channel_info()
@@ -371,28 +375,44 @@ def login():
         prompt="consent"  # Forces refresh_token delivery
     )
 
+    # Cache flow instance containing code_verifier
+    FLOW_CACHE[state] = flow
+
     return redirect(auth_url)
 
 
 @app.route("/api/channels/oauth2callback")
 def oauth2callback():
     code = request.args.get("code")
+    state = request.args.get("state")
     if not code:
         return "<h3>एरर: Google से कोई ऑथराइजेशन कोड प्राप्त नहीं हुआ।</h3>", 400
 
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
+    # Retrieve matching flow with code_verifier
+    flow = FLOW_CACHE.pop(state, None)
+    if not flow:
+        flow = Flow.from_client_secrets_file(
+            CLIENT_SECRETS_FILE,
+            scopes=SCOPES,
+            state=state,
+            redirect_uri=REDIRECT_URI
+        )
 
     # Exchange authorization code for access & refresh tokens
     flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
 
-    # Save to token.json
+    # Save to root token.json
     with open(TOKEN_FILE, "w", encoding="utf-8") as f:
         f.write(credentials.to_json())
+
+    # Also save to niches/01-daily-top10/token.json
+    niche_token = PROJECT_ROOT / "niches" / "01-daily-top10" / "token.json"
+    try:
+        with open(niche_token, "w", encoding="utf-8") as f:
+            f.write(credentials.to_json())
+    except Exception:
+        pass
 
     print(f"\n✓ OAuth Token successfully saved to: {TOKEN_FILE}")
 

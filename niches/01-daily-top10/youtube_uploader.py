@@ -61,7 +61,17 @@ def get_authenticated_youtube_service(
     """
     creds = None
 
-    if os.path.exists(token_file):
+    # Check if token passed via environment variable (e.g. for Kaggle / GitHub Actions Secrets)
+    env_token = os.environ.get("YOUTUBE_TOKEN_JSON", "")
+    if env_token:
+        try:
+            creds = Credentials.from_authorized_user_info(json.loads(env_token), SCOPES)
+            print("  ✓ Loaded OAuth token from environment variable YOUTUBE_TOKEN_JSON")
+        except Exception as e:
+            print(f"  ⚠️ Failed to parse YOUTUBE_TOKEN_JSON env var: {e}")
+            creds = None
+
+    if not creds and os.path.exists(token_file):
         try:
             creds = Credentials.from_authorized_user_file(token_file, SCOPES)
         except Exception as e:
