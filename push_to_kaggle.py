@@ -200,6 +200,24 @@ if mp4_files:
         except Exception:
             pass
 
+    # Ensure Master Thumbnail exists; generate if missing
+    if not thumb_path or not os.path.exists(thumb_path):
+        print("🖼️ Generating custom master thumbnail on-the-fly...", flush=True)
+        try:
+            sys.path.insert(0, str(ROOT / "niches" / "01-daily-top10"))
+            from generate_thumbnail import generate_superfast_news_thumbnail
+            thumb_target = str(out_dir / "thumbnail_01.jpg")
+            generate_superfast_news_thumbnail(
+                out_path=thumb_target,
+                all_stories=stories,
+                bottom_number="50"
+            )
+            if os.path.exists(thumb_target):
+                thumb_path = thumb_target
+                print(f"✓ Master thumbnail ready: {thumb_path}", flush=True)
+        except Exception as _th_e:
+            print(f"⚠️ Thumbnail generation fallback notice: {_th_e}", flush=True)
+
     try:
         sys.path.insert(0, str(ROOT / "niches" / "01-daily-top10"))
         from youtube_uploader import publish_broadcast_to_youtube
