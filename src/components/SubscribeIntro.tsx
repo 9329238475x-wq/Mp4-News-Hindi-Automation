@@ -189,47 +189,6 @@ export const SubscribeIntro: React.FC<SubscribeIntroProps> = ({
         </span>
       </div>
 
-      {/* ─── 3. TOP-RIGHT: ELEGANT BROADCAST WATERMARK PILL ─── */}
-      <div
-        style={{
-          position: "absolute",
-          top: 32,
-          right: 44,
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "8px 20px",
-          background: "rgba(10, 15, 28, 0.75)",
-          backdropFilter: "blur(12px)",
-          borderRadius: 30,
-          border: "1.5px solid rgba(255, 255, 255, 0.25)",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
-          opacity: introFade,
-          zIndex: 110,
-        }}
-      >
-        <div
-          style={{
-            width: 10,
-            height: 10,
-            borderRadius: "50%",
-            backgroundColor: "#e50914",
-            boxShadow: "0 0 10px #ff1a1a",
-          }}
-        />
-        <span
-          style={{
-            color: "#ffffff",
-            fontSize: 18,
-            fontWeight: 800,
-            fontFamily: "'Noto Sans Devanagari', 'Segoe UI', sans-serif",
-            letterSpacing: "0.5px",
-          }}
-        >
-          {channelName}
-        </span>
-      </div>
-
       {/* ─── 4. BOTTOM WATERMARK HINT ─── */}
       <div
         style={{
