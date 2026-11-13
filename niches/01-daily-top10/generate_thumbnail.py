@@ -17,6 +17,8 @@
 
 import os
 import sys
+import re
+import json
 import shutil
 import tempfile
 import subprocess
@@ -764,12 +766,23 @@ def generate_dls_reference_pillow(
         "#000000": (0, 0, 0),
     }
     for seg in white_strip_segments:
-        txt = seg.get("text", "") + " "
-        c_hex = seg.get("color", "#000000")
+        if isinstance(seg, dict):
+            txt = seg.get("text", "") + " "
+            c_hex = seg.get("color", "#000000")
+            no_ul = seg.get("no_underline", False)
+        elif isinstance(seg, (list, tuple)):
+            txt = str(seg[0]) + " "
+            c_hex = seg[1] if len(seg) > 1 else "#000000"
+            no_ul = seg[2] if len(seg) > 2 else False
+        else:
+            txt = str(seg) + " "
+            c_hex = "#000000"
+            no_ul = False
+
         c_rgb = color_map.get(c_hex, (0, 0, 0))
         draw.text((x_cursor, 420), txt, fill=c_rgb, font=f_strip)
         bbox = draw.textbbox((x_cursor, 420), txt, font=f_strip)
-        if not seg.get("no_underline", False):
+        if not no_ul:
             draw.line([(x_cursor, 482), (bbox[2] - 5, 482)], fill=c_rgb, width=3.5)
         x_cursor = bbox[2] + 16
 
