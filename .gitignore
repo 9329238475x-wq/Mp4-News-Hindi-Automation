@@ -26,3 +26,5 @@ build_complete_notebook.py
 test_*.wav
 *.log
 *logs.txt
+YT-API-KEY.json
+token.json

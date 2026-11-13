@@ -302,6 +302,54 @@ def run_full_pipeline(max_stories: int = None, auto_render: bool = False):
         print("   3. 7-पॉइंट QA टेस्ट रन:      python run_pipeline.py --qa\n")
 
 
+def trigger_youtube_upload(privacy_status: str = "unlisted"):
+    """YouTube पर वीडियो और थंबनेल अपलोड करके ईमेल नोटिफिकेशन भेजता है"""
+    print_banner("🚀 YouTube ऑटोमेटेड अपलोड प्रोसेस शुरू...")
+    out_dir = os.path.join(BASE_DIR, "out")
+    
+    # 1. वीडियो फाइल खोजें
+    possible_videos = [
+        os.path.join(out_dir, "output_bulletin.mp4"),
+        os.path.join(out_dir, "output_dls_top10.mp4"),
+        os.path.join(out_dir, "master_output.mp4")
+    ]
+    video_file = next((v for v in possible_videos if os.path.exists(v) and os.path.getsize(v) > 1000000), "")
+    
+    if not video_file:
+        # Check any mp4 in out
+        mp4s = [os.path.join(out_dir, f) for f in os.listdir(out_dir) if f.endswith(".mp4") and os.path.getsize(os.path.join(out_dir, f)) > 1000000]
+        if mp4s:
+            video_file = sorted(mp4s, key=os.path.getmtime, reverse=True)[0]
+
+    if not video_file:
+        print("❌ कोई रेंडर किया गया MP4 वीडियो नहीं मिला! पहले वीडियो रेंडर करें: python run_pipeline.py --render")
+        return
+
+    # 2. थंबनेल फाइल खोजें
+    possible_thumbs = [
+        os.path.join(out_dir, "test_dls_reference_thumbnail.jpg"),
+        os.path.join(out_dir, "thumbnail_01.jpg")
+    ]
+    thumb_file = next((t for t in possible_thumbs if os.path.exists(t)), "")
+
+    # 3. स्टोरीज लोड करें
+    stories = []
+    if os.path.exists(JSON_PATH):
+        try:
+            with open(JSON_PATH, "r", encoding="utf-8") as f:
+                stories = json.load(f)
+        except Exception:
+            pass
+
+    from youtube_uploader import publish_broadcast_to_youtube
+    publish_broadcast_to_youtube(
+        video_path=video_file,
+        thumbnail_path=thumb_file,
+        all_stories=stories,
+        privacy_status=privacy_status
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="DLS News 'हर खबर काम की' मास्टर पाइपलाइन रनर",
@@ -332,6 +380,8 @@ def main():
     parser.add_argument("--autopilot", action="store_true", help="100% स्वायत्त ऑटोपायलट: AI स्क्रिप्ट, 10-15 इमेजेस (वॉटरमार्क क्रॉप्ड), TTS, रेंडर और QA")
     parser.add_argument("--qa", action="store_true", help="7-पॉइंट QA क्वालिटी टेस्ट चलाएं")
     parser.add_argument("--clean", action="store_true", help="सभी पुरानी टेस्ट व टेम्पररी फाइल्स को डिलीट करें")
+    parser.add_argument("--upload", action="store_true", help="रेंडर किए गए वीडियो और थंबनेल को स्वचालित YouTube पर अपलोड करें")
+    parser.add_argument("--privacy", type=str, default="unlisted", choices=["private", "unlisted", "public"], help="YouTube वीडियो प्राइवेसी स्टेटस")
 
     args = parser.parse_args()
 
@@ -356,6 +406,8 @@ def main():
         run_remotion_render()
     elif args.qa:
         run_all_qa_checks()
+    elif args.upload:
+        trigger_youtube_upload(privacy_status=args.privacy)
     elif args.autopilot:
         run_full_pipeline(max_stories=args.count, auto_render=True)
     else:
