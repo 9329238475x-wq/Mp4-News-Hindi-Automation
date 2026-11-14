@@ -159,22 +159,43 @@ def extract_thumbnail_hook_segments(
 
 def find_browser_executable() -> str:
     """Find local Chrome, Chromium, or Edge binary for headless rendering"""
+    import glob
     candidates = [
-        shutil.which("chrome"),
+        shutil.which("google-chrome-stable"),
         shutil.which("google-chrome"),
+        shutil.which("chromium-browser"),
         shutil.which("chromium"),
-        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        shutil.which("chrome"),
         shutil.which("msedge"),
-        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        "/usr/bin/google-chrome-stable",
         "/usr/bin/google-chrome",
         "/usr/bin/chromium-browser",
         "/usr/bin/chromium",
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
     ]
     for c in candidates:
         if c and os.path.exists(c):
             return c
+
+    # Search user & system cache (Remotion / Puppeteer downloaded browser binaries)
+    search_dirs = [os.path.expanduser("~"), "/root", "/kaggle/working", "/tmp"]
+    for sdir in search_dirs:
+        if not os.path.exists(sdir):
+            continue
+        patterns = [
+            f"{sdir}/.cache/remotion/**/chrome",
+            f"{sdir}/.cache/remotion/**/chromium",
+            f"{sdir}/.cache/puppeteer/**/chrome",
+            f"{sdir}/.cache/puppeteer/**/chromium",
+        ]
+        for pat in patterns:
+            for match in glob.glob(pat, recursive=True):
+                if os.path.isfile(match) and os.access(match, os.X_OK):
+                    return match
+
     return ""
 
 
@@ -730,14 +751,16 @@ def generate_dls_reference_pillow(
     f_huge_date = ImageFont.truetype(FONT_POPPINS, 210) if os.path.exists(FONT_POPPINS) else ImageFont.load_default()
     f_month = ImageFont.truetype(FONT_BALOO, 110) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
     f_day = ImageFont.truetype(FONT_BALOO, 50) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
-    f_strip = ImageFont.truetype(FONT_BALOO, 48) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
-    f_baloo_num = ImageFont.truetype(FONT_BALOO, 170) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
+    f_live = ImageFont.truetype(FONT_POPPINS, 36) if os.path.exists(FONT_POPPINS) else ImageFont.load_default()
+    f_year = ImageFont.truetype(FONT_POPPINS, 40) if os.path.exists(FONT_POPPINS) else ImageFont.load_default()
+    f_strip = ImageFont.truetype(FONT_BALOO, 46) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
+    f_baloo_num = ImageFont.truetype(FONT_POPPINS, 170) if os.path.exists(FONT_POPPINS) else ImageFont.load_default()
     f_baloo_word = ImageFont.truetype(FONT_BALOO, 140) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
 
     draw.text((45, 45), "सुपरफास्ट", fill=(255, 242, 0), font=f_baloo, stroke_width=3, stroke_fill=(74, 34, 0))
     draw.text((105, 125), "न्यूज", fill=(255, 242, 0), font=f_baloo, stroke_width=3, stroke_fill=(74, 34, 0))
     draw.rounded_rectangle([120, 240, 240, 280], radius=6, fill=(229, 9, 20), outline=(255, 255, 255), width=2)
-    draw.text((145, 244), "LIVE", fill=(255, 255, 255), font=f_day)
+    draw.text((145, 244), "LIVE", fill=(255, 255, 255), font=f_live)
 
     # Huge Date & Month
     draw.text((375, 25), day_num, fill=(229, 0, 0), font=f_huge_date, stroke_width=8, stroke_fill=(255, 230, 0))
@@ -746,7 +769,7 @@ def generate_dls_reference_pillow(
     # Top-Right Day, Year, Mukhya (Lifted to y=212 for zero clipping)
     draw.text((1010, 20), weekday_str, fill=(0, 43, 73), font=f_day)
     draw.rounded_rectangle((1160, 24, 1260, 68), radius=6, fill=(255, 230, 0), outline=(0, 0, 0), width=2)
-    draw.text((1175, 28), year_str, fill=(0, 0, 0), font=f_day)
+    draw.text((1175, 24), year_str, fill=(0, 0, 0), font=f_year)
     draw.text((1060, 212), "मुख्य", fill=(0, 68, 204), font=f_baloo, stroke_width=3, stroke_fill=(255, 255, 255))
 
     # 2. Middle Row: Cyan Pill + Samachar (Y: 305-405)
@@ -880,7 +903,9 @@ def generate_sensational_thumbnail(
                 "--disable-gpu",
                 "--hide-scrollbars",
                 "--no-sandbox",
+                "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
+                "--virtual-time-budget=2000",
                 f"--window-size={THUMB_W},{THUMB_H}",
                 f"--screenshot={out_abs}",
                 f"file:///{temp_html.replace(os.sep, '/')}",
