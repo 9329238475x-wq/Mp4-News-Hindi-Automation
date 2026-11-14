@@ -59,7 +59,7 @@ class GroqEngine:
             raise ValueError("कोई Groq API Key उपलब्ध नहीं है।")
 
         attempts = 0
-        max_attempts = len(self.keys)
+        max_attempts = max(10, len(self.keys) * 3)
 
         while attempts < max_attempts:
             key = self._get_active_key()
@@ -87,7 +87,8 @@ class GroqEngine:
 
                 # 429 = Rate Limit, 401 = Invalid Key
                 if resp.status_code in (429, 401):
-                    print(f"⚠️ Groq Key #{self.current_key_index + 1} पर स्टेटस {resp.status_code} मिला।")
+                    print(f"⚠️ Groq Key #{self.current_key_index + 1} पर स्टेटस {resp.status_code} मिला (कूल-ऑफ 2s)...", flush=True)
+                    time.sleep(2)
                     self._rotate_key()
                     attempts += 1
                     continue
@@ -121,11 +122,12 @@ class GroqEngine:
                 return parsed
 
             except requests.RequestException as e:
-                print(f"❌ नेटवर्क त्रुटि (Key #{self.current_key_index + 1}): {e}")
+                print(f"❌ नेटवर्क त्रुटि (Key #{self.current_key_index + 1}): {e}", flush=True)
+                time.sleep(1)
                 self._rotate_key()
                 attempts += 1
             except json.JSONDecodeError as e:
-                print(f"❌ JSON पार्सिंग त्रुटि: {e}")
+                print(f"❌ JSON पार्सिंग त्रुटि: {e}", flush=True)
                 attempts += 1
 
         raise RuntimeError("सभी Groq API Keys समाप्त हो गईं या कनेक्शन में समस्या है।")
