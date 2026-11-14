@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       story_number:
-        description: "Story Count / Number (50 for full 50 Badi Khabren bulletin, or 1 for single story test)"
+        description: "Story Count / Number (25 for full 25 Badi Khabren bulletin, or 1 for single story test)"
         required: false
-        default: "50"
+        default: "25"
       force_refresh_news:
         description: "Fetch 100% fresh breaking news from live web"
         required: false
@@ -46,7 +46,7 @@ jobs:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME || 'vinodkumartekam' }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY || 'debe5f4350257f533281191fd96863c7' }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          STORY_NUMBER: ${{ inputs.story_number || '50' }}
+          STORY_NUMBER: ${{ inputs.story_number || '25' }}
           FORCE_REFRESH_NEWS: ${{ inputs.force_refresh_news != false }}
           YOUTUBE_PRIVACY: "public"
           YOUTUBE_SCHEDULE: "true"

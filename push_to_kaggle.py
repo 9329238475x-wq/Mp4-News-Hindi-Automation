@@ -51,8 +51,8 @@ api.authenticate()
 kernel_slug = "mp4-news-hindi-omnivoice-pipeline"
 kernel_id = f"{kaggle_user}/{kernel_slug}"
 
-# Write bulletin configuration for Kaggle pipeline (Default: 50 stories bulletin)
-story_number = os.environ.get("STORY_NUMBER", "50")
+# Write bulletin configuration for Kaggle pipeline (Default: 25 stories bulletin)
+story_number = os.environ.get("STORY_NUMBER", "25")
 force_refresh = os.environ.get("FORCE_REFRESH_NEWS", "false").lower() in ["true", "1", "yes"]
 
 config_path = ROOT / "bulletin_config.json"
@@ -222,11 +222,11 @@ if mp4_files:
             import generate_thumbnail as gt
             thumb_target = str(out_dir / "thumbnail_01.jpg")
             if hasattr(gt, "auto_generate_master_thumbnail"):
-                thumb_path = gt.auto_generate_master_thumbnail(out_path=thumb_target, bottom_number="50", slot_str=slot_str)
+                thumb_path = gt.auto_generate_master_thumbnail(out_path=thumb_target, bottom_number="25", slot_str=slot_str)
             elif hasattr(gt, "generate_sensational_thumbnail"):
-                thumb_path = gt.generate_sensational_thumbnail(out_path=thumb_target, all_stories=stories, bottom_number="50", slot_str=slot_str)
+                thumb_path = gt.generate_sensational_thumbnail(out_path=thumb_target, all_stories=stories, bottom_number="25", slot_str=slot_str)
             elif hasattr(gt, "generate_superfast_news_thumbnail"):
-                thumb_path = gt.generate_superfast_news_thumbnail(out_path=thumb_target, all_stories=stories, bottom_number="50", slot_str=slot_str)
+                thumb_path = gt.generate_superfast_news_thumbnail(out_path=thumb_target, all_stories=stories, bottom_number="25", slot_str=slot_str)
             if thumb_path and os.path.exists(thumb_path):
                 print(f"✓ Master thumbnail ready ({slot_str}): {thumb_path}", flush=True)
         except Exception as _th_e:

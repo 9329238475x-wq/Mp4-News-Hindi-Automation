@@ -68,7 +68,7 @@ def extract_thumbnail_hook_segments(
     all_stories: list = None,
     headline: str = "",
     story: dict = None,
-    bottom_number: str = "50"
+    bottom_number: str = "25"
 ) -> tuple:
     """
     Extracts high-CTR underlined keywords for the white strip and dynamic text for cyan pill.
@@ -222,7 +222,7 @@ def build_dls_reference_html(
     year_str: str,
     white_strip_segments: list,
     cyan_pill_html: str = "",
-    bottom_number: str = "50",
+    bottom_number: str = "25",
     slot_str: str = ""
 ) -> str:
     """
@@ -824,8 +824,8 @@ def generate_dls_reference_pillow(
     weekday_str: str,
     year_str: str,
     white_strip_segments: list,
-    bottom_number: str,
-    out_path: str,
+    bottom_number: str = "25",
+    out_path: str = "out/thumbnail_01.jpg",
     cyan_pill_html: str = "",
     is_crime_heavy: bool = False,
     slot_str: str = ""
@@ -996,7 +996,7 @@ def generate_sensational_thumbnail(
     story: dict = None,
     all_stories: list = None,
     channel_name: str = "Uncut भारत",
-    bottom_number: str = "50",
+    bottom_number: str = "25",
     slot_str: str = ""
 ) -> str:
     """
@@ -1008,7 +1008,7 @@ def generate_sensational_thumbnail(
     - [मुख्य] sitting JUST DIRECTLY ABOVE [समाचार] with zero matra clipping
     - White strip text enlarged (51px) to fill height with hard-news triggers
     - [क्राइम अलर्ट] badge on bottom left
-    - [50 बड़ी खबरें] vertically centered in the red banner
+    - [25 बड़ी खबरें] vertically centered in the red banner
     - Dynamic Day, Date, Month & Year automatically computed from datetime.now()
     - Dynamic Cyan Pill and White Strip keywords from actual scraped stories
     """
@@ -1016,9 +1016,9 @@ def generate_sensational_thumbnail(
         slot_str = os.environ.get("NEWS_SLOT") or get_ist_slot()
 
     if not headline and all_stories:
-        headline = all_stories[0].get("screen_headline") or all_stories[0].get("title") or "आज के मुख्य समाचार 50 बड़ी खबरें"
+        headline = all_stories[0].get("screen_headline") or all_stories[0].get("title") or "आज के मुख्य समाचार 25 बड़ी खबरें"
     if not headline:
-        headline = "आज के मुख्य समाचार 50 बड़ी खबरें"
+        headline = "आज के मुख्य समाचार 25 बड़ी खबरें"
 
     now = datetime.now()
     day_num = str(now.day)
@@ -1026,9 +1026,9 @@ def generate_sensational_thumbnail(
     weekday_str = HINDI_DAYS[now.weekday()]
     year_str = str(now.year)
 
-    # Story count determines bottom number: 50 for 50-news bulletin, 10 for Top 10
+    # Story count determines bottom number: 25 for full bulletin, 10 for Top 10
     if not bottom_number:
-        bottom_number = "50" if (not all_stories or len(all_stories) > 10 or "50" in headline) else str(len(all_stories))
+        bottom_number = "25" if (not all_stories or len(all_stories) > 10 or "25" in headline or "50" in headline) else str(len(all_stories))
 
     # Extract dynamic hard-news keywords & dynamic cyan pill text from actual stories
     white_segments, cyan_pill_html = extract_thumbnail_hook_segments(
@@ -1105,7 +1105,7 @@ def generate_sensational_thumbnail(
 generate_superfast_news_thumbnail = generate_sensational_thumbnail
 
 
-def auto_generate_master_thumbnail(out_path: str = "", bottom_number: str = "50", slot_str: str = "") -> str:
+def auto_generate_master_thumbnail(out_path: str = "", bottom_number: str = "25", slot_str: str = "") -> str:
     """100% Fully Automated: Loads current bulletin stories and renders the master thumbnail"""
     stories = []
     candidates = [
@@ -1131,7 +1131,7 @@ def auto_generate_master_thumbnail(out_path: str = "", bottom_number: str = "50"
     if stories:
         hl = stories[0].get("screen_headline") or stories[0].get("title") or ""
     if not hl:
-        hl = "आज के मुख्य समाचार 50 बड़ी खबरें"
+        hl = "आज के मुख्य समाचार 25 बड़ी खबरें"
 
     print(f"🖼️ [Auto Thumbnail] Generating master broadcast thumbnail to: {out_path}")
     res = generate_sensational_thumbnail(
@@ -1168,7 +1168,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="Uncut भारत Master Superfast YouTube Thumbnail Generator")
     parser.add_argument("--out", default="", help="Output thumbnail path")
-    parser.add_argument("--number", default="50", help="Bottom big number (default 50)")
+    parser.add_argument("--number", default="25", help="Bottom big number (default 25)")
     parser.add_argument("--slot", default="", help="News slot: 'सुबह' or 'शाम' (auto-detected if omitted)")
     args = parser.parse_args()
 

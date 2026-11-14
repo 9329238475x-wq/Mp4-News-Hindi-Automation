@@ -99,7 +99,7 @@ def get_youtube_autocomplete(seed_query: str, max_results: int = 10) -> list:
     return []
 
 
-def scrape_competitor_tags(search_query: str = "आज की बड़ी खबरें 50", max_videos: int = 2) -> list:
+def scrape_competitor_tags(search_query: str = "आज की बड़ी खबरें 25", max_videos: int = 2) -> list:
     """
     Extracts hidden SEO tags from top-ranking competitor YouTube videos on breaking topics.
     """
@@ -136,7 +136,7 @@ def generate_vidiq_viral_tags(all_stories: list = None, max_chars: int = 495) ->
     # 1. Base Core Proven High-Velocity News Tags
     core_tags = [
         "आज की बड़ी खबरें",
-        "50 बड़ी खबरें",
+        "25 बड़ी खबरें",
         "superfast news",
         "hindi news live",
         "breaking news hindi",
@@ -166,7 +166,7 @@ def generate_vidiq_viral_tags(all_stories: list = None, max_chars: int = 495) ->
     # 3. Live YouTube Autocomplete harvest
     autocomplete_tags = []
     try:
-        seed1 = story_tags[0] if story_tags else "50 बड़ी खबरें"
+        seed1 = story_tags[0] if story_tags else "25 बड़ी खबरें"
         auto1 = get_youtube_autocomplete(seed1, max_results=5)
         auto2 = get_youtube_autocomplete("आज की ताजा खबर", max_results=5)
         autocomplete_tags = auto1 + auto2
@@ -176,7 +176,7 @@ def generate_vidiq_viral_tags(all_stories: list = None, max_chars: int = 495) ->
     # 4. Competitor Tag harvest
     competitor_tags = []
     try:
-        competitor_tags = scrape_competitor_tags("आज की ताजा खबर 50 बड़ी खबरें", max_videos=2)
+        competitor_tags = scrape_competitor_tags("आज की ताजा खबर 25 बड़ी खबरें", max_videos=2)
     except Exception:
         pass
 
@@ -207,7 +207,7 @@ def generate_vidiq_viral_tags(all_stories: list = None, max_chars: int = 495) ->
 # 2. HIGH-CLASS DYNAMIC TITLE GENERATOR (< 95 Chars, ZERO EMOJIS)
 # ═════════════════════════════════════════════════════════════════════════════
 
-def build_high_class_viral_title(all_stories: list = None, bottom_number: str = "50", slot_str: str = "") -> str:
+def build_high_class_viral_title(all_stories: list = None, bottom_number: str = "25", slot_str: str = "") -> str:
     """
     Constructs an algorithmic, high-class, Prime-Time news title strictly according
     to the actual news stories of that run.
@@ -296,7 +296,7 @@ def build_high_class_viral_title(all_stories: list = None, bottom_number: str = 
 def build_master_description(
     all_stories: list = None,
     channel_name: str = "Uncut भारत",
-    bottom_number: str = "50",
+    bottom_number: str = "25",
     slot_str: str = ""
 ) -> str:
     """
@@ -420,7 +420,7 @@ def build_master_description(
 # 4. MASTER SEO PACKAGE BUNDLER
 # ═════════════════════════════════════════════════════════════════════════════
 
-def generate_youtube_seo_package(all_stories: list = None, bottom_number: str = "50", slot_str: str = "") -> dict:
+def generate_youtube_seo_package(all_stories: list = None, bottom_number: str = "25", slot_str: str = "") -> dict:
     """
     Main entrypoint: Generates the full SEO metadata package for YouTube upload:
     - title (< 95 chars, zero emojis, dynamic to actual news, with morning/evening slot)
@@ -455,7 +455,7 @@ if __name__ == "__main__":
         {"screen_headline": "ED की बड़ी रेड: शराब घोटाले में कई ठिकानों पर छापेमारी", "category": "जांच व छापे"},
         {"screen_headline": "UP पुलिस का बड़ा एनकाउंटर: 50 हजार का इनामी बदमाश ढेर", "category": "क्राइम व कानून"}
     ]
-    pkg = generate_youtube_seo_package(all_stories=sample_stories, bottom_number="50")
+    pkg = generate_youtube_seo_package(all_stories=sample_stories, bottom_number="25")
     print(f"\n✓ Generated Title ({pkg['title_length']} chars, Zero Emojis):\n  {pkg['title']}")
     print(f"\n✓ Generated Tags ({pkg['tags_count']} tags, {pkg['tags_char_count']} chars, Zero Emojis):\n  {', '.join(pkg['tags'])}")
     print(f"\n✓ Description Length: {pkg['desc_length']} / 5000 chars (Zero Emojis, Zero Timestamps)")

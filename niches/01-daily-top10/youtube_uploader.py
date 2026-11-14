@@ -303,7 +303,7 @@ def publish_broadcast_to_youtube(
         slot_str = os.environ.get("NEWS_SLOT") or ("सुबह" if datetime.datetime.now(IST_TZ).hour < 12 else "शाम")
 
     # 2. Generate SEO Metadata Package synced to Target Slot
-    seo_pkg = generate_youtube_seo_package(all_stories=all_stories, bottom_number="50", slot_str=slot_str)
+    seo_pkg = generate_youtube_seo_package(all_stories=all_stories, bottom_number="25", slot_str=slot_str)
     print(f"  ✓ SEO Package Ready ({slot_str}): '{seo_pkg['title']}'")
     print(f"  ✓ Video Upload Tags Box: KEPT EMPTY (as instructed)")
     print(f"  ✓ Description: {seo_pkg['desc_length']} chars (Zero Emojis, Zero Timestamps)")
@@ -329,7 +329,7 @@ def publish_broadcast_to_youtube(
         try:
             from generate_thumbnail import auto_generate_master_thumbnail
             thumb_auto = os.path.join(os.path.dirname(video_path), "thumbnail_01.jpg")
-            thumbnail_path = auto_generate_master_thumbnail(out_path=thumb_auto, bottom_number="50", slot_str=slot_str)
+            thumbnail_path = auto_generate_master_thumbnail(out_path=thumb_auto, bottom_number="25", slot_str=slot_str)
             print(f"  ✓ Automatically generated master thumbnail: {thumbnail_path}")
         except Exception as e_th:
             print(f"  ⚠️ Could not auto-generate thumbnail: {e_th}")
@@ -357,7 +357,7 @@ def publish_broadcast_to_youtube(
             privacy_status=status_label,
             thumbnail_status=thumb_status,
             tags_count=seo_pkg["tags_count"],
-            chapters_count=len(all_stories) if all_stories else 50,
+            chapters_count=len(all_stories) if all_stories else 25,
             video_path=video_path
         )
 

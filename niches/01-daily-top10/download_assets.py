@@ -966,5 +966,5 @@ if __name__ == "__main__":
     parser.add_argument("--max", type=int, default=None, help="अधिकतम कितनी खबरों के एसेट्स डाउनलोड करने हैं")
     parser.add_argument("--force", action="store_true", help="पहले से मौजूद इमेजेस को दोबारा डाउनलोड करें")
     args = parser.parse_args()
-    limit = args.max if args.max is not None else (args.count if args.count is not None else 50)
+    limit = args.max if args.max is not None else (args.count if args.count is not None else 25)
     download_all_assets(max_stories=limit, target_count=12, force=args.force)

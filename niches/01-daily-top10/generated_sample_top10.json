@@ -3,310 +3,460 @@
     "story_number": 1,
     "category": "क्राइम व कानून",
     "is_suicide_story": false,
-    "screen_headline": "तमिलनाडु ग्रामीण विकास विभाग के खातों से 22 करोड़ चोरी",
+    "source": "राजस्थान पत्रिका",
+    "real_publisher": "राजस्थान पत्रिका",
+    "screen_headline": "पुलिस ने रामचंदर राव को घर पर नजरबंद किया",
     "screen_headlines": [
-      "तमिलनाडु ग्रामीण विकास विभाग के खातों से 22 करोड़ चोरी",
-      "तीन पंचायत यूनियनों में साइबर धोखाधड़ी, पुलिस जांच शुरू",
-      "रामनाथपुरम में 14 करोड़, तिरुपुर में 5 करोड़ चोरी",
-      "साइबर क्राइम पोर्टल सुरक्षा खामियों पर दो‑स्तरीय प्रमाणीकरण"
+      "पुलिस ने रामचंदर राव को घर पर नजरबंद किया",
+      "रामचंदर राव ने भारत समिट को देश-विरोधी कहा",
+      "समिट हाईटेक्स में हो रहा, राहुल गांधी की उपस्थिति अपेक्षित",
+      "पुलिस ने आदेश जारी कर राव को घर में रोका"
     ],
     "chunks": [
       {
         "chunk_index": 1,
-        "sentence": "तमिलनाडु सरकार के ग्रामीण विकास विभाग के तीन पंचायत यूनियनों के बैंक खातों से कुल बीस करोड़ बीस लाख रुपये की ऑनलाइन धोखाधड़ी की रिपोर्ट मिली है।",
-        "bullet_text": "**तमिलनाडु सरकार** के **ग्रामीण विकास विभाग** के खातों से बीस करोड़ बीस लाख चोरी",
+        "sentence": "हैदराबाद के तारनाका में पुलिस ने रामचंदर राव को घर पर नजरबंद किया, भारत समिट के बीच।",
+        "bullet_text": "रामचंदर राव को घर पर नजरबंद किया गया।",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "Tamil Nadu Rural Development office",
-          "Tamil Nadu bank ledger",
-          "Cyber crime police archive"
+          "Hyderabad Taranaka police",
+          "Ramchander Rao house arrest",
+          "Hyderabad police station"
         ],
-        "meme_keyword_en": null,
-        "visual_images": [
-          {
-            "path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
-            "is_scraped": true,
-            "credit_source": "ईटीवी भारत"
-          },
-          {
-            "path": "out/story_01/news real image/context_img_1_01_01.jpg",
-            "is_scraped": false,
-            "credit_source": null,
-            "keyword": "Tamil Nadu Rural Development office"
-          },
-          {
-            "path": "out/story_01/news real image/context_img_1_01_02.jpg",
-            "is_scraped": false,
-            "credit_source": null,
-            "keyword": "Tamil Nadu bank ledger"
-          }
-        ],
-        "local_visual_paths": [
-          "out/story_01/news real image/scraped_news_img_1_01.jpg",
-          "out/story_01/news real image/context_img_1_01_01.jpg",
-          "out/story_01/news real image/context_img_1_01_02.jpg"
-        ],
-        "local_visual_path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
-        "is_scraped_news": true,
-        "credit_source": "ईटीवी भारत"
+        "meme_keyword_en": null
       },
       {
         "chunk_index": 2,
-        "sentence": "रामनाथपुरम जिले की मंडपम पंचायत यूनियन के खाते से लगभग चौदह करोड़ रुपये, तिरुपुर के धारापुरम से पाँच करोड़ रुपये और नागपट्टिनम के जिला पंचायत यूनियन से तीन करोड़ दस लाख रुपये चोरी हुए।",
-        "bullet_text": "**रामनाथपुरम**, **तिरुपुर**, **नागपट्टिनम** जिलों में क्रमशः चौदह, पाँच और तीन करोड़ दस लाख की चोरी",
+        "sentence": "समिट हाईटेक्स में हो रहा है, हज़ारों प्रतिनिधि, राहुल गांधी की उपस्थिति की उम्मीद।",
+        "bullet_text": "हज़ारों प्रतिनिधि, राहुल गांधी की उपस्थिति की उम्मीद।",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "Ramanathapuram police station",
-          "Tirupur district bank records",
-          "Nagapattinam treasury office"
+          "Bharat Summit Hyderabad",
+          "Hightech conference venue",
+          "Rahul Gandhi arrival"
         ],
-        "meme_keyword_en": null,
-        "visual_images": [
-          {
-            "path": "out/story_01/news real image/scraped_news_img_1_02.jpg",
-            "is_scraped": true,
-            "credit_source": "ईटीवी भारत"
-          },
-          {
-            "path": "out/story_01/news real image/context_img_1_02_01.jpg",
-            "is_scraped": false,
-            "credit_source": null,
-            "keyword": "Ramanathapuram police station"
-          },
-          {
-            "path": "out/story_01/news real image/context_img_1_02_02.jpg",
-            "is_scraped": false,
-            "credit_source": null,
-            "keyword": "Tirupur district bank records"
-          }
-        ],
-        "local_visual_paths": [
-          "out/story_01/news real image/scraped_news_img_1_02.jpg",
-          "out/story_01/news real image/context_img_1_02_01.jpg",
-          "out/story_01/news real image/context_img_1_02_02.jpg"
-        ],
-        "local_visual_path": "out/story_01/news real image/scraped_news_img_1_02.jpg",
-        "is_scraped_news": true,
-        "credit_source": "ईटीवी भारत"
+        "meme_keyword_en": null
       },
       {
         "chunk_index": 3,
-        "sentence": "पुलिस के अनुसार, अपराधियों ने वित्तीय लेनदेन पोर्टल की सुरक्षा खामियों का फायदा उठाकर अनधिकृत लॉगिन किया और फंड ट्रांसफर किए।",
-        "bullet_text": "अपराधियों ने पोर्टल की सुरक्षा में कमी का फायदा उठाया",
+        "sentence": "रामचंदर राव ने समिट को देश-विरोधी कहा, कांग्रेस पर देशभक्ति विरोधी गतिविधि का आरोप लगाया।",
+        "bullet_text": "रामचंदर राव ने समिट को देश-विरोधी कहा।",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "Cyber crime portal login",
-          "Tamil Nadu police investigation",
-          "Online fund transfer screenshot"
+          "Bharat Summit anti India",
+          "Congress opposition protest",
+          "Ramchander Rao speech"
         ],
-        "meme_keyword_en": null,
-        "visual_images": [
-          {
-            "path": "out/story_01/news real image/context_img_1_03_01.jpg",
-            "is_scraped": false,
-            "credit_source": null,
-            "keyword": "Cyber crime portal login"
-          },
-          {
-            "path": "out/story_01/news real image/context_img_1_03_02.jpg",
-            "is_scraped": false,
-            "credit_source": null,
-            "keyword": "Tamil Nadu police investigation"
-          },
-          {
-            "path": "out/story_01/news real image/context_img_1_03_03.jpg",
-            "is_scraped": false,
-            "credit_source": null,
-            "keyword": "Online fund transfer screenshot"
-          }
-        ],
-        "local_visual_paths": [
-          "out/story_01/news real image/context_img_1_03_01.jpg",
-          "out/story_01/news real image/context_img_1_03_02.jpg",
-          "out/story_01/news real image/context_img_1_03_03.jpg"
-        ],
-        "local_visual_path": "out/story_01/news real image/context_img_1_03_01.jpg",
-        "is_scraped_news": false,
-        "credit_source": null
+        "meme_keyword_en": null
       },
       {
         "chunk_index": 4,
-        "sentence": "साइबर क्राइम पुलिस ने मामले की गहराई से जांच शुरू कर दी है और जुड़े आईपी पते व ईमेल विवरण एकत्र किए हैं।",
-        "bullet_text": "**साइबर क्राइम पुलिस** ने जांच शुरू की, आईपी और ईमेल डेटा एकत्र",
+        "sentence": "पुलिस ने घर पर सुरक्षा आदेश जारी किया, राव को घर में ही रोका गया।",
+        "bullet_text": "पुलिस ने सुरक्षा आदेश जारी किया।",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "Cyber crime police workstation",
-          "IP address tracking screen",
-          "Email header analysis"
+          "Hyderabad police order",
+          "House arrest enforcement",
+          "Security guard checkpoint"
         ],
-        "meme_keyword_en": null,
-        "visual_images": [
-          {
-            "path": "out/story_01/news real image/context_img_1_04_01.jpg",
-            "is_scraped": false,
-            "credit_source": null,
-            "keyword": "Cyber crime police workstation"
-          },
-          {
-            "path": "out/story_01/news real image/context_img_1_04_02.jpg",
-            "is_scraped": false,
-            "credit_source": null,
-            "keyword": "IP address tracking screen"
-          },
-          {
-            "path": "out/story_01/news real image/context_img_1_04_03.jpg",
-            "is_scraped": false,
-            "credit_source": null,
-            "keyword": "Email header analysis"
-          }
-        ],
-        "local_visual_paths": [
-          "out/story_01/news real image/context_img_1_04_01.jpg",
-          "out/story_01/news real image/context_img_1_04_02.jpg",
-          "out/story_01/news real image/context_img_1_04_03.jpg"
-        ],
-        "local_visual_path": "out/story_01/news real image/context_img_1_04_01.jpg",
-        "is_scraped_news": false,
-        "credit_source": null
+        "meme_keyword_en": null
       },
       {
         "chunk_index": 5,
-        "sentence": "कथित तौर पर, विभाग अब सभी ऑनलाइन पोर्टलों की सुरक्षा ऑडिट कराएगा और भविष्य में ऐसे घोटालों को रोकने के लिए दो‑स्तरीय प्रमाणीकरण लागू करेगा।",
-        "bullet_text": "सरकार दो‑स्तरीय प्रमाणीकरण और सुरक्षा ऑडिट की योजना बना रही है",
+        "sentence": "समिट जारी, पुलिस निगरानी बढ़ा रही है, आगे की कार्रवाई पर नजर।",
+        "bullet_text": "समिट जारी, पुलिस निगरानी बढ़ा रही है।",
         "visual_intent": "REAL_PHOTO",
         "image_keywords_en": [
-          "Tamil Nadu security audit",
-          "Two factor authentication interface",
-          "Rural Development IT office"
+          "Bharat Summit security",
+          "Police surveillance Hyderabad",
+          "Event monitoring"
         ],
-        "meme_keyword_en": null,
-        "visual_images": [
-          {
-            "path": "out/story_01/news real image/context_img_1_05_01.jpg",
-            "is_scraped": false,
-            "credit_source": null,
-            "keyword": "Tamil Nadu security audit"
-          },
-          {
-            "path": "out/story_01/news real image/context_img_1_05_02.jpg",
-            "is_scraped": false,
-            "credit_source": null,
-            "keyword": "Two factor authentication interface"
-          },
-          {
-            "path": "out/story_01/news real image/context_img_1_05_03.jpg",
-            "is_scraped": false,
-            "credit_source": null,
-            "keyword": "Rural Development IT office"
-          }
-        ],
-        "local_visual_paths": [
-          "out/story_01/news real image/context_img_1_05_01.jpg",
-          "out/story_01/news real image/context_img_1_05_02.jpg",
-          "out/story_01/news real image/context_img_1_05_03.jpg"
-        ],
-        "local_visual_path": "out/story_01/news real image/context_img_1_05_01.jpg",
-        "is_scraped_news": false,
-        "credit_source": null
+        "meme_keyword_en": null
       }
     ],
     "bulletin_points": [
-      "**तमिलनाडु सरकार** के **ग्रामीण विकास विभाग** के खातों से बीस करोड़ बीस लाख चोरी",
-      "**रामनाथपुरम**, **तिरुपुर**, **नागपट्टिनम** जिलों में क्रमशः चौदह, पाँच और तीन करोड़ दस लाख की चोरी",
-      "अपराधियों ने पोर्टल की सुरक्षा में कमी का फायदा उठाया",
-      "**साइबर क्राइम पुलिस** ने जांच शुरू की, आईपी और ईमेल डेटा एकत्र",
-      "सरकार दो‑स्तरीय प्रमाणीकरण और सुरक्षा ऑडिट की योजना बना रही है"
+      "रामचंदर राव को घर पर नजरबंद किया गया।",
+      "हज़ारों प्रतिनिधि, राहुल गांधी की उपस्थिति की उम्मीद।",
+      "रामचंदर राव ने समिट को देश-विरोधी कहा।",
+      "पुलिस ने सुरक्षा आदेश जारी किया।",
+      "समिट जारी, पुलिस निगरानी बढ़ा रही है।"
     ],
     "bullet_points": [
-      "तमिलनाडु सरकार के ग्रामीण विकास विभाग के खातों से बीस करोड़ बीस लाख चोरी",
-      "रामनाथपुरम, तिरुपुर, नागपट्टिनम जिलों में क्रमशः चौदह, पाँच और तीन करोड़ दस लाख की चोरी",
-      "अपराधियों ने पोर्टल की सुरक्षा में कमी का फायदा उठाया",
-      "साइबर क्राइम पुलिस ने जांच शुरू की, आईपी और ईमेल डेटा एकत्र",
-      "सरकार दो‑स्तरीय प्रमाणीकरण और सुरक्षा ऑडिट की योजना बना रही है"
+      "रामचंदर राव को घर पर नजरबंद किया गया।",
+      "हज़ारों प्रतिनिधि, राहुल गांधी की उपस्थिति की उम्मीद।",
+      "रामचंदर राव ने समिट को देश-विरोधी कहा।",
+      "पुलिस ने सुरक्षा आदेश जारी किया।",
+      "समिट जारी, पुलिस निगरानी बढ़ा रही है।"
     ],
-    "voiceover_script": "तमिलनाडु सरकार के ग्रामीण विकास विभाग के तीन पंचायत यूनियनों के बैंक खातों से कुल बीस करोड़ बीस लाख रुपये की ऑनलाइन धोखाधड़ी की रिपोर्ट मिली है। रामनाथपुरम जिले की मंडपम पंचायत यूनियन के खाते से लगभग चौदह करोड़ रुपये, तिरुपुर के धारापुरम से पाँच करोड़ रुपये और नागपट्टिनम के जिला पंचायत यूनियन से तीन करोड़ दस लाख रुपये चोरी हुए। पुलिस के अनुसार, अपराधियों ने वित्तीय लेनदेन पोर्टल की सुरक्षा खामियों का फायदा उठाकर अनधिकृत लॉगिन किया और फंड ट्रांसफर किए। साइबर क्राइम पुलिस ने मामले की गहराई से जांच शुरू कर दी है और जुड़े आईपी पते व ईमेल विवरण एकत्र किए हैं। कथित तौर पर, विभाग अब सभी ऑनलाइन पोर्टलों की सुरक्षा ऑडिट कराएगा और भविष्य में ऐसे घोटालों को रोकने के लिए दो‑स्तरीय प्रमाणीकरण लागू करेगा।",
+    "voiceover_script": "हैदराबाद के तारनाका में पुलिस ने रामचंदर राव को घर पर नजरबंद किया, भारत समिट के बीच। समिट हाईटेक्स में हो रहा है, हज़ारों प्रतिनिधि, राहुल गांधी की उपस्थिति की उम्मीद। रामचंदर राव ने समिट को देश-विरोधी कहा, कांग्रेस पर देशभक्ति विरोधी गतिविधि का आरोप लगाया। पुलिस ने घर पर सुरक्षा आदेश जारी किया, राव को घर में ही रोका गया। समिट जारी, पुलिस निगरानी बढ़ा रही है, आगे की कार्रवाई पर नजर।",
     "visual_keywords": [
-      "Tamil Nadu Rural Development office",
-      "Tamil Nadu bank ledger",
-      "Cyber crime police archive",
-      "Ramanathapuram police station",
-      "Tirupur district bank records",
-      "Nagapattinam treasury office",
-      "Cyber crime portal login",
-      "Tamil Nadu police investigation",
-      "Online fund transfer screenshot",
-      "Cyber crime police workstation",
-      "IP address tracking screen",
-      "Email header analysis",
-      "Tamil Nadu security audit",
-      "Two factor authentication interface",
-      "Rural Development IT office",
-      "Tamil Nadu cyber fraud",
-      "Rural Development fund theft"
+      "Hyderabad Taranaka police",
+      "Ramchander Rao house arrest",
+      "Hyderabad police station",
+      "Bharat Summit Hyderabad",
+      "Hightech conference venue",
+      "Rahul Gandhi arrival",
+      "Bharat Summit anti India",
+      "Congress opposition protest",
+      "Ramchander Rao speech",
+      "Hyderabad police order",
+      "House arrest enforcement",
+      "Security guard checkpoint",
+      "Bharat Summit security",
+      "Police surveillance Hyderabad",
+      "Event monitoring"
     ],
     "visual_keywords_en": [
-      "Tamil Nadu Rural Development office",
-      "Tamil Nadu bank ledger",
-      "Cyber crime police archive",
-      "Ramanathapuram police station",
-      "Tirupur district bank records",
-      "Nagapattinam treasury office",
-      "Cyber crime portal login",
-      "Tamil Nadu police investigation",
-      "Online fund transfer screenshot",
-      "Cyber crime police workstation",
-      "IP address tracking screen",
-      "Email header analysis",
-      "Tamil Nadu security audit",
-      "Two factor authentication interface",
-      "Rural Development IT office",
-      "Tamil Nadu cyber fraud",
-      "Rural Development fund theft"
+      "Hyderabad Taranaka police",
+      "Ramchander Rao house arrest",
+      "Hyderabad police station",
+      "Bharat Summit Hyderabad",
+      "Hightech conference venue",
+      "Rahul Gandhi arrival",
+      "Bharat Summit anti India",
+      "Congress opposition protest",
+      "Ramchander Rao speech",
+      "Hyderabad police order",
+      "House arrest enforcement",
+      "Security guard checkpoint",
+      "Bharat Summit security",
+      "Police surveillance Hyderabad",
+      "Event monitoring"
     ],
     "primary_source_index": 0,
-    "real_image_url": "https://imgs.etvbharat.com/etvbharat/prod-images/10-11-2026/1200-675-28077098-thumbnail-16x9-cyberfraud.jpg",
-    "real_image_attribution": "गूगल न्यूज़ भारत क्राइम",
-    "original_title": "तमिलनाडु सरकार के बैंक अकाउंट हैक: 22 करोड़ 10 लाख रुपये चोरी, साइबर क्राइम पुलिस की जांच शुरू - ETV Bharat",
+    "real_image_url": "https://cms.patrika.com/wp-content/uploads/2026/11/Ramchander-Rao-house-arrest.webp",
+    "real_image_attribution": "राजस्थान पत्रिका",
+    "original_title": "Ramchander Rao House Arrest: यह भारत नहीं, एंटी-भारत समिट है! रामचंदर राव का सनसनीखेज आरोप, पुलिस ने घर पर किया नजरबंद - Patrika News",
     "local_news_image": "out/story_01/news real image/scraped_news_img_1_01.jpg",
     "local_visual_asset": "out/story_01/news real image/scraped_news_img_1_01.jpg",
     "local_audio_asset": "out/story_01/voice over/audio_story_1.mp3",
-    "article_url": "https://www.etvbharat.com/amp/hi/bharat/tamil-nadu-govt-bank-accounts-hacked-more-than-rs-22-crore-stolen-cyber-crime-probe-begins-hin26111002609",
-    "published_at": "Tue, 10 Nov 2026 08:30:25 GMT",
-    "word_count_original": 778,
+    "article_url": "https://www.patrika.com/national-news/ramchander-rao-house-arrest-bharat-summit-hyderabad-rahul-gandhi-21049851",
+    "published_at": "Sat, 14 Nov 2026 05:39:05 GMT",
+    "word_count_original": 651,
     "images": [
       {
         "index": 1,
         "local_path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
         "public_path": "out/story_01/news real image/scraped_news_img_1_01.jpg",
         "filename": "scraped_news_img_1_01.jpg",
-        "resolution": "1200x675",
-        "size_kb": 82.7,
+        "resolution": "1200x800",
+        "size_kb": 240.8,
         "is_animated": false,
         "is_video": false,
         "is_scraped_news": true,
-        "credit_source": "गूगल न्यूज़ भारत क्राइम",
-        "url": "https://imgs.etvbharat.com/etvbharat/prod-images/10-11-2026/1200-675-28077098-thumbnail-16x9-cyberfraud.jpg"
+        "credit_source": "राजस्थान पत्रिका",
+        "url": "https://cms.patrika.com/wp-content/uploads/2026/11/Ramchander-Rao-house-arrest.webp"
       }
     ],
-    "videos": [],
-    "all_real_images": [
-      "out/story_01/news real image/scraped_news_img_1_01.jpg",
-      "out/story_01/news real image/context_img_1_01_01.jpg",
-      "out/story_01/news real image/context_img_1_01_02.jpg",
-      "out/story_01/news real image/scraped_news_img_1_02.jpg",
-      "out/story_01/news real image/context_img_1_02_01.jpg",
-      "out/story_01/news real image/context_img_1_02_02.jpg",
-      "out/story_01/news real image/context_img_1_03_01.jpg",
-      "out/story_01/news real image/context_img_1_03_02.jpg",
-      "out/story_01/news real image/context_img_1_03_03.jpg",
-      "out/story_01/news real image/context_img_1_04_01.jpg",
-      "out/story_01/news real image/context_img_1_04_02.jpg",
-      "out/story_01/news real image/context_img_1_04_03.jpg",
-      "out/story_01/news real image/context_img_1_05_01.jpg",
-      "out/story_01/news real image/context_img_1_05_02.jpg",
-      "out/story_01/news real image/context_img_1_05_03.jpg"
+    "videos": []
+  },
+  {
+    "story_number": 2,
+    "category": "क्राइम व कानून",
+    "is_suicide_story": false,
+    "source": "ThePrint Hindi",
+    "real_publisher": "ThePrint Hindi",
+    "screen_headline": "सीबीआई ने महादेव सट्टेबाजी ऐप पर छापेमारी की",
+    "screen_headlines": [
+      "सीबीआई ने महादेव सट्टेबाजी ऐप पर छापेमारी की",
+      "छह राज्यों में मोबाइल फोन और डिजिटल उपकरण बरामद हुए",
+      "म्यूल बैंक खातों से धन का हवाला पाया गया",
+      "सौरभ चंद्राकर को ओमान से प्रत्यर्पित कर गिरफ्तार किया गया"
     ],
-    "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / गूगल न्यूज़ भारत क्राइम",
-    "thumbnail_path": "out/story_01/thumbnail_01.jpg"
+    "chunks": [
+      {
+        "chunk_index": 1,
+        "sentence": "केंद्रीय अन्वेषण ब्यूरो ने महादेव सट्टेबाजी ऐप के खिलाफ छापेमारी की।",
+        "bullet_text": "सीबीआई ने महादेव सट्टेबाजी ऐप पर छापेमारी की।",
+        "visual_intent": "REAL_PHOTO",
+        "image_keywords_en": [
+          "CBI raid Delhi",
+          "Mahadev betting app",
+          "CBI officers raid"
+        ],
+        "meme_keyword_en": null
+      },
+      {
+        "chunk_index": 2,
+        "sentence": "छह राज्यों में तीस्थानों पर उपकरण और मोबाइल फोन बरामद हुए।",
+        "bullet_text": "छह राज्यों में तीस्थानों पर उपकरण और मोबाइल फोन बरामद।",
+        "visual_intent": "REAL_PHOTO",
+        "image_keywords_en": [
+          "CBI seized mobile phones",
+          "CBI seized digital devices",
+          "CBI raid locations"
+        ],
+        "meme_keyword_en": null
+      },
+      {
+        "chunk_index": 3,
+        "sentence": "साक्ष्यों से पता चला कि ‘म्यूल’ बैंक खातों के माध्यम से धन का हवाला हो रहा है।",
+        "bullet_text": "साक्ष्यों से ‘म्यूल’ बैंक खातों के माध्यम से धन का हवाला।",
+        "visual_intent": "REAL_PHOTO",
+        "image_keywords_en": [
+          "Mule bank account",
+          "Shell bank account",
+          "Bank money transfer"
+        ],
+        "meme_keyword_en": null
+      },
+      {
+        "chunk_index": 4,
+        "sentence": "सीबीआई के प्रवक्ता ने बताया कि प्रमुख प्रवर्तक सौरभ चंद्राकर को ओमान से प्रत्यर्पित कर गिरफ्तार किया गया।",
+        "bullet_text": "सौरभ चंद्राकर को ओमान से प्रत्यर्पित कर गिरफ्तार किया गया।",
+        "visual_intent": "REAL_PHOTO",
+        "image_keywords_en": [
+          "Oman extradition",
+          "CBI spokesperson statement",
+          "CBI raid arrest"
+        ],
+        "meme_keyword_en": null
+      },
+      {
+        "chunk_index": 5,
+        "sentence": "जांच जारी, और विदेश में मौजूद आरोपियों के प्रत्यर्पण के लिए कदम उठाए जा रहे हैं।",
+        "bullet_text": "जांच जारी, विदेश में आरोपियों के प्रत्यर्पण के कदम उठाए जा रहे हैं।",
+        "visual_intent": "REAL_PHOTO",
+        "image_keywords_en": [
+          "CBI investigation ongoing",
+          "Extradition process",
+          "International arrest warrant"
+        ],
+        "meme_keyword_en": null
+      }
+    ],
+    "bulletin_points": [
+      "सीबीआई ने महादेव सट्टेबाजी ऐप पर छापेमारी की।",
+      "छह राज्यों में तीस्थानों पर उपकरण और मोबाइल फोन बरामद।",
+      "साक्ष्यों से ‘म्यूल’ बैंक खातों के माध्यम से धन का हवाला।",
+      "सौरभ चंद्राकर को ओमान से प्रत्यर्पित कर गिरफ्तार किया गया।",
+      "जांच जारी, विदेश में आरोपियों के प्रत्यर्पण के कदम उठाए जा रहे हैं।"
+    ],
+    "bullet_points": [
+      "सीबीआई ने महादेव सट्टेबाजी ऐप पर छापेमारी की।",
+      "छह राज्यों में तीस्थानों पर उपकरण और मोबाइल फोन बरामद।",
+      "साक्ष्यों से ‘म्यूल’ बैंक खातों के माध्यम से धन का हवाला।",
+      "सौरभ चंद्राकर को ओमान से प्रत्यर्पित कर गिरफ्तार किया गया।",
+      "जांच जारी, विदेश में आरोपियों के प्रत्यर्पण के कदम उठाए जा रहे हैं।"
+    ],
+    "voiceover_script": "केंद्रीय अन्वेषण ब्यूरो ने महादेव सट्टेबाजी ऐप के खिलाफ छापेमारी की। छह राज्यों में तीस्थानों पर उपकरण और मोबाइल फोन बरामद हुए। साक्ष्यों से पता चला कि ‘म्यूल’ बैंक खातों के माध्यम से धन का हवाला हो रहा है। सीबीआई के प्रवक्ता ने बताया कि प्रमुख प्रवर्तक सौरभ चंद्राकर को ओमान से प्रत्यर्पित कर गिरफ्तार किया गया। जांच जारी, और विदेश में मौजूद आरोपियों के प्रत्यर्पण के लिए कदम उठाए जा रहे हैं।",
+    "visual_keywords": [
+      "CBI raid Delhi",
+      "Mahadev betting app",
+      "CBI officers raid",
+      "CBI seized mobile phones",
+      "CBI seized digital devices",
+      "CBI raid locations",
+      "Mule bank account",
+      "Shell bank account",
+      "Bank money transfer",
+      "Oman extradition",
+      "CBI spokesperson statement",
+      "CBI raid arrest",
+      "CBI investigation ongoing",
+      "Extradition process",
+      "International arrest warrant",
+      "CBI betting app raid",
+      "Mule bank accounts"
+    ],
+    "visual_keywords_en": [
+      "CBI raid Delhi",
+      "Mahadev betting app",
+      "CBI officers raid",
+      "CBI seized mobile phones",
+      "CBI seized digital devices",
+      "CBI raid locations",
+      "Mule bank account",
+      "Shell bank account",
+      "Bank money transfer",
+      "Oman extradition",
+      "CBI spokesperson statement",
+      "CBI raid arrest",
+      "CBI investigation ongoing",
+      "Extradition process",
+      "International arrest warrant",
+      "CBI betting app raid",
+      "Mule bank accounts"
+    ],
+    "primary_source_index": 1,
+    "real_image_url": null,
+    "real_image_attribution": "ThePrint Hindi",
+    "original_title": "महादेव सट्टेबाजी ऐप मामला: सीबीआई ने छापेमारी कर डिजिटल उपकरण, महत्वपूर्ण दस्तावेज बरामद किए - ThePrint Hindi",
+    "local_news_image": "out/story_02/news real image/scraped_news_img_2_01.jpg",
+    "local_visual_asset": "out/story_02/news real image/scraped_news_img_2_01.jpg",
+    "local_audio_asset": "out/story_02/voice over/audio_story_2.mp3",
+    "article_url": "https://hindi.theprint.in/india/mahadev-betting-app-case-cbi-raids-seizes-digital-devices-crucial-documents/1058616/",
+    "published_at": "Sat, 14 Nov 2026 06:33:27 GMT",
+    "word_count_original": 586,
+    "images": [],
+    "videos": []
+  },
+  {
+    "story_number": 3,
+    "category": "क्राइम व कानून",
+    "is_suicide_story": false,
+    "source": "Chetna Manch",
+    "real_publisher": "Chetna Manch",
+    "screen_headline": "दिव्या मित्तल ने उत्तर प्रदेश एनकाउंटर नीति पर सवाल उठाया",
+    "screen_headlines": [
+      "दिव्या मित्तल ने उत्तर प्रदेश एनकाउंटर नीति पर सवाल उठाया",
+      "अपराध गंभीरता के बजाय जाति को प्राथमिकता दी जाती है?",
+      "प्रयागराज नाबालिग हत्या के बाद पुलिस देरी पर चिंता जताई",
+      "न्याय व्यवस्था में पारदर्शिता और समानता की माँग की गई"
+    ],
+    "chunks": [
+      {
+        "chunk_index": 1,
+        "sentence": "पूर्व IAS अधिकारी दिव्या मित्तल ने उत्तर प्रदेश में एनकाउंटर और बुलडोजर नीति पर सवाल उठाया।",
+        "bullet_text": "दिव्या मित्तल ने उत्तर प्रदेश में एनकाउंटर और बुलडोजर नीति पर सवाल उठाया।",
+        "visual_intent": "REAL_PHOTO",
+        "image_keywords_en": [
+          "Uttar Pradesh police barricade checkpoint policy",
+          "Uttar Pradesh bulldozer action",
+          "Uttar Pradesh police briefing"
+        ],
+        "meme_keyword_en": null
+      },
+      {
+        "chunk_index": 2,
+        "sentence": "उन्होंने पूछा कि क्या अपराध की गंभीरता के बजाय आरोपी की जाति को प्राथमिकता दी जाती है?",
+        "bullet_text": "क्या अपराध की गंभीरता के बजाय आरोपी की जाति को प्राथमिकता दी जाती है?",
+        "visual_intent": "REAL_PHOTO",
+        "image_keywords_en": [
+          "Uttar Pradesh caste bias",
+          "Uttar Pradesh crime severity",
+          "Uttar Pradesh police decision"
+        ],
+        "meme_keyword_en": null
+      },
+      {
+        "chunk_index": 3,
+        "sentence": "प्रयागराज में नाबालिग प्रिंस की हत्या के बाद पुलिस की देरी पर उन्होंने चिंता जताई।",
+        "bullet_text": "प्रयागराज में नाबालिग प्रिंस की हत्या के बाद पुलिस की देरी पर चिंता जताई।",
+        "visual_intent": "REAL_PHOTO",
+        "image_keywords_en": [
+          "Prayagraj juvenile police patrolling vehicle",
+          "Prayagraj police delay",
+          "Prayagraj court case"
+        ],
+        "meme_keyword_en": null
+      },
+      {
+        "chunk_index": 4,
+        "sentence": "उन्होंने बल दिया कि न्याय व्यवस्था में पारदर्शिता और समानियम अनिवार्य हैं।",
+        "bullet_text": "न्याय व्यवस्था में पारदर्शिता और समानियम अनिवार्य हैं।",
+        "visual_intent": "REAL_PHOTO",
+        "image_keywords_en": [
+          "Uttar Pradesh justice transparency",
+          "Uttar Pradesh legal fairness",
+          "Uttar Pradesh court integrity"
+        ],
+        "meme_keyword_en": null
+      },
+      {
+        "chunk_index": 5,
+        "sentence": "पुलिस एवं न्यायालयों से समय पर गिरफ्तारी और सजा के आदेश की माँग की गई।",
+        "bullet_text": "पुलिस एवं न्यायालयों से समय पर गिरफ्तारी और सजा के आदेश की माँग।",
+        "visual_intent": "REAL_PHOTO",
+        "image_keywords_en": [
+          "Uttar Pradesh arrest timing",
+          "Uttar Pradesh sentencing speed",
+          "Uttar Pradesh law enforcement"
+        ],
+        "meme_keyword_en": null
+      }
+    ],
+    "bulletin_points": [
+      "दिव्या मित्तल ने उत्तर प्रदेश में एनकाउंटर और बुलडोजर नीति पर सवाल उठाया।",
+      "क्या अपराध की गंभीरता के बजाय आरोपी की जाति को प्राथमिकता दी जाती है?",
+      "प्रयागराज में नाबालिग प्रिंस की हत्या के बाद पुलिस की देरी पर चिंता जताई।",
+      "न्याय व्यवस्था में पारदर्शिता और समानियम अनिवार्य हैं।",
+      "पुलिस एवं न्यायालयों से समय पर गिरफ्तारी और सजा के आदेश की माँग।"
+    ],
+    "bullet_points": [
+      "दिव्या मित्तल ने उत्तर प्रदेश में एनकाउंटर और बुलडोजर नीति पर सवाल उठाया।",
+      "क्या अपराध की गंभीरता के बजाय आरोपी की जाति को प्राथमिकता दी जाती है?",
+      "प्रयागराज में नाबालिग प्रिंस की हत्या के बाद पुलिस की देरी पर चिंता जताई।",
+      "न्याय व्यवस्था में पारदर्शिता और समानियम अनिवार्य हैं।",
+      "पुलिस एवं न्यायालयों से समय पर गिरफ्तारी और सजा के आदेश की माँग।"
+    ],
+    "voiceover_script": "पूर्व IAS अधिकारी दिव्या मित्तल ने उत्तर प्रदेश में एनकाउंटर और बुलडोजर नीति पर सवाल उठाया। उन्होंने पूछा कि क्या अपराध की गंभीरता के बजाय आरोपी की जाति को प्राथमिकता दी जाती है? प्रयागराज में नाबालिग प्रिंस की हत्या के बाद पुलिस की देरी पर उन्होंने चिंता जताई। उन्होंने बल दिया कि न्याय व्यवस्था में पारदर्शिता और समानियम अनिवार्य हैं। पुलिस एवं न्यायालयों से समय पर गिरफ्तारी और सजा के आदेश की माँग की गई।",
+    "visual_keywords": [
+      "Uttar Pradesh police barricade checkpoint policy",
+      "Uttar Pradesh bulldozer action",
+      "Uttar Pradesh police briefing",
+      "Uttar Pradesh caste bias",
+      "Uttar Pradesh crime severity",
+      "Uttar Pradesh police decision",
+      "Prayagraj juvenile police patrolling vehicle",
+      "Prayagraj police delay",
+      "Prayagraj court case",
+      "Uttar Pradesh justice transparency",
+      "Uttar Pradesh legal fairness",
+      "Uttar Pradesh court integrity",
+      "Uttar Pradesh arrest timing",
+      "Uttar Pradesh sentencing speed",
+      "Uttar Pradesh law enforcement",
+      "Uttar Pradesh police police barricade checkpoint",
+      "Uttar Pradesh justice system"
+    ],
+    "visual_keywords_en": [
+      "Uttar Pradesh police barricade checkpoint policy",
+      "Uttar Pradesh bulldozer action",
+      "Uttar Pradesh police briefing",
+      "Uttar Pradesh caste bias",
+      "Uttar Pradesh crime severity",
+      "Uttar Pradesh police decision",
+      "Prayagraj juvenile police patrolling vehicle",
+      "Prayagraj police delay",
+      "Prayagraj court case",
+      "Uttar Pradesh justice transparency",
+      "Uttar Pradesh legal fairness",
+      "Uttar Pradesh court integrity",
+      "Uttar Pradesh arrest timing",
+      "Uttar Pradesh sentencing speed",
+      "Uttar Pradesh law enforcement",
+      "Uttar Pradesh police police barricade checkpoint",
+      "Uttar Pradesh justice system"
+    ],
+    "primary_source_index": 2,
+    "real_image_url": "https://pub-9bcf52037ba54ff4bd92f98adcea24b9.r2.dev/uploads/2026/11/Former%20IAS%20officer%20Divya%20Mittal.webp?v=1794640722459",
+    "real_image_attribution": "Chetna Manch",
+    "original_title": "उत्तर प्रदेश में एनकाउंटर-बुलडोजर नीति पर पूर्व IAS दिव्या मित्तल ने उठाए सवाल - Chetna Manch",
+    "local_news_image": "out/story_03/news real image/scraped_news_img_3_01.jpg",
+    "local_visual_asset": "out/story_03/news real image/scraped_news_img_3_01.jpg",
+    "local_audio_asset": "out/story_03/voice over/audio_story_3.mp3",
+    "article_url": "https://chetnamanch.com/uttar-pradesh/divya-mittal-questions-yogi-government-encounter-policy",
+    "published_at": "Sat, 14 Nov 2026 05:33:37 GMT",
+    "word_count_original": 952,
+    "images": [
+      {
+        "index": 1,
+        "local_path": "out/story_03/news real image/scraped_news_img_3_01.jpg",
+        "public_path": "out/story_03/news real image/scraped_news_img_3_01.jpg",
+        "filename": "scraped_news_img_3_01.jpg",
+        "resolution": "1366x768",
+        "size_kb": 103.0,
+        "is_animated": false,
+        "is_video": false,
+        "is_scraped_news": true,
+        "credit_source": "Chetna Manch",
+        "url": "https://pub-9bcf52037ba54ff4bd92f98adcea24b9.r2.dev/uploads/2026/11/Former%20IAS%20officer%20Divya%20Mittal.webp?v=1794640722459"
+      },
+      {
+        "index": 2,
+        "local_path": "out/story_03/news real image/scraped_news_img_3_02.jpg",
+        "public_path": "out/story_03/news real image/scraped_news_img_3_02.jpg",
+        "filename": "scraped_news_img_3_02.jpg",
+        "resolution": "1366x768",
+        "size_kb": 103.0,
+        "is_animated": false,
+        "is_video": false,
+        "is_scraped_news": true,
+        "credit_source": "Chetna Manch",
+        "url": "https://pub-9bcf52037ba54ff4bd92f98adcea24b9.r2.dev/uploads/2026/11/Former IAS officer Divya Mittal.webp?v=1794640722459"
+      }
+    ],
+    "videos": []
   }
 ]
