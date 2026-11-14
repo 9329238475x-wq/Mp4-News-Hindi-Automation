@@ -86,29 +86,8 @@ export const NewsTopHeader: React.FC<NewsTopHeaderProps> = ({
   const taglineTranslateX = interpolate(taglineSpring, [0, 1], [-25, 0]);
   const taglineOpacity = interpolate(taglineSpring, [0, 1], [0, 1]);
 
-  // ─── 5. Dynamic Rotating Tagline (Switches every 150 frames = 5s) ───
-  const rotatingTaglines = [
-    tagline,
-    "100% निडर • निष्पक्ष • सच",
-    "देश का नंबर 1 बुलेटिन",
-    "सत्य से कोई समझौता नहीं",
-  ];
-  const taglineIndex = Math.floor(frame / 150) % rotatingTaglines.length;
-  const currentTagline = rotatingTaglines[taglineIndex];
-
-  const tagFrameInCycle = frame % 150;
-  const tagSwitchOpacity = interpolate(
-    tagFrameInCycle,
-    [0, 12, 138, 150],
-    [0, 1, 1, 0],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-  );
-  const tagSwitchY = interpolate(
-    tagFrameInCycle,
-    [0, 12, 138, 150],
-    [8, 0, 0, -8],
-    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-  );
+  // ─── 5. Fixed Static Tagline (TV News Standard: 100% stable across entire video) ───
+  const staticTagline = tagline || "हर खबर पर सबसे सटीक नज़र";
 
   return (
     <div
@@ -273,13 +252,13 @@ export const NewsTopHeader: React.FC<NewsTopHeaderProps> = ({
           </div>
         </div>
 
-        {/* Dynamic Animated Tagline (Enlarged to 30px, Zero Emojis) */}
+        {/* Static Stable Tagline (30px Bold, Zero Emojis) */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            transform: `translateX(${taglineTranslateX}px) translateY(${tagSwitchY}px)`,
-            opacity: taglineOpacity * tagSwitchOpacity,
+            transform: `translateX(${taglineTranslateX}px)`,
+            opacity: taglineOpacity,
           }}
         >
           <span
@@ -293,7 +272,7 @@ export const NewsTopHeader: React.FC<NewsTopHeaderProps> = ({
                 "0 2px 5px #000000, 0 3px 14px rgba(0,0,0,0.95), 0 0 16px rgba(0,0,0,0.85)",
             }}
           >
-            {currentTagline}
+            {staticTagline}
           </span>
         </div>
       </div>

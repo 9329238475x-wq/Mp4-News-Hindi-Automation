@@ -29,11 +29,23 @@ def repair_hindi_tts_text(text: str) -> str:
     # 0b. Convert date and number ranges like "14-27" or "14‑18" or "14–27" to "14 से 27" so TTS reads it naturally
     clean = re.sub(r'(\d+)\s*[-‑–—]\s*(\d+)', r'\1 से \2', clean)
 
-    # 1. Consecutive duplicate words (e.g. 'राज्यपाल राज्यपाल' -> 'राज्यपाल', 'ने ने' -> 'ने')
+    # 0c. Remove stray markdown asterisks (**)
+    clean = clean.replace("**", "").replace("*", "")
+
+    # 1. Consecutive duplicate words (e.g. 'से से' -> 'से', 'राज्यपाल राज्यपाल' -> 'राज्यपाल')
+    clean = re.sub(r'\b(\w+)\s+\1\b', r'\1', clean)
     clean = re.sub(r'(?<!\S)([\u0900-\u097Fa-zA-Z]+)[,.]?\s+\1(?!\S)', r'\1', clean)
 
-    # 2. Common AI transliteration & grammar typos
+    # 2. Common AI transliteration, pronunciation & TV phrasing typos
+    clean = re.sub(r'(?:सुबह\s*)?(?:नौ|9)\s*से\s*शाम\s*(?:सात|7)(?:\s*बजे)?(?:\s*तक)?', 'सुबह 9 से शाम 7 बजे तक', clean)
+    clean = re.sub(r'बजे तक\s+तक', 'बजे तक', clean)
+    clean = re.sub(r'तक\s+तक', 'तक', clean)
+
     typo_fixes = {
+        "ITPO": "आई-टी-पी-ओ",
+        "आईटीपीओ": "आई-टी-पी-ओ",
+        "शुभारम्भ सत्र हुआ": "शुभारंभ हुआ",
+        "शुभारंभ सत्र हुआ": "शुभारंभ हुआ",
         "पोलिस": "पुलिस",
         "डिसिपी": "डीसीपी",
         "कई विधायक पर": "कई विधायकों पर",

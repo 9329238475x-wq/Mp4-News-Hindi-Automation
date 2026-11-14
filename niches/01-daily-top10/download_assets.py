@@ -93,6 +93,20 @@ COMMERCE_AND_SPAM_BLOCKLIST = [
     "toy",
     "action-figure",
     "nickelodeon",
+    # Stock Graphic, Mockup, Blueprint, Watermark & Map Blocklist (100% Real Photo Guarantee)
+    "template",
+    "mockup",
+    "watermark",
+    "thishousegraphics",
+    "yourcompanyname",
+    "blueprint",
+    "underpass",
+    "sketch",
+    "diagram",
+    "infographic",
+    "map",
+    "gis",
+    "cartography",
     "dreamworks",
     "boxoffice",
     "box-office",
@@ -412,10 +426,11 @@ def download_best_single_image(keyword: str, save_path: str) -> bool:
     }
 
     for search_query in queries_to_try:
+        clean_search_query = f"{search_query} -vector -template -mockup -watermark -shutterstock -map"
         try:
             with DDGS() as ddgs:
                 results = ddgs.images(
-                    search_query,
+                    clean_search_query,
                     region="in-en",
                     safesearch="moderate",
                     size="Large",

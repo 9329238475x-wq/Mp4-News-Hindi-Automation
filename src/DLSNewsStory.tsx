@@ -308,11 +308,12 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
         expandProgress={expandProgress}
       />
 
-      {/* ─── 4. MASTER DYNAMIC CARD (Center -> Right + Live Typing + Seesaw Focus) ─── */}
+      {/* ─── 4. MASTER DYNAMIC CARD (Right Docked + Sleek TV News Layout) ─── */}
       <DLSNewsCard
         headline={story.screen_headline}
         headlines={story.screen_headlines}
         category={story.category}
+        location={story.city || story.location}
         bulletPoints={story.bullet_points}
         expandProgress={expandProgress}
         totalStoryDurationFrames={durationInFrames}
