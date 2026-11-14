@@ -1,12 +1,13 @@
 """
-Groq AI Engine with Multi-Key Failover (Python 3)
-मॉडल: openai/gpt-oss-120b
+Groq AI Engine with Multi-Key Failover & Round-Robin Load Balancing (Python 3)
+मॉडल: openai/gpt-oss-20b (Ultra-Fast 1.8s Response & High Throughput)
 """
 
 import os
 import sys
 import json
 import re
+import time
 import requests
 from dotenv import load_dotenv
 
@@ -22,12 +23,12 @@ load_dotenv()
 
 class GroqEngine:
     def __init__(self, model: str = None):
-        self.model = model or os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+        self.model = model or os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
         self.keys = []
         self.current_key_index = 0
 
         # GROQ_API_KEYS (कॉमा-सेपरेटेड लिस्ट)
-        raw_keys = os.getenv("GROQ_API_KEYS", "")
+        raw_keys = os.getenv("GROQ_API_KEYS", "") or os.getenv("GROQ_API_KEY", "")
         if raw_keys:
             self.keys = [k.strip() for k in raw_keys.split(",") if k.strip()]
 
@@ -39,30 +40,34 @@ class GroqEngine:
                     self.keys.append(k.strip())
 
         if not self.keys:
-            print("⚠️ चेतावनी: कोई भी Groq API Key नहीं मिली! कृपया .env फ़ाइल चेक करें।")
+            print("⚠️ चेतावनी: कोई भी Groq API Key नहीं मिली! कृपया .env फ़ाइल चेक करें।", flush=True)
         else:
-            print(f"🤖 Groq Python इंजन तैयार: {len(self.keys)} सक्रिय Keys लोड की गईं (Model: {self.model})")
+            print(f"🤖 Groq Python इंजन तैयार: {len(self.keys)} सक्रिय Keys लोड की गईं (Model: {self.model})", flush=True)
 
-    def _get_active_key(self) -> str:
-        return self.keys[self.current_key_index]
+    def _get_active_key(self) -> tuple:
+        """Round-robin key selector to distribute load evenly across all keys"""
+        idx = self.current_key_index
+        key = self.keys[idx]
+        self.current_key_index = (self.current_key_index + 1) % len(self.keys)
+        return idx, key
 
     def _rotate_key(self):
         prev = self.current_key_index
         self.current_key_index = (self.current_key_index + 1) % len(self.keys)
-        print(f"🔄 Groq Key स्विच: Key #{prev + 1} ➡️ Key #{self.current_key_index + 1}")
+        print(f"🔄 Groq Key स्विच: Key #{prev + 1} ➡️ Key #{self.current_key_index + 1}", flush=True)
 
     def chat_json(self, system_prompt: str, user_prompt: str, temperature: float = 0.6) -> dict:
         """
-        Groq API को कॉल करके सीधा वैध JSON डिक्शनरी लौटाता है
+        Groq API को कॉल करके सीधा वैध JSON डिक्शनरी लौटाता है (Round-robin distributed)
         """
         if not self.keys:
             raise ValueError("कोई Groq API Key उपलब्ध नहीं है।")
 
         attempts = 0
-        max_attempts = max(10, len(self.keys) * 3)
+        max_attempts = min(len(self.keys) * 2, 6)
 
         while attempts < max_attempts:
-            key = self._get_active_key()
+            key_idx, key = self._get_active_key()
             headers = {
                 "Authorization": f"Bearer {key}",
                 "Content-Type": "application/json"
@@ -70,11 +75,11 @@ class GroqEngine:
             payload = {
                 "model": self.model,
                 "messages": [
-                    {"role": "system", "content": system_prompt + "\nCRITICAL: Keep internal reasoning brief (under 50 words) and immediately output the valid JSON."},
+                    {"role": "system", "content": system_prompt + "\nCRITICAL: Keep internal reasoning brief (under 30 words) and immediately output the valid JSON."},
                     {"role": "user", "content": user_prompt}
                 ],
                 "temperature": temperature,
-                "max_completion_tokens": 6000
+                "max_completion_tokens": 2048
             }
 
             try:
@@ -82,14 +87,13 @@ class GroqEngine:
                     "https://api.groq.com/openai/v1/chat/completions",
                     headers=headers,
                     json=payload,
-                    timeout=30
+                    timeout=(8, 25)
                 )
 
                 # 429 = Rate Limit, 401 = Invalid Key
                 if resp.status_code in (429, 401):
-                    print(f"⚠️ Groq Key #{self.current_key_index + 1} पर स्टेटस {resp.status_code} मिला (कूल-ऑफ 2s)...", flush=True)
-                    time.sleep(2)
-                    self._rotate_key()
+                    print(f"⚠️ Groq Key #{key_idx + 1} पर स्टेटस {resp.status_code} मिला, अगली Key पर स्विच...", flush=True)
+                    time.sleep(0.5)
                     attempts += 1
                     continue
 
@@ -122,9 +126,8 @@ class GroqEngine:
                 return parsed
 
             except requests.RequestException as e:
-                print(f"❌ नेटवर्क त्रुटि (Key #{self.current_key_index + 1}): {e}", flush=True)
-                time.sleep(1)
-                self._rotate_key()
+                print(f"❌ नेटवर्क नोटिस (Key #{key_idx + 1}): {e}, अगली Key पर स्विच...", flush=True)
+                time.sleep(0.5)
                 attempts += 1
             except json.JSONDecodeError as e:
                 print(f"❌ JSON पार्सिंग त्रुटि: {e}", flush=True)
