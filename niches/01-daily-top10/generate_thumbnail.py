@@ -150,9 +150,9 @@ def extract_thumbnail_hook_segments(
     elif any(w in low for w in ["एनकाउंटर", "माफिया", "अपराधी", "मुठभेड़", "गोली"]):
         cyan_pill_html = 'अपराधियों और माफिया पर प्रहार: <span class="cyan-pill-highlight">पुलिस का बड़ा एक्शन</span>'
     elif any(w in low for w in ["कोर्ट", "रिमांड", "जेल", "अदालत"]):
-        cyan_pill_html = 'देशभर के सनसनीखेज मामलों में: <span class="cyan-pill-highlight">कोर्ट का बड़ा फैसला</span>'
+        cyan_pill_html = 'सनसनीखेज मामलों में: <span class="cyan-pill-highlight">कोर्ट का बड़ा फैसला</span>'
     else:
-        cyan_pill_html = f'देशभर की {bottom_number} बड़ी घटनाओं पर: <span class="cyan-pill-highlight">प्रशासन का कड़ा एक्शन</span>'
+        cyan_pill_html = f'{bottom_number} बड़ी घटनाओं पर: <span class="cyan-pill-highlight">प्रशासन का कड़ा एक्शन</span>'
 
     return segments, cyan_pill_html
 
@@ -222,8 +222,10 @@ def build_dls_reference_html(
     font_poppins_uri = Path(FONT_POPPINS).resolve().as_uri()
 
     white_spans = []
+    tot_white_chars = 0
     for s in white_strip_segments:
         txt = s.get("text", "").strip()
+        tot_white_chars += len(txt)
         col = s.get("color", "#000000")
         no_u = s.get("no_underline", False)
         if no_u:
@@ -233,7 +235,35 @@ def build_dls_reference_html(
     white_strip_html = "".join(white_spans)
 
     if not cyan_pill_html:
-        cyan_pill_html = f'देशभर की {bottom_number} बड़ी घटनाओं पर: <span class="cyan-pill-highlight">प्रशासन का कड़ा एक्शन</span>'
+        cyan_pill_html = f'{bottom_number} बड़ी घटनाओं पर: <span class="cyan-pill-highlight">प्रशासन का कड़ा एक्शन</span>'
+
+    # Dynamically scale cyan pill font size so it NEVER wraps into 2 lines
+    plain_pill = re.sub(r'<[^>]+>', '', cyan_pill_html).strip()
+    pill_len = len(plain_pill)
+    if pill_len <= 26:
+        cyan_pill_font_size = "45px"
+    elif pill_len <= 34:
+        cyan_pill_font_size = "41px"
+    elif pill_len <= 42:
+        cyan_pill_font_size = "37px"
+    elif pill_len <= 50:
+        cyan_pill_font_size = "34px"
+    elif pill_len <= 58:
+        cyan_pill_font_size = "30px"
+    else:
+        cyan_pill_font_size = "26px"
+
+    # Dynamically scale white strip font size so long segments fit comfortably
+    if tot_white_chars <= 40:
+        white_strip_font_size = "48px"
+    elif tot_white_chars <= 50:
+        white_strip_font_size = "44px"
+    elif tot_white_chars <= 60:
+        white_strip_font_size = "40px"
+    elif tot_white_chars <= 70:
+        white_strip_font_size = "36px"
+    else:
+        white_strip_font_size = "32px"
 
     template = """<!DOCTYPE html>
 <html lang="hi">
@@ -478,24 +508,34 @@ def build_dls_reference_html(
     border-radius: 12px;
     display: flex;
     align-items: center;
-    padding: 0 18px;
+    justify-content: center;
+    padding: 0 16px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.25);
     margin-right: 18px;
     font-family: 'BalooLocal', sans-serif;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
   .cyan-pill-text {
     color: #000000;
-    font-size: 48px;
+    font-size: __CYAN_PILL_FONT_SIZE__;
     font-weight: 900;
-    letter-spacing: 0.5px;
-    line-height: 1;
+    letter-spacing: 0.3px;
+    line-height: 1.1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    text-align: center;
+    width: 100%;
+    display: block;
   }
 
   .cyan-pill-highlight {
     color: #d00000;
     font-weight: 900;
     margin-left: 6px;
+    display: inline;
   }
 
   .samachar-right-box {
@@ -535,7 +575,7 @@ def build_dls_reference_html(
     align-items: center;
     justify-content: center;
     padding: 0 12px;
-    font-size: 47px;
+    font-size: __WHITE_STRIP_FONT_SIZE__;
     font-weight: 900;
     letter-spacing: 0.2px;
     box-shadow: 0 4px 14px rgba(0,0,0,0.25);
@@ -715,7 +755,9 @@ def build_dls_reference_html(
         .replace("__WEEKDAY_STR__", weekday_str)
         .replace("__YEAR_STR__", year_str)
         .replace("__CYAN_PILL_HTML__", cyan_pill_html)
+        .replace("__CYAN_PILL_FONT_SIZE__", cyan_pill_font_size)
         .replace("__WHITE_STRIP_HTML__", white_strip_html)
+        .replace("__WHITE_STRIP_FONT_SIZE__", white_strip_font_size)
         .replace("__BOTTOM_NUMBER__", bottom_number)
     )
 
@@ -775,8 +817,44 @@ def generate_dls_reference_pillow(
     # 2. Middle Row: Cyan Pill + Samachar (Y: 305-405)
     draw.rectangle([0, 305, THUMB_W, 405], fill=(255, 233, 64))
     draw.rounded_rectangle([18, 315, 960, 395], radius=12, fill=(164, 237, 249), outline=(0, 85, 119), width=2)
-    pill_label = re.sub(r'<[^>]+>', '', cyan_pill_html).strip() if cyan_pill_html else f"देशभर की {bottom_number} बड़ी घटनाओं पर: प्रशासन का कड़ा एक्शन"
-    draw.text((36, 328), pill_label, fill=(0, 0, 0), font=f_strip)
+    pill_label = re.sub(r'<[^>]+>', '', cyan_pill_html).strip() if cyan_pill_html else f"{bottom_number} बड़ी घटनाओं पर: प्रशासन का कड़ा एक्शन"
+    pill_len = len(pill_label)
+    if pill_len <= 26:
+        pill_font_size = 43
+    elif pill_len <= 34:
+        pill_font_size = 39
+    elif pill_len <= 42:
+        pill_font_size = 35
+    elif pill_len <= 50:
+        pill_font_size = 32
+    elif pill_len <= 58:
+        pill_font_size = 28
+    else:
+        pill_font_size = 24
+
+    f_pill = ImageFont.truetype(FONT_BALOO, pill_font_size) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
+
+    # Draw cyan pill text with highlight support
+    match = re.search(r'^(.*?)(?:<span class="cyan-pill-highlight">)(.*?)(?:</span>)?$', cyan_pill_html) if cyan_pill_html else None
+    if match:
+        part1 = re.sub(r'<[^>]+>', '', match.group(1)).strip() + " "
+        part2 = re.sub(r'<[^>]+>', '', match.group(2)).strip()
+        b1 = draw.textbbox((0, 0), part1, font=f_pill)
+        b2 = draw.textbbox((0, 0), part2, font=f_pill)
+        w1 = b1[2] - b1[0]
+        w2 = b2[2] - b2[0]
+        tot_w = w1 + w2
+        start_x = max(28, 18 + (942 - tot_w) // 2)
+        y_pill = 315 + (80 - pill_font_size) // 2 - 2
+        draw.text((start_x, y_pill), part1, fill=(0, 0, 0), font=f_pill)
+        draw.text((start_x + w1, y_pill), part2, fill=(208, 0, 0), font=f_pill)
+    else:
+        bbox = draw.textbbox((0, 0), pill_label, font=f_pill)
+        tot_w = bbox[2] - bbox[0]
+        start_x = max(28, 18 + (942 - tot_w) // 2)
+        y_pill = 315 + (80 - pill_font_size) // 2 - 2
+        draw.text((start_x, y_pill), pill_label, fill=(0, 0, 0), font=f_pill)
+
     draw.text((1040, 312), "समाचार", fill=(0, 59, 187), font=f_baloo, stroke_width=3, stroke_fill=(255, 255, 255))
 
     # 3. Middle White Strip (Y: 405-505)
