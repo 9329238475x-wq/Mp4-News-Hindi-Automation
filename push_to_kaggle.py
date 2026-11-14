@@ -236,11 +236,13 @@ if mp4_files:
         print("🚀 AUTOMATICALLY PUBLISHING BROADCAST VIDEO TO YOUTUBE...", flush=True)
         print("═" * 65, flush=True)
 
+        schedule_mode = os.environ.get("YOUTUBE_SCHEDULE", "true").lower() in ["true", "1", "yes"]
         upload_res = publish_broadcast_to_youtube(
             video_path=str(latest_mp4),
             thumbnail_path=thumb_path,
             all_stories=stories,
             privacy_status=os.environ.get("YOUTUBE_PRIVACY", "public"),
+            schedule_publish=schedule_mode,
             notify_email=True
         )
         print(f"✅ YOUTUBE PUBLISH COMPLETE: {upload_res.get('watch_url')}", flush=True)

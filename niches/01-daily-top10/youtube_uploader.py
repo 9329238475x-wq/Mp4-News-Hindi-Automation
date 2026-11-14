@@ -12,6 +12,7 @@ import os
 import sys
 import time
 import json
+import datetime
 import http.client
 from pathlib import Path
 
@@ -109,8 +110,47 @@ def get_authenticated_youtube_service(
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-# 2. RESUMABLE VIDEO UPLOAD ENGINE
+# 2. RESUMABLE VIDEO UPLOAD ENGINE & 7:00 AM/PM SCHEDULER
 # ═════════════════════════════════════════════════════════════════════════════
+
+IST_TZ = datetime.timezone(datetime.timedelta(hours=5, minutes=30))
+UTC_TZ = datetime.timezone.utc
+
+
+def get_scheduled_publish_time(min_buffer_minutes: int = 10) -> tuple:
+    """
+    Computes upcoming scheduled publish time for 7:00 AM IST or 7:00 PM IST.
+    When video pipeline runs at 4:00 AM IST, it targets 7:00 AM IST today.
+    When video pipeline runs at 4:00 PM IST, it targets 7:00 PM IST today.
+    Returns (iso_utc_str, ist_display_str).
+    Format: ('2026-11-14T13:30:00.000Z', '14 Nov 2026, 07:00 PM IST')
+    """
+    now_ist = datetime.datetime.now(IST_TZ)
+
+    # Slot 1: Today 7:00 AM IST
+    slot_morning = now_ist.replace(hour=7, minute=0, second=0, microsecond=0)
+    # Slot 2: Today 7:00 PM IST (19:00 IST)
+    slot_evening = now_ist.replace(hour=19, minute=0, second=0, microsecond=0)
+    # Slot 3: Tomorrow 7:00 AM IST
+    slot_tomorrow_morning = slot_morning + datetime.timedelta(days=1)
+
+    candidates = [slot_morning, slot_evening, slot_tomorrow_morning]
+    chosen = None
+    for cand in candidates:
+        diff_sec = (cand - now_ist).total_seconds()
+        # Must be at least min_buffer_minutes in the future
+        if diff_sec >= min_buffer_minutes * 60:
+            chosen = cand
+            break
+
+    if not chosen:
+        chosen = slot_tomorrow_morning
+
+    utc_dt = chosen.astimezone(UTC_TZ)
+    iso_str = utc_dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    ist_display = chosen.strftime("%d %b %Y, %I:%M %p IST")
+    return iso_str, ist_display
+
 
 def upload_video_resumable(
     youtube,
@@ -119,11 +159,13 @@ def upload_video_resumable(
     description: str,
     tags: list,
     category_id: str = "25",
-    privacy_status: str = "public"
+    privacy_status: str = "public",
+    publish_at: str = None
 ) -> str:
     """
     Executes a high-performance resumable video upload in 4MB chunks with exponential backoff.
     Returns the uploaded YouTube Video ID.
+    If publish_at is provided, video is uploaded as private and scheduled to go public at publish_at.
     """
     if not os.path.exists(video_path):
         raise FileNotFoundError(f"Video file not found: {video_path}")
@@ -131,7 +173,18 @@ def upload_video_resumable(
     file_size_mb = os.path.getsize(video_path) / (1024 * 1024)
     print(f"\n🚀 [YouTube Upload] Starting upload of: {video_path} ({file_size_mb:.1f} MB)")
     print(f"  📌 Title: {title}")
-    print(f"  🔒 Privacy: {privacy_status.upper()}")
+
+    status_dict = {
+        "selfDeclaredMadeForKids": False
+    }
+
+    if publish_at:
+        status_dict["privacyStatus"] = "private"
+        status_dict["publishAt"] = publish_at
+        print(f"  ⏰ Schedule Mode: Set to go PUBLIC at: {publish_at} (UTC)")
+    else:
+        status_dict["privacyStatus"] = privacy_status
+        print(f"  🔒 Privacy: {privacy_status.upper()}")
 
     body = {
         "snippet": {
@@ -140,10 +193,7 @@ def upload_video_resumable(
             "tags": [],  # Intentionally kept completely empty as per user request
             "categoryId": category_id
         },
-        "status": {
-            "privacyStatus": privacy_status,
-            "selfDeclaredMadeForKids": False
-        }
+        "status": status_dict
     }
 
     # 4MB chunks (must be multiple of 256KB)
@@ -225,6 +275,7 @@ def publish_broadcast_to_youtube(
     thumbnail_path: str,
     all_stories: list = None,
     privacy_status: str = "public",
+    schedule_publish: bool = True,
     client_secrets_file: str = CLIENT_SECRETS_FILE,
     token_file: str = TOKEN_FILE,
     notify_email: bool = True
@@ -232,7 +283,7 @@ def publish_broadcast_to_youtube(
     """
     High-level entrypoint for the pipeline:
     1. Generates VidIQ-style Title, 5K Description & Tags.
-    2. Uploads video via resumable chunked stream.
+    2. Uploads video via resumable chunked stream (scheduled for 7:00 AM/PM IST or direct public).
     3. Attaches custom thumbnail.
     4. Sends instant notification to user's Gmail with clickable links.
     """
@@ -249,7 +300,14 @@ def publish_broadcast_to_youtube(
     # 2. Authenticate
     youtube = get_authenticated_youtube_service(client_secrets_file, token_file)
 
-    # 3. Resumable Upload (tags box kept 100% empty)
+    # 3. Schedule Mode Calculation (Exact 7:00 AM IST or 7:00 PM IST)
+    publish_at = None
+    schedule_display = ""
+    if schedule_publish:
+        publish_at, schedule_display = get_scheduled_publish_time()
+        print(f"  ⏰ [YouTube Schedule Mode] Video will go PUBLIC at: {schedule_display} (UTC: {publish_at})")
+
+    # 4. Resumable Upload (tags box kept 100% empty)
     video_id = upload_video_resumable(
         youtube=youtube,
         video_path=video_path,
@@ -257,10 +315,11 @@ def publish_broadcast_to_youtube(
         description=seo_pkg["description"],
         tags=[],
         category_id=seo_pkg["categoryId"],
-        privacy_status=privacy_status
+        privacy_status=privacy_status,
+        publish_at=publish_at
     )
 
-    # 4. Attach Thumbnail (with automatic generation if missing)
+    # 5. Attach Thumbnail (with automatic generation if missing)
     if not thumbnail_path or not os.path.exists(thumbnail_path):
         print("  🖼️ [Auto-Thumbnail] Thumbnail missing, generating automatically right now...")
         try:
@@ -281,14 +340,17 @@ def publish_broadcast_to_youtube(
     print("🎉 YOUTUBE PUBLISH SUCCESSFUL!")
     print(f"  🔗 Watch URL:       {watch_url}")
     print(f"  🛠️ Studio Edit URL: {studio_url}")
+    if publish_at:
+        print(f"  ⏰ Scheduled For:   {schedule_display}")
     print("═" * 70 + "\n")
 
-    # 5. Instant Gmail Notification
+    # 6. Instant Gmail Notification
     if notify_email:
+        status_label = f"Scheduled for {schedule_display}" if publish_at else privacy_status
         send_upload_notification(
             video_id=video_id,
             title=seo_pkg["title"],
-            privacy_status=privacy_status,
+            privacy_status=status_label,
             thumbnail_status=thumb_status,
             tags_count=seo_pkg["tags_count"],
             chapters_count=len(all_stories) if all_stories else 50,
@@ -301,7 +363,9 @@ def publish_broadcast_to_youtube(
         "watch_url": watch_url,
         "studio_url": studio_url,
         "title": seo_pkg["title"],
-        "privacy_status": privacy_status
+        "privacy_status": "scheduled" if publish_at else privacy_status,
+        "publish_at": publish_at,
+        "scheduled_display": schedule_display
     }
 
 

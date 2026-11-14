@@ -49,6 +49,7 @@ jobs:
           STORY_NUMBER: ${{ inputs.story_number || '50' }}
           FORCE_REFRESH_NEWS: ${{ inputs.force_refresh_news != false }}
           YOUTUBE_PRIVACY: "public"
+          YOUTUBE_SCHEDULE: "true"
           YOUTUBE_TOKEN_JSON: ${{ secrets.YOUTUBE_TOKEN_JSON }}
           DUBSTUDIO_EMAIL: ${{ secrets.DUBSTUDIO_EMAIL }}
           DUBSTUDIO_TO_EMAIL: ${{ secrets.DUBSTUDIO_TO_EMAIL }}
