@@ -102,12 +102,9 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
   const textLength = currentHeadline.length;
   const cardFontSize = textLength > 55 ? 32 : textLength > 40 ? 36 : textLength > 28 ? 40 : 44;
 
-  // Location / Category Label (e.g. 📍 नई दिल्ली or 📍 ट्रैफिक अलर्ट)
-  const displayBadge = location
-    ? (location.startsWith("📍") ? location : `📍 ${location}`)
-    : category
-    ? (category.startsWith("📍") ? category : `📍 ${category}`)
-    : "📍 विशेष बुलेटिन";
+  // Location / Category Label (e.g. नई दिल्ली or ट्रैफिक अलर्ट)
+  const rawBadge = location || category || "विशेष बुलेटिन";
+  const displayBadge = rawBadge.replace(/📍/g, "").trim();
 
   // ─── 4. TARAJU (SEESAW) FOCUS ORCHESTRATION ───
   const tarajuOpacity = interpolate(expandProgress, [0, 0.35, 1], [1, 0, 0], {
@@ -164,7 +161,21 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
             textShadow: "0 1px 3px rgba(0, 0, 0, 0.6)",
           }}
         >
-          {displayBadge}
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ flexShrink: 0 }}
+          >
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="#ffffff" />
+            <circle cx="12" cy="10" r="3" fill="#D90429" />
+          </svg>
+          <span>{displayBadge}</span>
         </div>
         <div
           style={{
