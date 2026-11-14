@@ -51,8 +51,8 @@ api.authenticate()
 kernel_slug = "mp4-news-hindi-omnivoice-pipeline"
 kernel_id = f"{kaggle_user}/{kernel_slug}"
 
-# Write bulletin configuration for Kaggle pipeline (Default: 1 story for fast verification, or STORY_NUMBER env)
-story_number = os.environ.get("STORY_NUMBER", "1")
+# Write bulletin configuration for Kaggle pipeline (Default: 50 stories bulletin)
+story_number = os.environ.get("STORY_NUMBER", "50")
 force_refresh = os.environ.get("FORCE_REFRESH_NEWS", "false").lower() in ["true", "1", "yes"]
 
 config_path = ROOT / "bulletin_config.json"

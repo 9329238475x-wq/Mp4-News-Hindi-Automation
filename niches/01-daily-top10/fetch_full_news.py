@@ -140,8 +140,8 @@ MASTER_7_PILLARS = [
         "name": "🔥 क्राइम, एनकाउंटर & माफिया",
         "feeds": [
             ("एबीपी न्यूज़ क्राइम", "https://www.abplive.com/crime/feed"),
-            ("गूगल न्यूज़ भारत क्राइम", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%95%E0%A5%8D%E0%A4%B0%E0%A4%BE%E0%A4%87%E0%A4%AE+when:24h&hl=hi&gl=IN&ceid=IN:hi"),
-            ("गूगल न्यूज़ भारत पुलिस", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%AA%E0%A5%81%E0%A4%B2%E0%A4%BF%E0%A4%B8+when:24h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ भारत क्राइम", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%95%E0%A5%8D%E0%A4%B0%E0%A4%BE%E0%A4%87%E0%A4%AE+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ भारत पुलिस", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%AA%E0%A5%81%E0%A4%B2%E0%A4%BF%E0%A4%B8+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
             ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
             ("एबीपी न्यूज़", "https://www.abplive.com/home/feed")
         ],
@@ -154,7 +154,7 @@ MASTER_7_PILLARS = [
             ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
             ("एबीपी न्यूज़ राज्य", "https://www.abplive.com/states/feed"),
             ("गूगल न्यूज़ भारत", "https://news.google.com/rss/headlines/section/topic/NATION?hl=hi&gl=IN&ceid=IN:hi"),
-            ("गूगल न्यूज़ भारत हादसा", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%B9%E0%A4%BE%E0%A4%A6%E0%A4%B8%E0%A4%BE+when:24h&hl=hi&gl=IN&ceid=IN:hi")
+            ("गूगल न्यूज़ भारत हादसा", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%B9%E0%A4%BE%E0%A4%A6%E0%A4%B8%E0%A4%BE+when:12h&hl=hi&gl=IN&ceid=IN:hi")
         ],
         "keywords": ["हादसा", "चक्रवात", "बारिश", "ट्रेन", "आंधी", "अलर्ट", "स्कूल", "राहत", "तूफान", "जाम", "परेशान", "टक्कर", "आग", "सिलेंडर", "बिजली", "सड़क", "घायल", "अस्पताल", "धमाका"]
     },
@@ -162,7 +162,7 @@ MASTER_7_PILLARS = [
         "id": "court",
         "name": "⚖️ कोर्ट-कचहरी & सुप्रीम कोर्ट फैसले",
         "feeds": [
-            ("गूगल न्यूज़ सुप्रीम कोर्ट", "https://news.google.com/rss/search?q=%E0%A4%B8%E0%A5%81%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A5%80%E0%A4%AE+%E0%A4%95%E0%A5%8B%E0%A4%B0%E0%A5%8D%E0%A4%9F+when:24h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ सुप्रीम कोर्ट", "https://news.google.com/rss/search?q=%E0%A4%B8%E0%A5%81%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A5%80%E0%A4%AE+%E0%A4%95%E0%A5%8B%E0%A4%B0%E0%A5%8D%E0%A4%9F+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
             ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
             ("एबीपी न्यूज़ भारत", "https://www.abplive.com/news/india/feed"),
             ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml"),
@@ -174,7 +174,7 @@ MASTER_7_PILLARS = [
         "id": "security",
         "name": "🕵️‍♂️ राष्ट्रीय सुरक्षा, खुफिया रेड & ऑपरेशंस",
         "feeds": [
-            ("गूगल न्यूज़ भारत सुरक्षा", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%B8%E0%A5%81%E0%A4%B0%E0%A4%95%E0%A5%8D%E0%A4%B7%E0%A4%BE+OR+%E0%A4%8F%E0%A4%A8%E0%A4%86%E0%A4%88%E0%A4%8F+when:24h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ भारत सुरक्षा", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%B8%E0%A5%81%E0%A4%B0%E0%A4%95%E0%A5%8D%E0%A4%B7%E0%A4%BE+OR+%E0%A4%8F%E0%A4%A8%E0%A4%86%E0%A4%88%E0%A4%8F+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
             ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
             ("एबीपी न्यूज़ भारत", "https://www.abplive.com/news/india/feed"),
             ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml")
@@ -185,7 +185,7 @@ MASTER_7_PILLARS = [
         "id": "corruption",
         "name": "⚡ भ्रष्टाचार, घूसखोरी ट्रैप & खुलासे",
         "feeds": [
-            ("गूगल न्यूज़ भारत भ्रष्टाचार", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%AD%E0%A5%8D%E0%A4%B0%E0%A4%B7%E0%A5%8D%E0%A4%9F%E0%A4%BE%E0%A4%9A%E0%A4%BE%E0%A4%B0+OR+%E0%A4%88%E0%A4%A1%E0%A5%80+when:24h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ भारत भ्रष्टाचार", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%AD%E0%A5%8D%E0%A4%B0%E0%A4%B7%E0%A5%8D%E0%A4%9F%E0%A4%BE%E0%A4%9A%E0%A4%BE%E0%A4%B0+OR+%E0%A4%88%E0%A4%A1%E0%A5%80+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
             ("एबीपी न्यूज़ क्राइम", "https://www.abplive.com/crime/feed"),
             ("दैनिक जागरण राज्य", "https://rss.jagran.com/rss/news/state.xml"),
             ("एबीपी न्यूज़", "https://www.abplive.com/home/feed")
@@ -207,7 +207,7 @@ MASTER_7_PILLARS = [
         "id": "mystery",
         "name": "🛸 रहस्यमयी घटनाएं & कुदरती अजूबे",
         "feeds": [
-            ("गूगल न्यूज़ भारत अनोखा", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%85%E0%A4%A8%E0%A5%8B%E0%A4%96%E0%A4%BE+OR+%E0%A4%85%E0%A4%9C%E0%A5%80%E0%A4%AC+when:24h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ भारत अनोखा", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%85%E0%A4%A8%E0%A5%8B%E0%A4%96%E0%A4%BE+OR+%E0%A4%85%E0%A4%9C%E0%A5%80%E0%A4%AC+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
             ("दैनिक जागरण राज्य", "https://rss.jagran.com/rss/news/state.xml"),
             ("एबीपी न्यूज़ राज्य", "https://www.abplive.com/states/feed"),
             ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml")
@@ -223,18 +223,20 @@ HEADERS = {
 }
 
 
-MAX_NEWS_HOURS = 24
+MAX_NEWS_HOURS = int(os.environ.get("MAX_NEWS_HOURS", "12"))
 
 
-def is_within_last_24_hours(date_str: str) -> bool:
-    """जांच: क्या खबर पिछले 24 घंटे के अंदर प्रकाशित हुई है"""
+def is_within_last_24_hours(date_str: str, max_hours: float = None) -> bool:
+    """जांच: क्या खबर पिछले 12 घंटे (या निर्धारित समय) के अंदर प्रकाशित हुई है"""
+    if max_hours is None:
+        max_hours = float(MAX_NEWS_HOURS)
     if not date_str:
         return True
     try:
         dt = email.utils.parsedate_to_datetime(date_str)
         now = datetime.datetime.now(datetime.timezone.utc)
         diff_hours = (now - dt).total_seconds() / 3600.0
-        return -0.5 <= diff_hours <= 24.5  # पिछले 24 घंटे के अंदर की ताज़ा खबर
+        return -0.5 <= diff_hours <= (max_hours + 0.5)  # ताज़ा 12 घंटे के अंदर की खबर
     except Exception:
         pass
 
@@ -242,7 +244,7 @@ def is_within_last_24_hours(date_str: str) -> bool:
         pub_dt = datetime.datetime.strptime(date_str[:25].strip(), "%a, %d %b %Y %H:%M:%S")
         now = datetime.datetime.utcnow()
         diff_hours = (now - pub_dt).total_seconds() / 3600.0
-        return -0.5 <= diff_hours <= 24.5
+        return -0.5 <= diff_hours <= (max_hours + 0.5)
     except Exception:
         return True
 
