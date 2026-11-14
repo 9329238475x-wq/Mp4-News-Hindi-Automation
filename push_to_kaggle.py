@@ -240,7 +240,7 @@ if mp4_files:
             video_path=str(latest_mp4),
             thumbnail_path=thumb_path,
             all_stories=stories,
-            privacy_status="unlisted",
+            privacy_status=os.environ.get("YOUTUBE_PRIVACY", "public"),
             notify_email=True
         )
         print(f"✅ YOUTUBE PUBLISH COMPLETE: {upload_res.get('watch_url')}", flush=True)

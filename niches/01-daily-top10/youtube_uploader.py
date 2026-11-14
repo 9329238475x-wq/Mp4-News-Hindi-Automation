@@ -119,7 +119,7 @@ def upload_video_resumable(
     description: str,
     tags: list,
     category_id: str = "25",
-    privacy_status: str = "unlisted"
+    privacy_status: str = "public"
 ) -> str:
     """
     Executes a high-performance resumable video upload in 4MB chunks with exponential backoff.
@@ -224,7 +224,7 @@ def publish_broadcast_to_youtube(
     video_path: str,
     thumbnail_path: str,
     all_stories: list = None,
-    privacy_status: str = "unlisted",
+    privacy_status: str = "public",
     client_secrets_file: str = CLIENT_SECRETS_FILE,
     token_file: str = TOKEN_FILE,
     notify_email: bool = True

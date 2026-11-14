@@ -46,8 +46,9 @@ jobs:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME || 'vinodkumartekam' }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY || 'debe5f4350257f533281191fd96863c7' }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          STORY_NUMBER: ${{ inputs.story_number }}
-          FORCE_REFRESH_NEWS: ${{ inputs.force_refresh_news }}
+          STORY_NUMBER: ${{ inputs.story_number || '50' }}
+          FORCE_REFRESH_NEWS: ${{ inputs.force_refresh_news != false }}
+          YOUTUBE_PRIVACY: "public"
           YOUTUBE_TOKEN_JSON: ${{ secrets.YOUTUBE_TOKEN_JSON }}
           DUBSTUDIO_EMAIL: ${{ secrets.DUBSTUDIO_EMAIL }}
           DUBSTUDIO_TO_EMAIL: ${{ secrets.DUBSTUDIO_TO_EMAIL }}
