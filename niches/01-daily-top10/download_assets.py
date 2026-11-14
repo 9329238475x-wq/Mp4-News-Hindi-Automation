@@ -728,11 +728,11 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
                                 "is_scraped": True,
                                 "credit_source": credit_source,
                             })
-                            if len(scraped_pool) >= 4:
+                            if len(scraped_pool) >= 2:
                                 break
 
-    # 🛑 प्रामाणिक समाचार तस्वीरें पूल (अधिकतम 8 वास्तविक तस्वीरें सुरक्षित)
-    scraped_pool = scraped_pool[:8]
+    # 🛑 प्रामाणिक समाचार तस्वीरें पूल (सख्ती से अधिकतम 2 मुख्य तस्वीरें ताकि साइडबार/रिलेटेड न्यूज़ की गलत फोटो न आएं)
+    scraped_pool = scraped_pool[:2]
     print(f"  📸 [Pool A - Authentic News Media] {len(scraped_pool)} प्रामाणिक समाचार तस्वीरें/GIFs चयनित (साभार: '{credit_source}')")
 
     # ─────────────────────────────────────────────────────────────────

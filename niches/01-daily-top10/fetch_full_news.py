@@ -546,12 +546,12 @@ def extract_and_download_story_media(story_index: int, article_url: str, source_
                 "url": link_tag["href"]
             })
 
-    # 4. असली न्यूज़ फोटोज़ व एनिमेटेड GIFs डाउनलोड करना (अधिकतम 8 प्रामाणिक मीडिया फाइल्स)
+    # 4. असली न्यूज़ फोटोज़ व एनिमेटेड GIFs डाउनलोड करना (सख्ती से अधिकतम 2 मुख्य तस्वीरें ताकि साइडबार/रिलेटेड न्यूज़ की गलत फोटो न आएं)
     downloaded_images = []
     img_counter = 1
 
     for img_url in candidate_img_urls:
-        if img_counter > 8:
+        if img_counter > 2:
             break
         try:
             img_req_headers = dict(HEADERS)

@@ -71,6 +71,45 @@ OUTPUT_TXT_PATH = os.path.join(CURR_DIR, "bulletin_scripts.txt")
 OUT_DIR = os.path.join(BASE_DIR, "out")
 
 
+def fix_missing_ke_liye(text: str) -> str:
+    """'मछुआरों लिए' -> 'मछुआरों के लिए' जैसी व्याकरण संबंधी त्रुटियों को सुधारना"""
+    if not text:
+        return ""
+    pronoun_exceptions = {'इसके', 'उसके', 'किसके', 'जिसके', 'इनके', 'उनके', 'अपने', 'सबके', 'हमारे', 'तुम्हारे', 'मेरे', 'आपके', 'किसलिए', 'इसलिए', 'इसीलिये'}
+    def repl(m):
+        prev_word = m.group(1)
+        if prev_word in pronoun_exceptions or prev_word.endswith('के') or prev_word.endswith('रे') or prev_word.endswith('ने'):
+            return f"{prev_word} लिए"
+        return f"{prev_word} के लिए"
+    return re.sub(r'([\u0900-\u097F]+)\s+लिए(?![^\s])', repl, text)
+
+
+def sanitize_headline_grammar(h: str) -> str:
+    """हेडलाइंस और कार्ड टेक्स्ट में टूटी-फूटी हिंदी, छूटे हुए कारक व अधूरी क्रियाओं को सुधारना"""
+    if not h:
+        return ""
+    h = fix_missing_ke_liye(h)
+
+    # 1. 'गार्ड को' -> 'कोस्ट गार्ड को' (समुद्र/नाव/तटरक्षक संदर्भ)
+    h = re.sub(r'(?<![^\s])ने\s+गार्ड\s+को(?![^\s])', 'ने कोस्ट गार्ड को', h)
+
+    # 2. 'सुरक्षा आदेश दिया' -> 'सुरक्षा के आदेश दिए'
+    h = re.sub(r'सुरक्षा\s+आदेश\s+(?:दिया|दिए)', 'सुरक्षा के आदेश दिए', h)
+
+    # 3. 'सुधार कहा' -> 'सुधारने के निर्देश दिए'
+    h = re.sub(r'(?<![^\s])सुधार\s+कहा(?![^\s])', 'सुधारने के निर्देश दिए', h)
+    h = re.sub(r'(?<![^\s])कार्रवाई\s+कहा(?![^\s])', 'कार्रवाई के निर्देश दिए', h)
+    h = re.sub(r'(?<![^\s])जांच\s+कहा(?![^\s])', 'जांच के आदेश दिए', h)
+    h = re.sub(r'(?<![^\s])मंजूरी\s+कहा(?![^\s])', 'मंजूरी दी', h)
+    h = re.sub(r'(?<![^\s])रोक\s+कहा(?![^\s])', 'रोकने के आदेश दिए', h)
+
+    # 4. अन्य आदेश/निर्देश क्रियाएं
+    h = re.sub(r'(?<![^\s])निगरानी\s+आदेश\s+(?:दिया|दिए)(?![^\s])', 'निगरानी के आदेश दिए', h)
+    h = re.sub(r'(?<![^\s])राहत\s+आदेश\s+(?:दिया|दिए)(?![^\s])', 'राहत के आदेश दिए', h)
+
+    return h
+
+
 def sanitize_anchor_text(t: str) -> str:
     """अनौपचारिक व बचकाने शब्दों को हटाना और मानक हिंदी व्याकरण सुधारना"""
     if not t:
@@ -78,6 +117,8 @@ def sanitize_anchor_text(t: str) -> str:
     # Note: 'अपन' कभी न डालें क्योंकि वह 'अपनी', 'अपने' को 'ी', 'े' में काट देता है!
     t = re.sub(r'\b(अरे भाई|भाई साहब|भाई,|भाई|यार|भैया|दोस्त)\b', '', t)
     # व्याकरण, कारक और वर्तनी सुधार:
+    t = fix_missing_ke_liye(t)
+    t = sanitize_headline_grammar(t)
     t = re.sub(r'\bट्रेन आगे\b', 'ट्रेन के आगे', t)
     t = re.sub(r'\bगोली धमकी\b', 'गोली मारने की धमकी', t)
     t = re.sub(r'\bडिसिपी\b', 'डीसीपी', t)
@@ -239,12 +280,13 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
         if not h:
             continue
         clean_h = sanitize_headline_safety(h)
+        clean_h = sanitize_headline_grammar(clean_h)
         clean_h = clean_h.replace("**", "").replace("*", "").rstrip(":").rstrip("।").strip()
         if clean_h:
             cleaned_headlines.append(clean_h)
 
     if len(cleaned_headlines) < 4:
-        clean_screen_hl = screen_hl.replace("**", "").replace("*", "").rstrip(":").rstrip("।").strip()
+        clean_screen_hl = sanitize_headline_grammar(sanitize_headline_safety(screen_hl)).replace("**", "").replace("*", "").rstrip(":").rstrip("।").strip()
         while len(cleaned_headlines) < 4:
             cleaned_headlines.append(clean_screen_hl)
 
@@ -273,12 +315,20 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
     raw_broad_kws = stage3_resp.get("broad_story_keywords_en", [])
 
     # चंक्स में मास्टर सैनिटाइज्ड इमेज कीवर्ड्स मैप करना (No years, No times, 2-4 words)
-    kw_by_index = {item.get("chunk_index"): item.get("image_keywords_en", []) for item in chunk_img_kws}
+    kw_by_index = {}
+    for item in chunk_img_kws:
+        if isinstance(item, dict):
+            idx_val = item.get("chunk_index")
+            kws_val = item.get("image_keywords_en", [])
+            if idx_val is not None:
+                kw_by_index[idx_val] = kws_val
+                kw_by_index[str(idx_val)] = kws_val
 
     # Extract dynamic story topic and location for smart contextual fallbacks
     story_loc = story.get("location") or story.get("verified_location") or "India"
     story_cat = story.get("category", "")
-    
+    story_combined = f"{story.get('title', '')} {story_cat} {story.get('full_text', '')[:500]}".lower()
+
     # Clean broad keywords first so they can serve as primary context fallbacks
     broad_kws = []
     for bk in raw_broad_kws:
@@ -286,9 +336,19 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
         if s_bk and len(s_bk.split()) >= 2 and s_bk not in broad_kws:
             broad_kws.append(s_bk)
 
-    for c in cleaned_chunks:
-        c_idx = c["chunk_index"]
-        c_kws = kw_by_index.get(c_idx, [])
+    for c_i, c in enumerate(cleaned_chunks):
+        c_idx = c.get("chunk_index", c_i + 1)
+        c_kws = (
+            kw_by_index.get(c_idx) or
+            kw_by_index.get(str(c_idx)) or
+            kw_by_index.get(c_i) or
+            kw_by_index.get(str(c_i))
+        )
+        if not c_kws and c_i < len(chunk_img_kws) and isinstance(chunk_img_kws[c_i], dict):
+            c_kws = chunk_img_kws[c_i].get("image_keywords_en", [])
+        if not c_kws:
+            c_kws = []
+
         sanitized_list = []
         for raw_k in c_kws:
             s_k = sanitize_keyword_master(raw_k)
@@ -296,38 +356,69 @@ def process_single_story_multi_stage(engine: GroqEngine, story: dict) -> dict:
             if s_k and len(s_k.split()) >= 2 and s_k not in sanitized_list:
                 sanitized_list.append(s_k)
 
-        # 1. Use broad story-specific keywords as primary fallback (matches exact topic, never hardcoded crime!)
+        # 1. Use broad story-specific keywords as primary fallback (matches exact topic, never hardcoded generic words!)
         for bk in broad_kws:
             if len(sanitized_list) >= 3:
                 break
             if bk not in sanitized_list and len(bk.split()) >= 2:
                 sanitized_list.append(bk)
 
-        # 2. Dynamic contextual fallbacks based on actual story category and location
+        # 2. Dynamic contextual fallbacks based on actual story category and topic (Zero generic secretariat/archive words!)
         context_fallbacks = []
-        if any(term in story_cat for term in ["व्यापार", "अर्थव्यवस्था", "मेला", "कारोबार"]):
+
+        # Category A: Cyclone, Weather, Flood, Rain, Storm, Sea, Coast Guard, Boats, Fishermen
+        if any(w in story_combined for w in ["चक्रवात", "मौसम", "आपदा", "तूफान", "बारिश", "बाढ़", "समुद्र", "नाव", "मछुआरे", "मछुआरों", "तटरक्षक", "गार्ड", "कोस्ट गार्ड", "नौसेना", "cyclone", "sea", "boat", "coast guard", "flood", "rain"]):
             context_fallbacks = [
-                f"{story_loc} trade fair exhibition hall",
-                f"{story_loc} business expo convention",
-                f"{story_loc} public event venue archive"
+                f"{story_loc} Coast Guard ship rescue sea",
+                f"{story_loc} cyclone satellite weather radar",
+                f"{story_loc} fishing boats coastal harbor",
+                f"{story_loc} fishermen coastal search operation",
+                f"{story_loc} disaster response team rescue"
             ]
-        elif any(term in story_cat for term in ["क्राइम", "अपराध", "कानून", "पुलिस"]):
+        # Category B: Accidents, Fire, Explosion, Tragedy
+        elif any(w in story_combined for w in ["हादसा", "टक्कर", "आग", "आगजनी", "ब्लास्ट", "धमाका", "सिलेंडर", "ट्रेन", "accident", "fire"]):
+            context_fallbacks = [
+                f"{story_loc} emergency rescue disaster site",
+                f"{story_loc} fire brigade emergency operation",
+                f"{story_loc} district hospital trauma building",
+                f"{story_loc} national highway emergency team"
+            ]
+        # Category C: ED, CBI, Vigilance, Income Tax, Raid, Mahadev Satta
+        elif any(w in story_combined for w in ["ईडी", "सीबीआई", "विजिलेंस", "छापा", "छापेमारी", "रेड", "सट्टा", "महादेव", "घोटाला", "ed", "cbi"]):
+            context_fallbacks = [
+                f"Enforcement Directorate ED office {story_loc}",
+                f"CBI investigation headquarters {story_loc}",
+                f"{story_loc} police cyber crime cell",
+                f"{story_loc} income tax search operation"
+            ]
+        # Category D: Bulldozer, Demolition, Encroachment
+        elif any(w in story_combined for w in ["बुलडोजर", "ध्वस्त", "अवैध", "कब्जा", "कुर्क", "सील"]):
+            context_fallbacks = [
+                f"{story_loc} bulldozer demolition action",
+                f"{story_loc} municipal anti encroachment drive",
+                f"{story_loc} district administration office"
+            ]
+        # Category E: Crime, Encounter, Mafia, Police, Gangster
+        elif any(w in story_combined for w in ["क्राइम", "अपराध", "कानून", "पुलिस", "एनकाउंटर", "मुठभेड़", "गैंगस्टर", "माफिया", "हत्या", "गिरफ्तार"]):
             context_fallbacks = [
                 f"{story_loc} police administration office",
+                f"{story_loc} police barricade checkpoint",
                 f"{story_loc} district court justice building",
-                f"{story_loc} official press briefing"
+                f"{story_loc} police patrolling vehicle"
             ]
-        elif any(term in story_cat for term in ["राजनीति", "सरकार", "योजना", "जनहित"]):
+        # Category F: Court, Supreme Court, High Court, Verdicts
+        elif any(w in story_combined for w in ["कोर्ट", "अदालत", "सुप्रीम कोर्ट", "हाई कोर्ट", "जज", "सजा", "जमानत"]):
             context_fallbacks = [
-                f"{story_loc} government ministry secretariat",
-                f"{story_loc} official administrative conference",
-                f"{story_loc} public policy announcement"
+                f"{story_loc} High Court building exterior",
+                f"Supreme Court of India New Delhi",
+                f"{story_loc} district legal courtroom"
             ]
+        # Default Broadcast Fallback (Clean real news, ZERO 'administrative secretariat' or 'press conference' or 'public event archive')
         else:
             context_fallbacks = [
-                f"{story_loc} official press conference",
-                f"{story_loc} public event archive",
-                f"{story_loc} administrative secretariat"
+                f"{story_loc} breaking news broadcast coverage",
+                f"{story_loc} district administration headquarters",
+                f"{story_loc} official government briefing"
             ]
 
         fb_i = 0

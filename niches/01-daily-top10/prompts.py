@@ -23,11 +23,13 @@ STAGE1_SCRIPT_SYSTEM_PROMPT = r"""तुम एक राष्ट्रीय �
    - पीड़ित (Victim) और आरोपी (Accused) के संबंध को 100% सही रखें। कभी तथ्यों को न उलटें।
    - यदि किसी व्यक्ति ने प्रताड़ना से जान दी है, तो वह पीड़ित है। कभी न लिखें कि उसने झूठा आरोप लगाया। उदाहरण: 'महिलाओं ने मृतक पर झूठा चोरी का आरोप लगाया', न कि मृतक ने महिलाओं पर आरोप लगाया।
 4. ✍️ शुद्ध हिंदी व्याकरण व कारक (FLAWLESS HINDI GRAMMAR):
-   - कारक चिन्हों ('के', 'की', 'से', 'को') का पूरा और शुद्ध प्रयोग करें:
+   - कारक चिन्हों ('के', 'की', 'से', 'को') का पूरा और शुद्ध प्रयोग अनिवार्य है:
      - 'ट्रेन आगे' नहीं, 'ट्रेन के आगे'।
      - 'गोली धमकी' नहीं, 'गोली मारने की धमकी'।
      - 'परिवार को माफी मांगी' नहीं, 'परिवार से माफी मांगी'।
      - 'डिसिपी' नहीं, हमेशा मानक 'डीसीपी' (DCP) लिखें।
+     - ⚠️ 'के लिए' में से कभी भी 'के' गायब न करें: 'मछुआरों लिए' बिल्कुल अशुद्ध है, हमेशा 'मछुआरों के लिए', 'किसानों के लिए', 'सुरक्षा के लिए' लिखें ताकि TTS अटक कर न पढ़े।
+     - ⚠️ क्रिया अधूरी न छोड़ें: 'सुरक्षा आदेश दिया' नहीं, हमेशा 'सुरक्षा के आदेश दिए'; 'सुधार कहा' नहीं, 'सुधारने के निर्देश दिए'।
 5. ✅ सभी संख्याओं को हिंदी शब्दों में लिखो: '10, 25, 12, 100' के बजाय 'दस', 'पच्चीस', 'बारह लाख रुपये', 'सौ' लिखें ताकि TTS स्वाभाविक बोले।
 6. ⚖️ कानूनी सुरक्षा व पत्रकारिता की ढाल (LEGAL ATTRIBUTIONS):
    - 'कथित तौर पर', 'मृतक ने अपने वीडियो में आरोप लगाया कि...', 'पुलिस के अनुसार' जैसे शब्दों का अनिवार्य प्रयोग करें ताकि चैनल पर कोई कानूनी आँच न आए।
@@ -118,6 +120,10 @@ STAGE2_HEADLINES_SYSTEM_PROMPT = r"""तुम एक राष्ट्री�
 4. 🚫 यूट्यूब मोनेटाइजेशन सुरक्षा (ZERO YELLOW DOLLAR):
    - आत्महत्या/खुदकुशी का तरीका न लिखें। हिंसात्मक शब्दों के बजाय सुरक्षित मानक भाषा प्रयोग करें।
 5. 🔢 संख्या: ठीक 4 अलग-अलग, शक्तिशाली हेडलाइंस तैयार करें जो पूरी खबर के चारों पहलुओं को कवर करें।
+6. ✍️ शुद्ध मानक व्याकरण व पूरे नाम (STRICT GRAMMAR & FULL ENTITY NAMES):
+   - अधूरे कारक न छोड़ें: 'मछुआरों लिए' के बजाय हमेशा 'मछुआरों के लिए' लिखें।
+   - क्रिया अधूरी या अशुद्ध न हो: 'सुरक्षा आदेश दिया' के बजाय हमेशा 'सुरक्षा के आदेश दिए' और 'सुधार कहा' के बजाय 'सुधारने के निर्देश दिए' लिखें।
+   - संस्थाओं के पूरे नाम लिखें: 'गार्ड' नहीं, हमेशा 'कोस्ट गार्ड' या 'सुरक्षा बल' पूरा लिखें।
 
 आउटपुट केवल और केवल निम्नलिखित JSON फ़ॉर्मेट में दें:
 {
@@ -167,11 +173,11 @@ STRICT MASTER RULES:
    - NEVER generate private individuals' or victims' names: NO private names, NO 'family', NO 'home'.
    - NEVER generate abstract emotional phrases: NO 'police threat', NO 'children safety appeal'.
 4. ✅ APPROVED BROADCAST ARCHETYPES (2 TO 4 WORDS MAX):
-   1. Official Police / Agency Logo or Uniform: e.g. "<Location> police official badge"
-   2. Specific Government / Station Building: e.g. "<City> police station building", "<City> court building"
-   3. Physical Context Scene: e.g. "forensic crime scene evidence", "railway tracks generic", "hospital emergency ward"
-   4. Official Public Spokesperson / Leader: e.g. "<Official Name> press conference"
-   5. Official Investigation Archive: e.g. "<Region> police investigation file photo"
+   1. Maritime, Coast Guard, Navy, Weather, Cyclone: e.g. "Indian Coast Guard ship sea", "Bay of Bengal cyclone IMD", "fishing boats harbor coast", "coastal fishermen rescue operation"
+   2. Agency / Police / Enforcement: e.g. "<Location> police official badge", "Enforcement Directorate ED headquarters", "CBI office New Delhi", "<City> police station building"
+   3. Physical Context & Disaster Scene: e.g. "hospital emergency trauma center", "fire brigade rescue operation", "national highway emergency", "NDRF disaster rescue team"
+   4. High Court / Supreme Court: e.g. "<City> High Court building", "Supreme Court courtroom New Delhi"
+   5. Official Public Leader: e.g. "<Official Name> official portrait"
 5. 📍 MANDATORY CITY/LOCATION ANCHOR:
    - When referencing a police outpost, station, or landmark, ALWAYS append the actual city or state name from the story.
 6. 🚫 NO TRUNCATION: Never truncate names (e.g. write 'Uttar Pradesh', NEVER cut off to just 'Uttar').
@@ -184,6 +190,9 @@ STRICT MASTER RULES:
    - DDGS searches Indian news portals, so searching 'crime scene' or 'suspect leg' fetches graphic blood or wounds, which causes YouTube Yellow Dollar or Age Restriction!
    - ALWAYS substitute with safe institutional or context visuals:
      e.g., '<City> police barricade checkpoint', '<City> police patrolling vehicle', '<City> police station building', '<City> high court building', '<City> district hospital building'.
+9. 🌊 STORY-SPECIFIC VISUAL DIRECTIVE (NEVER DEFAULT TO GENERIC PRESS CONFERENCES):
+   - If the story is about weather, cyclone, storm, floods, sea, coast guard, or boats: EVERY query MUST describe ocean waves, cyclone radar, coast guard ships, rescue boats, harbor docks, or weather satellites! NEVER generate 'press conference' or 'secretariat'!
+   - If the story is about crime, encounter, or ED/CBI: queries MUST describe police vehicles, court buildings, agency headquarters, or barricades.
 
 OUTPUT ONLY IN VALID JSON FORMAT:
 {
@@ -216,6 +225,8 @@ OUTPUT ONLY IN VALID JSON FORMAT:
 def build_stage3_image_prompt(story: dict, stage1_data: dict, headlines: list) -> str:
     title = story.get("title", "")
     full_text = (story.get("full_text", "") or "")[:2000]
+    category = stage1_data.get("category") or story.get("pillar_name") or "News"
+    location = story.get("location") or story.get("verified_location") or "India"
     chunks = stage1_data.get("chunks", [])
 
     script_text = "\n".join([f"Chunk #{c.get('chunk_index', idx+1)}: {c.get('sentence', '')}" for idx, c in enumerate(chunks)])
@@ -223,6 +234,8 @@ def build_stage3_image_prompt(story: dict, stage1_data: dict, headlines: list) -
 
     return f"""SOURCE NEWS STORY:
 Title: {title}
+Category: {category}
+Location: {location}
 Context: {full_text}
 
 CHANGING SCREEN HEADLINES:
@@ -233,6 +246,7 @@ VOICEOVER SCRIPT (SENTENCE-BY-SENTENCE):
 
 INSTRUCTIONS:
 Generate EXACTLY 3 SHORT (2 to 4 words max) distinct English press/stock queries for EACH chunk representing different visual aspects of what is being spoken in that sentence.
+STRICT RULE: Match the actual category ({category}) and story topic. NO GENERIC 'press conference' or 'secretariat' unless specifically about an administrative meeting!
 RULES: NO YEARS (no 2024/2025), NO CLOCK TIMES (no 12:30 PM), NO SLOGANS/QUOTES. ONLY 2-4 WORDS.
 Output in the requested JSON format."""
 
