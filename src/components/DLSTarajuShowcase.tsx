@@ -67,12 +67,12 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
     images.length > 0 ? images : ["assets/news_img_1_01.jpg"];
 
   // ─── 1. TARAJU SEESAW COORDINATE INTERPOLATION (PERFECT 16:9 BROADCAST RATIO) ───
-  // Split Size: left: 60, top: 200, width: 1060, height: 596 (exact 16:9 ratio, ~60% screen)
+  // Split Size: left: 60, top: 180, width: 1210, height: 680 (exact 16:9 ratio, ~63% screen)
   // Expanded Size: left: 240, top: 135, width: 1440, height: 810 (Exact 16:9)
-  const panelTop = interpolate(expandProgress, [0, 1], [200, 135]);
+  const panelTop = interpolate(expandProgress, [0, 1], [180, 135]);
   const panelLeft = interpolate(expandProgress, [0, 1], [60, 240]);
-  const panelWidth = interpolate(expandProgress, [0, 1], [1060, 1440]);
-  const panelHeight = interpolate(expandProgress, [0, 1], [596, 810]);
+  const panelWidth = interpolate(expandProgress, [0, 1], [1210, 1440]);
+  const panelHeight = interpolate(expandProgress, [0, 1], [680, 810]);
 
   // Entrance spring from frame 0 (First frame of news story has photo!)
   const entranceSpring = spring({

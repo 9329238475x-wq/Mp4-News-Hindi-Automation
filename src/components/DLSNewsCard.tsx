@@ -2,18 +2,18 @@
  * DLS News – Master Sleek Broadcast Headline Card
  * 
  * 100% Television Broadcast Quality:
- * 1. Single Authoritative Brand Color:
- *    - Deep Navy Blue Card (#0A192F) with crisp broadcast frame.
- *    - Crimson Red Category/Location Bar (#D90429) on top.
- * 2. Professional TV Typography & Alignment:
- *    - Left-aligned text (textAlign: "left") with comfortable padding.
- *    - Sleek height (380px) eliminating excessive empty space.
- * 3. Instant Broadcast Reveal (Zero AI Typewriter Glitch):
- *    - Entire headline renders immediately with a smooth slide & fade-in.
- * 4. Pacing & Timing:
- *    - Last headline transitions at least 3 seconds before voiceover ends.
- * 5. Screen Balance:
- *    - Starts from Frame 0 docked on Right (40% width), perfectly paired with Left Media (60% width).
+ * 1. Glossy Crimson Red Theme ("ताज़ा अपडेट्स" Style):
+ *    - Main Body: linear-gradient(180deg, #C80000 0%, #8B0000 55%, #520000 100%)
+ *    - Border: 2px solid #FF5555 with vibrant broadcast glow
+ *    - Header Bar: Deep Maroon-Black (linear-gradient(90deg, #2A0000 0%, #1A0000 100%))
+ * 2. Slim & Tall Vertical Dimensions:
+ *    - Width: 550px (Leaves 63% screen for expansive media showcase on Left)
+ *    - Height: 540px (Vertical tall broadcast chyron card)
+ * 3. Perfect Center Alignment:
+ *    - display: flex, flexDirection: column, justifyContent: center, alignItems: center, textAlign: center
+ *    - 40px bold white typography with soft black shadow (0 3px 10px rgba(0,0,0,0.65))
+ * 4. 100% Clean Location Badge:
+ *    - Zero emojis or broken characters, clean Devanagari city name (e.g. "नई दिल्ली")
  */
 import React from "react";
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
@@ -31,7 +31,7 @@ interface DLSNewsCardProps {
 export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
   headline,
   headlines = [],
-  category = "विशेष रिपोर्ट",
+  category = "विशेष बुलेटिन",
   location,
   bulletPoints = [],
   expandProgress = 0,
@@ -88,8 +88,8 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
   const phaseTranslateY = interpolate(phaseSpring, [0, 1], [16, 0]);
   const phaseOpacity = interpolate(phaseSpring, [0, 1], [0, 1]);
 
-  // ─── 3. RIGHT DOCKED BROADCAST GEOMETRY (Frame 0 Start, Sleek Height) ───
-  // Right Card: left 1150px, top 200px, width 710px, height 380px (40% screen)
+  // ─── 3. RIGHT DOCKED BROADCAST GEOMETRY (Width 550px, Height 540px) ───
+  // Right Card: left 1310px, top 180px, width 550px, height 540px
   const entranceSpring = spring({
     frame,
     fps,
@@ -100,11 +100,12 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
 
   // Dynamic Font Size tailored to headline length
   const textLength = currentHeadline.length;
-  const cardFontSize = textLength > 55 ? 32 : textLength > 40 ? 36 : textLength > 28 ? 40 : 44;
+  const cardFontSize = textLength > 60 ? 34 : textLength > 45 ? 37 : 40;
 
-  // Location / Category Label (e.g. नई दिल्ली or ट्रैफिक अलर्ट)
-  const rawBadge = location || category || "विशेष बुलेटिन";
-  const displayBadge = rawBadge.replace(/📍/g, "").trim();
+  // Clean location / category badge (e.g. नई दिल्ली, zero broken unicode or emoji)
+  let rawBadge = location || (category && category !== "जनहित" ? category : "") || "नई दिल्ली";
+  rawBadge = rawBadge.replace(/[^a-zA-Z0-9\u0900-\u097F\s]/g, "").trim();
+  const displayBadge = rawBadge || "नई दिल्ली";
 
   // ─── 4. TARAJU (SEESAW) FOCUS ORCHESTRATION ───
   const tarajuOpacity = interpolate(expandProgress, [0, 0.35, 1], [1, 0, 0], {
@@ -120,9 +121,9 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
     <div
       style={{
         position: "absolute",
-        top: 200,
-        left: 1150,
-        width: 710,
+        top: 180,
+        left: 1310,
+        width: 550,
         transform: `translateX(${entranceTranslateX}px) scale(${tarajuScale})`,
         opacity: entranceOpacity * tarajuOpacity,
         zIndex: 40,
@@ -133,19 +134,19 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
         pointerEvents: tarajuOpacity < 0.1 ? "none" : "auto",
       }}
     >
-      {/* ─── 1. TOP CATEGORY / LOCATION RED BAR (Official Crimson TV Red #D90429) ─── */}
+      {/* ─── 1. TOP LOCATION / CATEGORY BAR (Deep Maroon #2A0000) ─── */}
       <div
         style={{
-          background: "linear-gradient(90deg, #D90429 0%, #b8001f 100%)",
+          background: "linear-gradient(90deg, #2A0000 0%, #1A0000 100%)",
           borderTopLeftRadius: 14,
           borderTopRightRadius: 14,
-          padding: "10px 24px",
+          padding: "11px 22px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          border: "2px solid rgba(255, 255, 255, 0.25)",
+          border: "2px solid #FF5555",
           borderBottom: "none",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5)",
         }}
       >
         <div
@@ -158,53 +159,47 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
             alignItems: "center",
             gap: 8,
             textTransform: "uppercase",
-            textShadow: "0 1px 3px rgba(0, 0, 0, 0.6)",
+            textShadow: "0 1px 3px rgba(0, 0, 0, 0.8)",
           }}
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#ffffff"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ flexShrink: 0 }}
-          >
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" fill="#ffffff" />
-            <circle cx="12" cy="10" r="3" fill="#D90429" />
-          </svg>
+          <span style={{ color: "#FF5555", fontSize: 18, lineHeight: 1 }}>●</span>
           <span>{displayBadge}</span>
         </div>
         <div
           style={{
-            color: "rgba(255, 255, 255, 0.85)",
-            fontSize: 15,
-            fontWeight: 800,
-            letterSpacing: "1px",
+            background: "#D90429",
+            color: "#ffffff",
+            fontSize: 13,
+            fontWeight: 900,
+            letterSpacing: "1.2px",
+            padding: "3px 10px",
+            borderRadius: 6,
+            textTransform: "uppercase",
+            boxShadow: "0 2px 6px rgba(0, 0, 0, 0.4)",
           }}
         >
           BREAKING
         </div>
       </div>
 
-      {/* ─── 2. MAIN BROADCAST CARD BODY (Fixed Deep Navy Blue #0A192F) ─── */}
+      {/* ─── 2. MAIN BROADCAST CARD BODY (Glossy Crimson Red Gradient) ─── */}
       <div
         style={{
           width: "100%",
-          minHeight: 320,
-          maxHeight: 380,
-          background: "linear-gradient(180deg, #0f2744 0%, #0a192f 55%, #061120 100%)",
-          border: "2.5px solid #1e3a5f",
+          height: 485,
+          background: "linear-gradient(180deg, #C80000 0%, #8B0000 55%, #520000 100%)",
+          border: "2px solid #FF5555",
           borderTop: "none",
           borderBottomLeftRadius: 16,
           borderBottomRightRadius: 16,
-          boxShadow: "0 18px 45px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+          boxShadow:
+            "0 18px 48px rgba(0, 0, 0, 0.88), 0 0 24px rgba(200, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.25)",
           padding: "24px 28px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
+          alignItems: "center",
+          textAlign: "center",
           position: "relative",
           overflow: "hidden",
         }}
@@ -216,13 +211,14 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
             top: 0,
             left: 0,
             right: 0,
-            height: "40%",
-            background: "linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 100%)",
+            height: "45%",
+            background:
+              "linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, transparent 100%)",
             pointerEvents: "none",
           }}
         />
 
-        {/* ─── 3. THE ACTIVE HEADLINE (Left-Aligned, Full Reveal, Sharp & Punchy) ─── */}
+        {/* ─── 3. THE ACTIVE HEADLINE (Centered Horizontally & Vertically, 40px Bold) ─── */}
         <div
           key={`headline-${currentIdx}`}
           style={{
@@ -230,6 +226,7 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
             opacity: phaseOpacity,
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
             width: "100%",
           }}
         >
@@ -238,11 +235,12 @@ export const DLSNewsCard: React.FC<DLSNewsCardProps> = ({
               color: "#ffffff",
               fontSize: cardFontSize,
               fontWeight: 900,
-              lineHeight: 1.38,
+              lineHeight: 1.35,
               letterSpacing: "0.2px",
-              textAlign: "left",
+              textAlign: "center",
               wordBreak: "break-word",
-              textShadow: "0 2px 8px rgba(0, 0, 0, 0.95), 0 4px 20px rgba(0, 0, 0, 0.7)",
+              textShadow:
+                "0 3px 10px rgba(0, 0, 0, 0.65), 0 2px 4px rgba(0, 0, 0, 0.9)",
             }}
           >
             {currentHeadline}
