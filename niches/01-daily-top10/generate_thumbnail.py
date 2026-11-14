@@ -651,7 +651,7 @@ def build_dls_reference_html(
     margin-top: 2px;
   }
 
-  /* Centered 50 बड़ी खबरें in Baloo 2 */
+  /* Centered 50 बड़ी खबरें in Baloo 2 (Safe right margin for YouTube duration badge) */
   .giant-headline-container {
     flex: 1;
     display: flex;
@@ -659,11 +659,13 @@ def build_dls_reference_html(
     justify-content: center;
     font-family: 'BalooLocal', sans-serif;
     padding-top: 20px;
+    padding-right: 90px;
+    box-sizing: border-box;
   }
 
   .giant-number {
     paint-order: stroke fill;
-    font-size: 195px;
+    font-size: 190px;
     font-weight: 900;
     line-height: 0.85;
     color: #fff200;
@@ -676,7 +678,7 @@ def build_dls_reference_html(
 
   .giant-words {
     paint-order: stroke fill;
-    font-size: 170px;
+    font-size: 162px;
     font-weight: 900;
     line-height: 0.85;
     color: #fff200;
@@ -901,9 +903,9 @@ def generate_dls_reference_pillow(
     draw.text((45, 540), "क्राइम", fill=(0, 212, 255), font=f_day)
     draw.text((45, 605), "अलर्ट", fill=(255, 230, 0), font=f_day)
 
-    # Giant 3D Golden text with Baloo 2 font centered
-    draw.text((230, 525), bottom_number, fill=(255, 242, 0), font=f_baloo_num, stroke_width=8, stroke_fill=(58, 0, 0))
-    draw.text((480, 535), "बड़ी खबरें", fill=(255, 242, 0), font=f_baloo_word, stroke_width=7, stroke_fill=(58, 0, 0))
+    # Giant 3D Golden text with Baloo 2 font centered (Shifted safely left for YouTube duration badge)
+    draw.text((215, 525), bottom_number, fill=(255, 242, 0), font=f_baloo_num, stroke_width=8, stroke_fill=(58, 0, 0))
+    draw.text((450, 535), "बड़ी खबरें", fill=(255, 242, 0), font=f_baloo_word, stroke_width=7, stroke_fill=(58, 0, 0))
 
     os.makedirs(os.path.dirname(os.path.abspath(out_path)), exist_ok=True)
     canvas.save(out_path, "JPEG", quality=95)

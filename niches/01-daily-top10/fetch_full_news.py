@@ -112,8 +112,29 @@ INDIAN_ANCHORS = [
 ]
 
 
+# 🚫 बोरिंग पीआर/मेला/भाषण/रैली किल-लिस्ट (100% निषिद्ध ताकि थंबनेल और वीडियो का कंटेंट 100% मैच करे)
+BORING_NEWS_BLOCKLIST = [
+    "मेला", "व्यापार मेला", "उद्घाटन", "शिलान्यास", "रैली", "जनसभा",
+    "संबोधन", "संबोधित", "बैठक", "समीक्षा बैठक", "दौरा", "प्रदर्शनी",
+    "समारोह", "जयंती", "पुण्यतिथि", "बधाई", "शुभकामनाएं", "सम्मेलन",
+    "महोत्सव", "कार्यशाला", "सेमिनार", "ज्ञापन", "धरना प्रदर्शन", "प्रेस वार्ता",
+    "शपथ ग्रहण", "लोकार्पण", "रोड शो", "प्रचार", "पदयात्रा", "स्वागत",
+    "प्रतियोगिता", "पुरस्कार", "मेडल", "खेलकूद", "क्रिकेट", "मैच", "आईपीएल"
+]
+
+
+def is_boring_pr_news(title: str, text: str = "") -> bool:
+    """प्रेस रिलीज़, उद्घाटन, मेला, भाषण, और खेलकूद जैसी बोरिंग खबरों को 100% रिजेक्ट करना"""
+    sample = f"{title} {text[:400]}".lower()
+    return any(b in sample for b in BORING_NEWS_BLOCKLIST)
+
+
 def is_strictly_indian_news(title: str, text: str = "") -> bool:
     """100% केवल भारत की घटनाएं सुनिश्चित करना (विदेशी अपराध/हादसे पूर्णतः वर्जित)"""
+    # 0. बोरिंग पीआर/मेला/भाषण को तुरंत रिजेक्ट करें
+    if is_boring_pr_news(title, text):
+        return False
+
     t_low = (title or "").lower()
     full_sample = f"{title} {text[:600]}".lower()
 
@@ -132,87 +153,80 @@ def is_strictly_indian_news(title: str, text: str = "") -> bool:
     return True
 
 
-# 7 मुख्य पिलर्स और शीर्ष भारतीय न्यूज़ सोर्सेस (100% भारतीय समाचार: एबीपी, जागरण, दैनिक भास्कर, ज़ी न्यूज़, गूगल भारत)
-# बीबीसी को विदेशी खबरों के कारण हटा दिया गया है
+# 7 मुख्य हाई-वोल्टेज एक्शन पिलर्स (थंबनेल से 100% मैच: क्राइम, एनकाउंटर, ED रेड, बुलडोजर, साइबर ठगी, कोर्ट व हादसे)
 MASTER_7_PILLARS = [
     {
-        "id": "crime",
-        "name": "🔥 क्राइम, एनकाउंटर & माफिया",
+        "id": "crime_encounter",
+        "name": "🚨 पुलिस एनकाउंटर & माफिया एक्शन",
         "feeds": [
+            ("गूगल न्यूज़ भारत एनकाउंटर", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%8F%E0%A4%A8%E0%A4%95%E0%A4%BE%E0%A4%87%E0%A4%82%E0%A4%9F%E0%A4%B0+OR+%E0%A4%AE%E0%A5%81%E0%A4%A0%E0%A4%AD%E0%A5%87%E0%A4%A1%E0%A4%BC+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
             ("एबीपी न्यूज़ क्राइम", "https://www.abplive.com/crime/feed"),
             ("गूगल न्यूज़ भारत क्राइम", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%95%E0%A5%8D%E0%A4%B0%E0%A4%BE%E0%A4%87%E0%A4%AE+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
-            ("गूगल न्यूज़ भारत पुलिस", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%AA%E0%A5%81%E0%A4%B2%E0%A4%BF%E0%A4%B8+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
-            ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
-            ("एबीपी न्यूज़", "https://www.abplive.com/home/feed")
+            ("गूगल न्यूज़ भारत पुलिस एक्शन", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%AA%E0%A5%81%E0%A4%B2%E0%A4%BF%E0%A4%B8+%E0%A4%97%E0%A4%BF%E0%A4%B0%E0%A4%AB%E0%A5%8D%E0%A4%A4%E0%A4%BE%E0%A4%B0+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("दैनिक जागरण राज्य", "https://rss.jagran.com/rss/news/state.xml")
         ],
-        "keywords": ["हत्या", "मर्डर", "एनकाउंटर", "गोलीबारी", "गैंगस्टर", "गिरफ्तार", "शूटर", "वारदात", "चोरी", "लूट", "हमला", "चाकू", "बदमाश", "पुलिस", "अपहरण", "लाश", "शव", "क्राइम", "बंदी"]
+        "keywords": ["एनकाउंटर", "मुठभेड़", "गैंगस्टर", "माफिया", "गोलीबारी", "हत्या", "मर्डर", "शूटर", "वारदात", "गिरफ्तार", "दबोचा", "अपराधियों", "हमला", "चाकू", "बदमाश", "एसटीएफ", "stf", "पुलिस", "अपहरण", "लाश", "शव", "क्राइम"]
     },
     {
-        "id": "crisis",
-        "name": "⚠️ हादसे, आपदाएं & जन-समस्याएं",
+        "id": "ed_cbi_raid",
+        "name": "⚡ ED, CBI व विजिलेंस की ताबड़तोड़ रेड",
         "feeds": [
-            ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
-            ("एबीपी न्यूज़ राज्य", "https://www.abplive.com/states/feed"),
-            ("गूगल न्यूज़ भारत", "https://news.google.com/rss/headlines/section/topic/NATION?hl=hi&gl=IN&ceid=IN:hi"),
-            ("गूगल न्यूज़ भारत हादसा", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%B9%E0%A4%BE%E0%A4%A6%E0%A4%B8%E0%A4%BE+when:12h&hl=hi&gl=IN&ceid=IN:hi")
+            ("गूगल न्यूज़ ईडी रेड", "https://news.google.com/rss/search?q=%E0%A4%88%E0%A4%A1%E0%A5%80+%E0%A4%9B%E0%A4%BE%E0%A4%AA%E0%A5%87%E0%A4%AE%E0%A4%BE%E0%A4%B0%E0%A5%80+OR+%E0%A4%B0%E0%A5%87%E0%A4%A1+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ सीबीआई विजिलेंस", "https://news.google.com/rss/search?q=CBI+OR+%E0%A4%B5%E0%A4%BF%E0%A4%9C%E0%A4%BF%E0%A4%B2%E0%A5%87%E0%A4%82%E0%A4%B8+%E0%A4%9B%E0%A4%BE%E0%A4%AA%E0%A4%BE+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ सट्टा सिंडिकेट", "https://news.google.com/rss/search?q=%E0%A4%B8%E0%A4%9F%E0%A5%8D%E0%A4%9F%E0%A4%BE+OR+%E0%A4%97%E0%A4%BF%E0%A4%B0%E0%A4%AB%E0%A5%8D%E0%A4%A4%E0%A4%BE%E0%A4%B0+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("एबीपी न्यूज़ क्राइम", "https://www.abplive.com/crime/feed")
         ],
-        "keywords": ["हादसा", "चक्रवात", "बारिश", "ट्रेन", "आंधी", "अलर्ट", "स्कूल", "राहत", "तूफान", "जाम", "परेशान", "टक्कर", "आग", "सिलेंडर", "बिजली", "सड़क", "घायल", "अस्पताल", "धमाका"]
+        "keywords": ["ईडी", "ed", "सीबीआई", "cbi", "विजिलेंस", "छापा", "छापेमारी", "रेड", "घूस", "रिश्वत", "रंगे हाथ", "ट्रैप", "सट्टा", "महादेव", "बरामद", "करोड़ों", "काला धन", "सीज", "घोटाला"]
     },
     {
-        "id": "court",
-        "name": "⚖️ कोर्ट-कचहरी & सुप्रीम कोर्ट फैसले",
+        "id": "bulldozer_action",
+        "name": "🚜 बुलडोजर एक्शन & प्रशासन की बड़ी कार्रवाई",
         "feeds": [
-            ("गूगल न्यूज़ सुप्रीम कोर्ट", "https://news.google.com/rss/search?q=%E0%A4%B8%E0%A5%81%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A5%80%E0%A4%AE+%E0%A4%95%E0%A5%8B%E0%A4%B0%E0%A5%8D%E0%A4%9F+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
-            ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
-            ("एबीपी न्यूज़ भारत", "https://www.abplive.com/news/india/feed"),
-            ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml"),
-            ("गूगल न्यूज़ भारत", "https://news.google.com/rss/headlines/section/topic/NATION?hl=hi&gl=IN&ceid=IN:hi")
+            ("गूगल न्यूज़ बुलडोजर कार्रवाई", "https://news.google.com/rss/search?q=%E0%A4%AC%E0%A5%81%E0%A4%B2%E0%A4%A1%E0%A5%8B%E0%A4%9C%E0%A4%B0+OR+%E0%A4%95%E0%A5%81%E0%A4%B0%E0%A5%8D%E0%A4%95%E0%A5%80+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ प्रशासन कार्रवाई", "https://news.google.com/rss/search?q=%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A4%B6%E0%A4%BE%E0%A4%B8%E0%A4%A8+%E0%A4%95%E0%A4%BE%E0%A4%B0%E0%A5%8D%E0%A4%B0%E0%A4%B5%E0%A4%BE%E0%A4%88+OR+%E0%A4%B8%E0%A5%80%E0%A4%B2+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("दैनिक जागरण राज्य", "https://rss.jagran.com/rss/news/state.xml")
         ],
-        "keywords": ["सुप्रीम कोर्ट", "हाई कोर्ट", "अदालत", "फैसला", "याचिका", "फटकार", "जमानत", "सजा", "वकील", "आदेश", "एससी", "सीजेआई", "कोर्ट", "सुनवाई", "जज", "निर्देश", "दोषी"]
+        "keywords": ["बुलडोजर", "कार्रवाई", "ध्वस्त", "अवैध कब्जा", "कुर्क", "कुर्की", "सीज", "निलंबित", "सस्पेंड", "सील", "प्रशासन", "दबिश", "कार्रवाई शुरू", "मकान गिराया", "अतिक्रमण"]
     },
     {
-        "id": "security",
-        "name": "🕵️‍♂️ राष्ट्रीय सुरक्षा, खुफिया रेड & ऑपरेशंस",
+        "id": "cyber_fraud",
+        "name": "💻 साइबर क्राइम, बैंक फ्रॉड & पेपर लीक माफिया",
         "feeds": [
-            ("गूगल न्यूज़ भारत सुरक्षा", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%B8%E0%A5%81%E0%A4%B0%E0%A4%95%E0%A5%8D%E0%A4%B7%E0%A4%BE+OR+%E0%A4%8F%E0%A4%A8%E0%A4%86%E0%A4%88%E0%A4%8F+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
-            ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
-            ("एबीपी न्यूज़ भारत", "https://www.abplive.com/news/india/feed"),
-            ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml")
+            ("गूगल न्यूज़ साइबर ठगी फ्रॉड", "https://news.google.com/rss/search?q=%E0%A4%B8%E0%A4%BE%E0%A4%87%E0%A4%AC%E0%A4%B0+%E0%A4%A0%E0%A4%97%E0%A5%80+OR+%E0%A4%A1%E0%A4%BF%E0%A4%9C%E0%A4%BF%E0%A4%9F%E0%A4%B2+%E0%A4%85%E0%A4%B0%E0%A5%87%E0%A4%B8%E0%A5%8D%E0%A4%9F+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ पेपर लीक सॉल्व गैंग", "https://news.google.com/rss/search?q=%E0%A4%AA%E0%A5%87%E0%A4%AA%E0%A4%B0+%E0%A4%B2%E0%A5%80%E0%A4%95+OR+%E0%A4%B8%E0%A5%89%E0%A4%B2%E0%A5%8D%E0%A4%B5%E0%A4%B0+%E0%A4%97%E0%A5%88%E0%A4%82%E0%A4%97+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("एबीपी न्यूज़ क्राइम", "https://www.abplive.com/crime/feed")
         ],
-        "keywords": ["सुरक्षा", "सेना", "आतंकी", "छापा", "बॉर्डर", "ऑपरेशन", "जवान", "हमला", "हथियार", "कब्जा", "एनआईए", "सीबीआई", "जासूसी", "मुठभेड़", "सैनिक", "कमांडो", "घुसपैठ", "खुफिया"]
+        "keywords": ["साइबर", "डिजिटल अरेस्ट", "फ्रॉड", "ठगी", "पेपर लीक", "सॉल्वर", "फर्जी", "बैंक फ्रॉड", "खाते सीज", "कॉल सेंटर", "ऑनलाइन ठगी", "पर्दाफाश", "धोखाधड़ी", "हैक"]
     },
     {
-        "id": "corruption",
-        "name": "⚡ भ्रष्टाचार, घूसखोरी ट्रैप & खुलासे",
+        "id": "court_verdicts",
+        "name": "⚖️ सुप्रीम कोर्ट & हाई कोर्ट के सख्त आदेश",
         "feeds": [
-            ("गूगल न्यूज़ भारत भ्रष्टाचार", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%AD%E0%A5%8D%E0%A4%B0%E0%A4%B7%E0%A5%8D%E0%A4%9F%E0%A4%BE%E0%A4%9A%E0%A4%BE%E0%A4%B0+OR+%E0%A4%88%E0%A4%A1%E0%A5%80+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
-            ("एबीपी न्यूज़ क्राइम", "https://www.abplive.com/crime/feed"),
-            ("दैनिक जागरण राज्य", "https://rss.jagran.com/rss/news/state.xml"),
-            ("एबीपी न्यूज़", "https://www.abplive.com/home/feed")
-        ],
-        "keywords": ["घूस", "रिश्वत", "विजिलेंस", "घोटाला", "गड़बड़ी", "भ्रष्टाचार", "पर्दाफाश", "रंगे हाथ", "ट्रैप", "ईडी", "आय से अधिक", "फर्जी", "धोखाधड़ी", "सीज", "छापेमारी", "करोड़ों"]
-    },
-    {
-        "id": "politics",
-        "name": "💥 राजनीतिक घमासान, बयान & बवाल",
-        "feeds": [
-            ("एबीपी न्यूज़ भारत", "https://www.abplive.com/news/india/feed"),
-            ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml"),
-            ("गूगल न्यूज़ भारत", "https://news.google.com/rss/headlines/section/topic/NATION?hl=hi&gl=IN&ceid=IN:hi"),
-            ("ज़ी न्यूज़ हिंदी", "https://zeenews.india.com/hindi/india.xml")
-        ],
-        "keywords": ["बयान", "विवाद", "हंगामा", "विपक्ष", "सरकार", "राहुल", "मोदी", "प्रदर्शन", "नोटिस", "विरोध", "चुनौती", "चुनाव", "मंत्री", "इस्तीफा", "तकरार", "संसद", "नेता", "पार्टी", "चैलेंज"]
-    },
-    {
-        "id": "mystery",
-        "name": "🛸 रहस्यमयी घटनाएं & कुदरती अजूबे",
-        "feeds": [
-            ("गूगल न्यूज़ भारत अनोखा", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%85%E0%A4%A8%E0%A5%8B%E0%A4%96%E0%A4%BE+OR+%E0%A4%85%E0%A4%9C%E0%A5%80%E0%A4%AC+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
-            ("दैनिक जागरण राज्य", "https://rss.jagran.com/rss/news/state.xml"),
-            ("एबीपी न्यूज़ राज्य", "https://www.abplive.com/states/feed"),
+            ("गूगल न्यूज़ सुप्रीम कोर्ट फटकार", "https://news.google.com/rss/search?q=%E0%A4%B8%E0%A5%81%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A5%80%E0%A4%AE+%E0%A4%95%E0%A5%8B%E0%A4%B0%E0%A5%8D%E0%A4%9F+OR+%E0%A4%B9%E0%A4%BE%E0%A4%88+%E0%A4%95%E0%A5%8B%E0%A4%B0%E0%A5%8D%E0%A4%9F+%E0%A4%AB%E0%A4%9F%E0%A4%95%E0%A4%BE%E0%A4%B0+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ अदालत सजा फैसला", "https://news.google.com/rss/search?q=%E0%A4%95%E0%A5%8B%E0%A4%B0%E0%A5%8D%E0%A4%9F+%E0%A4%B8%E0%A4%9C%E0%A4%BE+OR+%E0%A4%9C%E0%A4%AE%E0%A4%BE%E0%A4%A8%E0%A4%A4+%E0%A4%96%E0%A4%BE%E0%A4%B0%E0%A4%BF%E0%A4%9C+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
             ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml")
         ],
-        "keywords": ["अनोखा", "रहस्य", "अजीब", "चमत्कार", "खुदाई", "अद्भुत", "हैरान", "पंडाल", "प्राचीन", "अजूबा", "दुर्लभ", "रहस्यमयी", "चौंकाने", "विचित्र", "खजाना", "मंदिर", "गुफा", "अनोखी"]
+        "keywords": ["सुप्रीम कोर्ट", "हाई कोर्ट", "कड़ी फटकार", "जमानत खारिज", "सजा", "आदेश", "सीजेआई", "कोर्ट", "जज", "निर्देश", "दोषी करार", "सख्त रुख", "याचिका खारिज", "फैसला सुनाया"]
+    },
+    {
+        "id": "disaster_alerts",
+        "name": "⚠️ बड़े हादसे, आगजनी & कुदरती आपदा अलर्ट",
+        "feeds": [
+            ("गूगल न्यूज़ भारत बड़ा हादसा", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%B9%E0%A4%BE%E0%A4%A6%E0%A4%B8%E0%A4%BE+OR+%E0%A4%AD%E0%A5%80%E0%A4%B7%E0%A4%A3+%E0%A4%86%E0%A4%97+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ आपदा अलर्ट", "https://news.google.com/rss/search?q=%E0%A4%B0%E0%A5%87%E0%A4%A1+%E0%A4%85%E0%A4%B2%E0%A4%B0%E0%A5%8D%E0%A4%9F+OR+%E0%A4%B0%E0%A5%87%E0%A4%B8%E0%A5%8D%E0%A4%95%E0%A5%8D%E0%A4%AF%E0%A5%82+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("एबीपी न्यूज़ राज्य", "https://www.abplive.com/states/feed")
+        ],
+        "keywords": ["हादसा", "टक्कर", "भीषण आग", "आगजनी", "ब्लास्ट", "धमाका", "सिलेंडर", "ट्रेन", "रेड अलर्ट", "चक्रवात", "तूफान", "बाढ़", "रेस्क्यू", "अस्पताल", "घायल", "मौत"]
+    },
+    {
+        "id": "security_intel",
+        "name": "🛡️ सीमा सुरक्षा, आतंकी साजिश & खुफिया ऑपरेशन",
+        "feeds": [
+            ("गूगल न्यूज़ सीमा सुरक्षा आतंकी", "https://news.google.com/rss/search?q=%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4+%E0%A4%86%E0%A4%A4%E0%A4%82%E0%A4%95%E0%A5%80+OR+%E0%A4%98%E0%A5%81%E0%A4%B8%E0%A4%AA%E0%A5%88%E0%A4%A0+OR+%E0%A4%96%E0%A5%81%E0%A4%AB%E0%A4%BF%E0%A4%AF%E0%A4%BE+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("गूगल न्यूज़ एटीएस ऑपरेशन", "https://news.google.com/rss/search?q=ATS+OR+%E0%A4%B9%E0%A4%A5%E0%A4%BF%E0%A4%AF%E0%A4%BE%E0%A4%B0+%E0%A4%A4%E0%A4%B8%E0%A5%8D%E0%A4%95%E0%A4%B0%E0%A5%80+when:12h&hl=hi&gl=IN&ceid=IN:hi"),
+            ("दैनिक जागरण राष्ट्रीय", "https://rss.jagran.com/rss/news/national.xml")
+        ],
+        "keywords": ["बॉर्डर", "आतंकी", "साजिश", "खुफिया", "ऑपरेशन", "मुठभेड़", "घुसपैठ", "हथियार", "तस्करी", "एटीएस", "ats", "एनआईए", "nia", "जवान", "सेना", "सैनिक", "कमांडो", "गिरफ्तार"]
     }
 ]
 
@@ -959,6 +973,27 @@ def fetch_master_bulletin(target_count: int = 10) -> list:
                             "full_text": ft
                         })
                         print(f"   ✅ [फॉलबैक खबर] {t[:60]}... ({wc} शब्द | {real_pub})", flush=True)
+
+    # -------------------------------------------------------------
+    # 🎯 स्टोरी #01 प्रायोरिटी हुक: सुनिश्चित करना कि पहली खबर हमेशा एनकाउंटर/क्राइम या ED रेड की हो
+    # -------------------------------------------------------------
+    top_lead_index = None
+    for idx, st in enumerate(verified_stories):
+        p_id = st.get("pillar_id", "")
+        if p_id in ["crime_encounter", "ed_cbi_raid"]:
+            top_lead_index = idx
+            break
+
+    if top_lead_index is None:
+        for idx, st in enumerate(verified_stories):
+            if st.get("pillar_id", "") in ["bulldozer_action", "cyber_fraud"]:
+                top_lead_index = idx
+                break
+
+    if top_lead_index is not None and top_lead_index > 0:
+        lead_story = verified_stories.pop(top_lead_index)
+        verified_stories.insert(0, lead_story)
+        print(f"\n⚡ [Story #01 Priority Hook] '{lead_story['title'][:60]}...' ({lead_story['pillar_name']}) को मुख्य लीड स्टोरी बनाया गया!", flush=True)
 
     final_stories = verified_stories[:target_count]
 
