@@ -337,7 +337,7 @@ def build_master_description(
     zone4 = (
         "चैनल एवं संपर्क विवरण:\n"
         f"• चैनल: {channel_name}\n"
-        "• यूट्यूब हैंडल: @UncutBharat\n"
+        "• यूट्यूब हैंडल: @UNCUT-भारत\n"
         "• ईमेल संपर्क: 9329238475x@gmail.com\n\n"
     )
 

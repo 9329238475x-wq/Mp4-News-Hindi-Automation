@@ -51,6 +51,15 @@ api.authenticate()
 kernel_slug = "mp4-news-hindi-omnivoice-pipeline"
 kernel_id = f"{kaggle_user}/{kernel_slug}"
 
+# Write bulletin configuration for Kaggle pipeline (Default: 50 stories)
+story_number = os.environ.get("STORY_NUMBER", "50")
+force_refresh = os.environ.get("FORCE_REFRESH_NEWS", "false").lower() in ["true", "1", "yes"]
+
+config_path = ROOT / "bulletin_config.json"
+with open(config_path, "w", encoding="utf-8") as f:
+    json.dump({"story_count": story_number, "force_refresh": force_refresh}, f, indent=2)
+print(f"✓ Configured broadcast bulletin: {story_number} stories (Config file ready)", flush=True)
+
 print(f"🚀 Deploying kernel to Kaggle ({kernel_id})...", flush=True)
 push_res = None
 for push_attempt in range(1, 6):
