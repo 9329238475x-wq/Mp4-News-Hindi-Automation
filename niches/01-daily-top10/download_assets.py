@@ -12,6 +12,7 @@ DLS News Visual Asset Downloader (100% Automated Autopilot Engine)
 
 import os
 import sys
+import shutil
 import json
 import time
 import re
@@ -746,12 +747,18 @@ def fetch_10_to_15_images_for_story(story: dict, target_count: int = None) -> li
 
     for c_idx, c in enumerate(chunks):
         c_kws = list(c.get("image_keywords_en", []))
-        if not c_kws:
-            story_kws = story.get("visual_keywords_en") or story.get("visual_keywords") or []
-            c_kws = story_kws[c_idx*3 : (c_idx+1)*3] if story_kws else ["India news press coverage", "official press conference", "administrative headquarters"]
+        story_kws = story.get("visual_keywords_en") or story.get("visual_keywords") or []
+        if not c_kws and story_kws:
+            c_kws = [story_kws[(c_idx * 3 + i) % len(story_kws)] for i in range(3)]
+        elif not c_kws:
+            raw_title = story.get("screen_headline") or story.get("title") or "India Breaking News"
+            clean_t = re.sub(r"[^\w\s]", " ", raw_title).strip()
+            w = clean_t.split()[:5]
+            base_t = " ".join(w) if w else "India news"
+            c_kws = [f"{base_t} live update", f"{base_t} investigation", f"{base_t} scene"]
 
         while len(c_kws) < 3:
-            c_kws.append(f"{c_kws[-1]} scene" if c_kws else "India national news coverage")
+            c_kws.append(f"{c_kws[-1]} report" if c_kws else "India breaking news")
 
         # यदि इस चंक में स्क्रैप्ड असली फोटो स्लॉट 1 पर लगेगी, तो इसे केवल 2 DDGS फोटो चाहिए।
         # यदि कोई स्क्रैप्ड फोटो नहीं है, तो इसे पूरे 3 DDGS फोटो चाहिए।

@@ -79,8 +79,8 @@ print("\n🎉 KERNEL TRIGGERED ON KAGGLE!", flush=True)
 print(f"🔗 Live Progress: https://www.kaggle.com/code/{kernel_id}", flush=True)
 print("\n⏳ Monitoring execution status...", flush=True)
 
-# Poll until completion
-max_wait = 2400  # 40 minutes max
+# Poll until completion (70 minutes safe wait for 25-story full TV bulletin)
+max_wait = 4200
 start_time = time.time()
 last_status = ""
 

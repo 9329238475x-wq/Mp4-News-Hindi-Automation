@@ -23,7 +23,7 @@ load_dotenv()
 
 class GroqEngine:
     def __init__(self, model: str = None):
-        self.model = model or os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+        self.model = model or os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
         self.keys = []
         self.current_key_index = 0
 
@@ -64,7 +64,7 @@ class GroqEngine:
             raise ValueError("कोई Groq API Key उपलब्ध नहीं है।")
 
         attempts = 0
-        max_attempts = min(len(self.keys) * 2, 6)
+        max_attempts = max(len(self.keys) * 4, 20)
 
         while attempts < max_attempts:
             key_idx, key = self._get_active_key()
@@ -75,7 +75,7 @@ class GroqEngine:
             payload = {
                 "model": self.model,
                 "messages": [
-                    {"role": "system", "content": system_prompt + "\nCRITICAL: Keep internal reasoning brief (under 30 words) and immediately output the valid JSON."},
+                    {"role": "system", "content": system_prompt + "\nCRITICAL: Output strictly a single valid JSON object. No preamble, no postamble."},
                     {"role": "user", "content": user_prompt}
                 ],
                 "temperature": temperature,
@@ -92,8 +92,25 @@ class GroqEngine:
 
                 # 429 = Rate Limit, 401 = Invalid Key
                 if resp.status_code in (429, 401):
-                    print(f"⚠️ Groq Key #{key_idx + 1} पर स्टेटस {resp.status_code} मिला, अगली Key पर स्विच...", flush=True)
-                    time.sleep(0.5)
+                    cooldown = 1.0
+                    try:
+                        err_msg = resp.json().get("error", {}).get("message", "")
+                        match_t = re.search(r"try again in ([\d\.]+)s", err_msg)
+                        if match_t:
+                            cooldown = min(float(match_t.group(1)), 5.0)
+                    except Exception:
+                        pass
+                    if "retry-after" in resp.headers:
+                        try:
+                            cooldown = min(float(resp.headers["retry-after"]), 5.0)
+                        except Exception:
+                            pass
+                    # If whole round of keys completed, add extra breathing room
+                    if attempts > 0 and (attempts % len(self.keys) == 0):
+                        cooldown = max(cooldown, 2.5)
+
+                    print(f"⚠️ Groq Key #{key_idx + 1} पर स्टेटस {resp.status_code} मिला, {cooldown:.1f}s इंतज़ार के बाद अगली Key...", flush=True)
+                    time.sleep(cooldown)
                     attempts += 1
                     continue
 
@@ -103,19 +120,20 @@ class GroqEngine:
                 data = resp.json()
                 raw_text = data["choices"][0]["message"]["content"].strip()
 
-                # Robust JSON extractor (चाहे बैकग्राउंड टेक्स्ट हो या मार्कडाउन बैकटिक)
+                # Robust JSON parser
                 parsed = None
-                json_match = re.search(r"(\{.*\}|\[.*\])", raw_text, re.DOTALL)
-                if json_match:
-                    try:
-                        parsed = json.loads(json_match.group(1))
-                    except json.JSONDecodeError:
-                        pass
-
-                if parsed is None:
-                    # फॉलबैक क्लीनिंग
-                    cleaned = re.sub(r"```(?:json)?", "", raw_text).strip()
-                    parsed = json.loads(cleaned)
+                try:
+                    parsed = json.loads(raw_text)
+                except Exception:
+                    json_match = re.search(r"(\{[\s\S]*\}|\[[\s\S]*\])", raw_text)
+                    if json_match:
+                        try:
+                            parsed = json.loads(json_match.group(1))
+                        except Exception:
+                            pass
+                    if parsed is None:
+                        cleaned = re.sub(r"```(?:json)?", "", raw_text).strip()
+                        parsed = json.loads(cleaned)
 
                 # हेडलाइन से किसी भी ** को हटाएँ
                 if isinstance(parsed, dict) and "stories" in parsed and isinstance(parsed["stories"], list):
@@ -127,10 +145,11 @@ class GroqEngine:
 
             except requests.RequestException as e:
                 print(f"❌ नेटवर्क नोटिस (Key #{key_idx + 1}): {e}, अगली Key पर स्विच...", flush=True)
-                time.sleep(0.5)
+                time.sleep(1.0)
                 attempts += 1
             except json.JSONDecodeError as e:
                 print(f"❌ JSON पार्सिंग त्रुटि: {e}", flush=True)
+                time.sleep(0.5)
                 attempts += 1
 
         raise RuntimeError("सभी Groq API Keys समाप्त हो गईं या कनेक्शन में समस्या है।")

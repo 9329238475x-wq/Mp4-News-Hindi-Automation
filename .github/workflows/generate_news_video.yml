@@ -1,6 +1,11 @@
 name: "🎬 Generate MP4 News Hindi Video (Kaggle GPU)"
 
 on:
+  schedule:
+    # 4:00 AM IST daily (22:30 UTC previous day) -> Targets 7:00 AM IST YouTube Publish
+    - cron: '30 22 * * *'
+    # 4:00 PM IST daily (10:30 UTC) -> Targets 7:00 PM IST YouTube Publish
+    - cron: '30 10 * * *'
   workflow_dispatch:
     inputs:
       story_number:
