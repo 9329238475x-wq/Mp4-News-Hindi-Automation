@@ -291,21 +291,25 @@ def publish_broadcast_to_youtube(
     print("🚀 [UNCUT भारत] INITIATING AUTOMATED YOUTUBE UPLOAD & PUBLISH")
     print("═" * 70)
 
-    # 1. Generate SEO Metadata Package
-    seo_pkg = generate_youtube_seo_package(all_stories=all_stories, bottom_number="50")
-    print(f"  ✓ SEO Package Ready: '{seo_pkg['title']}'")
-    print(f"  ✓ Video Upload Tags Box: KEPT EMPTY (as instructed)")
-    print(f"  ✓ Description: {seo_pkg['desc_length']} chars (Zero Emojis, Zero Timestamps)")
-
-    # 2. Authenticate
-    youtube = get_authenticated_youtube_service(client_secrets_file, token_file)
-
-    # 3. Schedule Mode Calculation (Exact 7:00 AM IST or 7:00 PM IST)
+    # 1. Schedule Mode & Target Slot Calculation (Exact 7:00 AM IST or 7:00 PM IST)
     publish_at = None
     schedule_display = ""
+    slot_str = ""
     if schedule_publish:
         publish_at, schedule_display = get_scheduled_publish_time()
         print(f"  ⏰ [YouTube Schedule Mode] Video will go PUBLIC at: {schedule_display} (UTC: {publish_at})")
+        slot_str = "सुबह" if "07:00 AM" in schedule_display else "शाम"
+    else:
+        slot_str = os.environ.get("NEWS_SLOT") or ("सुबह" if datetime.datetime.now(IST_TZ).hour < 12 else "शाम")
+
+    # 2. Generate SEO Metadata Package synced to Target Slot
+    seo_pkg = generate_youtube_seo_package(all_stories=all_stories, bottom_number="50", slot_str=slot_str)
+    print(f"  ✓ SEO Package Ready ({slot_str}): '{seo_pkg['title']}'")
+    print(f"  ✓ Video Upload Tags Box: KEPT EMPTY (as instructed)")
+    print(f"  ✓ Description: {seo_pkg['desc_length']} chars (Zero Emojis, Zero Timestamps)")
+
+    # 3. Authenticate
+    youtube = get_authenticated_youtube_service(client_secrets_file, token_file)
 
     # 4. Resumable Upload (tags box kept 100% empty)
     video_id = upload_video_resumable(
@@ -319,13 +323,13 @@ def publish_broadcast_to_youtube(
         publish_at=publish_at
     )
 
-    # 5. Attach Thumbnail (with automatic generation if missing)
+    # 5. Attach Thumbnail (with automatic generation if missing, synced to Target Slot)
     if not thumbnail_path or not os.path.exists(thumbnail_path):
-        print("  🖼️ [Auto-Thumbnail] Thumbnail missing, generating automatically right now...")
+        print(f"  🖼️ [Auto-Thumbnail] Thumbnail missing, generating automatically for slot '{slot_str}'...")
         try:
             from generate_thumbnail import auto_generate_master_thumbnail
             thumb_auto = os.path.join(os.path.dirname(video_path), "thumbnail_01.jpg")
-            thumbnail_path = auto_generate_master_thumbnail(out_path=thumb_auto, bottom_number="50")
+            thumbnail_path = auto_generate_master_thumbnail(out_path=thumb_auto, bottom_number="50", slot_str=slot_str)
             print(f"  ✓ Automatically generated master thumbnail: {thumbnail_path}")
         except Exception as e_th:
             print(f"  ⚠️ Could not auto-generate thumbnail: {e_th}")

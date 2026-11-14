@@ -216,16 +216,19 @@ if mp4_files:
         print("🖼️ Generating custom master thumbnail on-the-fly...", flush=True)
         try:
             sys.path.insert(0, str(ROOT / "niches" / "01-daily-top10"))
+            from youtube_uploader import get_scheduled_publish_time
+            _, sched_disp = get_scheduled_publish_time()
+            slot_str = "सुबह" if "07:00 AM" in sched_disp else "शाम"
             import generate_thumbnail as gt
             thumb_target = str(out_dir / "thumbnail_01.jpg")
             if hasattr(gt, "auto_generate_master_thumbnail"):
-                thumb_path = gt.auto_generate_master_thumbnail(out_path=thumb_target, bottom_number="50")
+                thumb_path = gt.auto_generate_master_thumbnail(out_path=thumb_target, bottom_number="50", slot_str=slot_str)
             elif hasattr(gt, "generate_sensational_thumbnail"):
-                thumb_path = gt.generate_sensational_thumbnail(out_path=thumb_target, all_stories=stories, bottom_number="50")
+                thumb_path = gt.generate_sensational_thumbnail(out_path=thumb_target, all_stories=stories, bottom_number="50", slot_str=slot_str)
             elif hasattr(gt, "generate_superfast_news_thumbnail"):
-                thumb_path = gt.generate_superfast_news_thumbnail(out_path=thumb_target, all_stories=stories, bottom_number="50")
+                thumb_path = gt.generate_superfast_news_thumbnail(out_path=thumb_target, all_stories=stories, bottom_number="50", slot_str=slot_str)
             if thumb_path and os.path.exists(thumb_path):
-                print(f"✓ Master thumbnail ready: {thumb_path}", flush=True)
+                print(f"✓ Master thumbnail ready ({slot_str}): {thumb_path}", flush=True)
         except Exception as _th_e:
             print(f"⚠️ Thumbnail generation fallback notice: {_th_e}", flush=True)
 

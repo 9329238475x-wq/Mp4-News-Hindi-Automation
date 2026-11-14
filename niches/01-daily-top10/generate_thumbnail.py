@@ -23,6 +23,7 @@ import shutil
 import tempfile
 import subprocess
 from datetime import datetime
+import datetime as dt_module
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
@@ -46,6 +47,21 @@ HINDI_MONTHS = [
     "", "जनवरी", "फ़रवरी", "मार्च", "अप्रैल", "मई", "जून",
     "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"
 ]
+
+IST_TZ = dt_module.timezone(dt_module.timedelta(hours=5, minutes=30))
+
+
+def get_ist_slot(now_dt=None) -> str:
+    """
+    Returns 'सुबह' if current IST hour < 12 else 'शाम'.
+    """
+    if now_dt is None:
+        now_dt = dt_module.datetime.now(IST_TZ)
+    elif now_dt.tzinfo is None:
+        now_dt = now_dt.replace(tzinfo=IST_TZ)
+    else:
+        now_dt = now_dt.astimezone(IST_TZ)
+    return "सुबह" if now_dt.hour < 12 else "शाम"
 
 
 def extract_thumbnail_hook_segments(
@@ -206,13 +222,15 @@ def build_dls_reference_html(
     year_str: str,
     white_strip_segments: list,
     cyan_pill_html: str = "",
-    bottom_number: str = "50"
+    bottom_number: str = "50",
+    slot_str: str = ""
 ) -> str:
     """
     Builds the pixel-perfect HTML/CSS layout:
     - [सुपरफास्ट न्यूज़ LIVE] with lowered LIVE pill
     - Baloo 2 for all Devanagari text
     - Poppins-Black for date digits and year pill
+    - Sleek Slot Badge: [सुबह] (#E65100 Orange) or [शाम] (#C80000 Crimson Red)
     - [मुख्य] placed JUST DIRECTLY ABOVE [समाचार] with unclipped 'ु' matra
     - White strip text enlarged (51px) to fill height with hard-news triggers
     - [क्राइम अलर्ट] badge on bottom-left
@@ -220,6 +238,10 @@ def build_dls_reference_html(
     """
     font_baloo_uri = Path(FONT_BALOO).resolve().as_uri()
     font_poppins_uri = Path(FONT_POPPINS).resolve().as_uri()
+
+    if not slot_str:
+        slot_str = get_ist_slot()
+    slot_class = "slot-morning" if slot_str == "सुबह" else "slot-evening"
 
     white_spans = []
     tot_white_chars = 0
@@ -463,6 +485,35 @@ def build_dls_reference_html(
     border: 2.5px solid #000000;
     box-shadow: 0 2px 6px rgba(0,0,0,0.25);
     font-family: 'PoppinsHeavy', sans-serif;
+  }
+
+  /* Sleek Slot Badge (सुबह: Orange #E65100 | शाम: Crimson Red #C80000) */
+  .slot-badge {
+    position: absolute;
+    top: 92px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1;
+    color: #ffffff;
+    padding: 3px 28px;
+    border-radius: 20px;
+    border: 2px solid #ffffff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+    text-shadow: 1.5px 1.5px 0 rgba(0,0,0,0.5);
+    white-space: nowrap;
+    font-family: 'BalooLocal', sans-serif;
+    letter-spacing: 0.5px;
+    z-index: 5;
+  }
+
+  .slot-morning {
+    background: linear-gradient(180deg, #ff6d00 0%, #e65100 100%);
+  }
+
+  .slot-evening {
+    background: linear-gradient(180deg, #e60000 0%, #c80000 100%);
   }
 
   /* MUKHYA: Absolute at bottom: 12px, sitting JUST ABOVE Samachar with ZERO matra clipping */
@@ -709,12 +760,13 @@ def build_dls_reference_html(
       <div class="month-name">__MONTH_STR__</div>
     </div>
 
-    <!-- Top-Right Day, Year & MUKHYA (Directly above Samachar) -->
+    <!-- Top-Right Day, Year, Slot Badge & MUKHYA (Directly above Samachar) -->
     <div class="top-right-box">
       <div class="day-and-year-row">
         <div class="day-name">__WEEKDAY_STR__</div>
         <div class="year-pill">__YEAR_STR__</div>
       </div>
+      <div class="slot-badge __SLOT_CLASS__">__SLOT_STR__</div>
       <div class="mukhya-top">मुख्य</div>
     </div>
   </div>
@@ -756,6 +808,8 @@ def build_dls_reference_html(
         .replace("__MONTH_STR__", month_str)
         .replace("__WEEKDAY_STR__", weekday_str)
         .replace("__YEAR_STR__", year_str)
+        .replace("__SLOT_STR__", slot_str)
+        .replace("__SLOT_CLASS__", slot_class)
         .replace("__CYAN_PILL_HTML__", cyan_pill_html)
         .replace("__CYAN_PILL_FONT_SIZE__", cyan_pill_font_size)
         .replace("__WHITE_STRIP_HTML__", white_strip_html)
@@ -773,9 +827,13 @@ def generate_dls_reference_pillow(
     bottom_number: str,
     out_path: str,
     cyan_pill_html: str = "",
-    is_crime_heavy: bool = False
+    is_crime_heavy: bool = False,
+    slot_str: str = ""
 ) -> str:
     """Pure Pillow Engine Fallback"""
+    if not slot_str:
+        slot_str = get_ist_slot()
+
     canvas = Image.new("RGB", (THUMB_W, THUMB_H), (255, 255, 255))
     draw = ImageDraw.Draw(canvas)
 
@@ -797,6 +855,7 @@ def generate_dls_reference_pillow(
     f_day = ImageFont.truetype(FONT_BALOO, 50) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
     f_live = ImageFont.truetype(FONT_POPPINS, 36) if os.path.exists(FONT_POPPINS) else ImageFont.load_default()
     f_year = ImageFont.truetype(FONT_POPPINS, 40) if os.path.exists(FONT_POPPINS) else ImageFont.load_default()
+    f_slot = ImageFont.truetype(FONT_BALOO, 36) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
     f_strip = ImageFont.truetype(FONT_BALOO, 46) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
     f_baloo_num = ImageFont.truetype(FONT_POPPINS, 170) if os.path.exists(FONT_POPPINS) else ImageFont.load_default()
     f_baloo_word = ImageFont.truetype(FONT_BALOO, 140) if os.path.exists(FONT_BALOO) else ImageFont.load_default()
@@ -810,10 +869,27 @@ def generate_dls_reference_pillow(
     draw.text((375, 25), day_num, fill=(229, 0, 0), font=f_huge_date, stroke_width=8, stroke_fill=(255, 230, 0))
     draw.text((630, 45), month_str, fill=(229, 0, 0), font=f_month, stroke_width=4, stroke_fill=(255, 255, 255))
 
-    # Top-Right Day, Year, Mukhya (Lifted to y=212 for zero clipping)
+    # Top-Right Day, Year, Slot Badge & Mukhya
     draw.text((1010, 20), weekday_str, fill=(0, 43, 73), font=f_day)
     draw.rounded_rectangle((1160, 24, 1260, 68), radius=6, fill=(255, 230, 0), outline=(0, 0, 0), width=2)
     draw.text((1175, 24), year_str, fill=(0, 0, 0), font=f_year)
+
+    # Slot Badge: सुबह (Orange #E65100) or शाम (Crimson Red #C80000)
+    slot_bg = (230, 81, 0) if slot_str == "सुबह" else (200, 0, 0)
+    s_bbox = draw.textbbox((0, 0), slot_str, font=f_slot)
+    s_w = s_bbox[2] - s_bbox[0]
+    s_h = s_bbox[3] - s_bbox[1]
+    badge_pad_x, badge_pad_y = 26, 4
+    badge_w = s_w + badge_pad_x * 2
+    badge_h = s_h + badge_pad_y * 2
+    badge_x1 = 1135 - badge_w // 2
+    badge_y1 = 100
+    badge_x2 = badge_x1 + badge_w
+    badge_y2 = badge_y1 + badge_h
+    draw.rounded_rectangle([badge_x1, badge_y1, badge_x2, badge_y2], radius=16, fill=slot_bg, outline=(255, 255, 255), width=2)
+    draw.text((badge_x1 + badge_pad_x, badge_y1 + badge_pad_y - 3), slot_str, fill=(255, 255, 255), font=f_slot, stroke_width=1, stroke_fill=(0, 0, 0))
+
+    # Mukhya (Lifted to y=212 for zero clipping)
     draw.text((1060, 212), "मुख्य", fill=(0, 68, 204), font=f_baloo, stroke_width=3, stroke_fill=(255, 255, 255))
 
     # 2. Middle Row: Cyan Pill + Samachar (Y: 305-405)
@@ -920,13 +996,15 @@ def generate_sensational_thumbnail(
     story: dict = None,
     all_stories: list = None,
     channel_name: str = "Uncut भारत",
-    bottom_number: str = "50"
+    bottom_number: str = "50",
+    slot_str: str = ""
 ) -> str:
     """
     Main Entrypoint: Generates the Master Superfast News YouTube Thumbnail
     100% matched to user's layout & typography specifications:
     - [सुपरफास्ट न्यूज़ LIVE] with lowered LIVE pill
     - Baloo 2 for all Hindi text
+    - Sleek Slot Badge: [सुबह] (#E65100 Orange) or [शाम] (#C80000 Crimson Red)
     - [मुख्य] sitting JUST DIRECTLY ABOVE [समाचार] with zero matra clipping
     - White strip text enlarged (51px) to fill height with hard-news triggers
     - [क्राइम अलर्ट] badge on bottom left
@@ -934,6 +1012,9 @@ def generate_sensational_thumbnail(
     - Dynamic Day, Date, Month & Year automatically computed from datetime.now()
     - Dynamic Cyan Pill and White Strip keywords from actual scraped stories
     """
+    if not slot_str:
+        slot_str = os.environ.get("NEWS_SLOT") or get_ist_slot()
+
     if not headline and all_stories:
         headline = all_stories[0].get("screen_headline") or all_stories[0].get("title") or "आज के मुख्य समाचार 50 बड़ी खबरें"
     if not headline:
@@ -968,7 +1049,8 @@ def generate_sensational_thumbnail(
                 year_str=year_str,
                 white_strip_segments=white_segments,
                 cyan_pill_html=cyan_pill_html,
-                bottom_number=bottom_number
+                bottom_number=bottom_number,
+                slot_str=slot_str
             )
             with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False, encoding="utf-8") as tf:
                 tf.write(html_content)
@@ -1012,7 +1094,8 @@ def generate_sensational_thumbnail(
         white_strip_segments=white_segments,
         bottom_number=bottom_number,
         out_path=out_path,
-        cyan_pill_html=cyan_pill_html
+        cyan_pill_html=cyan_pill_html,
+        slot_str=slot_str
     )
     print(f"  ✓ [Pillow Engine] Superfast News Master Thumbnail Ready: {out_path}")
     return out_path
@@ -1022,7 +1105,7 @@ def generate_sensational_thumbnail(
 generate_superfast_news_thumbnail = generate_sensational_thumbnail
 
 
-def auto_generate_master_thumbnail(out_path: str = "", bottom_number: str = "50") -> str:
+def auto_generate_master_thumbnail(out_path: str = "", bottom_number: str = "50", slot_str: str = "") -> str:
     """100% Fully Automated: Loads current bulletin stories and renders the master thumbnail"""
     stories = []
     candidates = [
@@ -1056,7 +1139,8 @@ def auto_generate_master_thumbnail(out_path: str = "", bottom_number: str = "50"
         out_path=out_path,
         all_stories=stories,
         story=stories[0] if stories else None,
-        bottom_number=bottom_number
+        bottom_number=bottom_number,
+        slot_str=slot_str
     )
 
     # Automatically replicate to story_01 and root out/ so every consumer finds it immediately
@@ -1085,7 +1169,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Uncut भारत Master Superfast YouTube Thumbnail Generator")
     parser.add_argument("--out", default="", help="Output thumbnail path")
     parser.add_argument("--number", default="50", help="Bottom big number (default 50)")
+    parser.add_argument("--slot", default="", help="News slot: 'सुबह' or 'शाम' (auto-detected if omitted)")
     args = parser.parse_args()
 
-    result = auto_generate_master_thumbnail(out_path=args.out, bottom_number=args.number)
+    result = auto_generate_master_thumbnail(out_path=args.out, bottom_number=args.number, slot_str=args.slot)
     print(f"✅ Master Thumbnail Ready: {result}")

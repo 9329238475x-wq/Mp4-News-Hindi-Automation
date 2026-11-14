@@ -16,6 +16,7 @@ import re
 import json
 import urllib.parse
 from datetime import datetime
+import datetime as dt_module
 from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
@@ -26,6 +27,21 @@ load_dotenv(PROJECT_ROOT / ".env")
 
 HINDI_MONTHS = ["", "जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"]
 HINDI_DAYS = ["सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार"]
+
+IST_TZ = dt_module.timezone(dt_module.timedelta(hours=5, minutes=30))
+
+
+def get_ist_slot(now_dt=None) -> str:
+    """
+    Returns 'सुबह' if current IST hour < 12 else 'शाम'.
+    """
+    if now_dt is None:
+        now_dt = dt_module.datetime.now(IST_TZ)
+    elif now_dt.tzinfo is None:
+        now_dt = now_dt.replace(tzinfo=IST_TZ)
+    else:
+        now_dt = now_dt.astimezone(IST_TZ)
+    return "सुबह" if now_dt.hour < 12 else "शाम"
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -191,15 +207,18 @@ def generate_vidiq_viral_tags(all_stories: list = None, max_chars: int = 495) ->
 # 2. HIGH-CLASS DYNAMIC TITLE GENERATOR (< 95 Chars, ZERO EMOJIS)
 # ═════════════════════════════════════════════════════════════════════════════
 
-def build_high_class_viral_title(all_stories: list = None, bottom_number: str = "50") -> str:
+def build_high_class_viral_title(all_stories: list = None, bottom_number: str = "50", slot_str: str = "") -> str:
     """
     Constructs an algorithmic, high-class, Prime-Time news title strictly according
     to the actual news stories of that run.
     STRICT RULES:
     1. Maximum 95 characters (well under YouTube 100 char limit).
     2. ZERO EMOJIS.
-    3. Incorporates exact date & today's top 2 breaking incidents.
+    3. Incorporates exact date, morning/evening slot (सुबह / शाम) & today's top 2 breaking incidents.
     """
+    if not slot_str:
+        slot_str = os.environ.get("NEWS_SLOT") or get_ist_slot()
+
     now = datetime.now()
     day = now.day
     month = HINDI_MONTHS[now.month] if 1 <= now.month <= 12 else "नवंबर"
@@ -236,7 +255,7 @@ def build_high_class_viral_title(all_stories: list = None, bottom_number: str = 
         engine = GroqEngine()
         if engine.keys:
             prompt = (
-                f"आज की तारीख: {day} {month} {year}\n"
+                f"आज की तारीख व स्लॉट: {day} {month} {year} ({slot_str})\n"
                 f"प्रमुख खबर 1: {entity1}\n"
                 f"प्रमुख खबर 2: {entity2}\n"
                 f"बुलेटिन: {bottom_number} बड़ी खबरें\n"
@@ -244,25 +263,26 @@ def build_high_class_viral_title(all_stories: list = None, bottom_number: str = 
                 "सख्त नियम:\n"
                 "1. कोई इमोजी नहीं (ZERO EMOJIS).\n"
                 "2. अधिकतम 92 अक्षर.\n"
-                "3. फॉर्मेट: Today Breaking News ! आज की तारीख | मुख्य खबर | 50 बड़ी खबरें.\n"
+                f"3. स्लॉट अनिवार्य: 'आज {day} {month} {slot_str} के मुख्य समाचार' शामिल हो.\n"
+                f"4. फॉर्मेट: Today Breaking News ! आज {day} {month} {slot_str} के मुख्य समाचार | मुख्य खबर | {bottom_number} बड़ी खबरें.\n"
                 "JSON format: {\"title\": \"...\"}"
             )
             res = engine.chat_json("You are a senior national TV news editor. Output clean JSON only.", prompt)
             ai_title = res.get("title", "").strip() if res else ""
             ai_title = clean_no_emojis(ai_title)
-            if ai_title and 40 <= len(ai_title) <= 95:
+            if ai_title and 40 <= len(ai_title) <= 95 and slot_str in ai_title:
                 return ai_title
     except Exception:
         pass
 
     # High-Class Algorithmic Template Fallback
-    # Pattern: Today Breaking News ! आज 13 नवंबर के मुख्य समाचार | महादेव सट्टा, UP एनकाउंटर | 50 बड़ी खबरें
-    title = f"Today Breaking News ! आज {day} {month} के मुख्य समाचार | {entity1}, {entity2} | {bottom_number} बड़ी खबरें"
+    # Pattern: Today Breaking News ! आज 14 नवंबर सुबह के मुख्य समाचार | महादेव सट्टा, UP एनकाउंटर | 50 बड़ी खबरें
+    title = f"Today Breaking News ! आज {day} {month} {slot_str} के मुख्य समाचार | {entity1}, {entity2} | {bottom_number} बड़ी खबरें"
 
     # Enforce strict character limits (< 95)
     title = clean_no_emojis(title)
     if len(title) > 95:
-        title = f"Today Breaking News ! {day} {month} के मुख्य समाचार | {entity1} | {bottom_number} बड़ी खबरें"
+        title = f"Today Breaking News ! {day} {month} {slot_str} के मुख्य समाचार | {entity1} | {bottom_number} बड़ी खबरें"
     if len(title) > 95:
         title = title[:92] + "..."
 
@@ -276,7 +296,8 @@ def build_high_class_viral_title(all_stories: list = None, bottom_number: str = 
 def build_master_description(
     all_stories: list = None,
     channel_name: str = "Uncut भारत",
-    bottom_number: str = "50"
+    bottom_number: str = "50",
+    slot_str: str = ""
 ) -> str:
     """
     Generates a structured, high-class broadcast description up to 5,000 characters:
@@ -287,6 +308,9 @@ def build_master_description(
     - Legal fair use journalism disclaimer.
     - Clean viral hashtags.
     """
+    if not slot_str:
+        slot_str = os.environ.get("NEWS_SLOT") or get_ist_slot()
+
     now = datetime.now()
     day = now.day
     month = HINDI_MONTHS[now.month] if 1 <= now.month <= 12 else "नवंबर"
@@ -297,7 +321,7 @@ def build_master_description(
 
     # ZONE 1: High-Class Opening Hook & Overview (NO EMOJIS, ZERO LINKS)
     zone1 = (
-        f"Today Breaking News - आज {day} {month} {year} ({weekday}) के दिनभर के सभी मुख्य समाचार और देश की {bottom_number} बड़ी खबरें।\n\n"
+        f"Today Breaking News - आज {day} {month} {year} ({weekday}) {slot_str} के दिनभर के सभी मुख्य समाचार और देश की {bottom_number} बड़ी खबरें।\n\n"
         f"इस विशेष बुलेटिन में देखिए क्राइम, प्रशासन की सख्त कार्रवाई, सुप्रीम कोर्ट के बड़े फैसले, "
         f"ED और CBI की छापेमारी, और सनसनीखेज मामलों की निष्पक्ष, तथ्यपरक और तेज रिपोर्टिंग सिर्फ {channel_name} पर।\n\n"
         f"ताज़ा खबरों के नियमित अपडेट्स के लिए {channel_name} चैनल को अभी सब्सक्राइब करें।\n\n"
@@ -396,16 +420,19 @@ def build_master_description(
 # 4. MASTER SEO PACKAGE BUNDLER
 # ═════════════════════════════════════════════════════════════════════════════
 
-def generate_youtube_seo_package(all_stories: list = None, bottom_number: str = "50") -> dict:
+def generate_youtube_seo_package(all_stories: list = None, bottom_number: str = "50", slot_str: str = "") -> dict:
     """
     Main entrypoint: Generates the full SEO metadata package for YouTube upload:
-    - title (< 95 chars, zero emojis, dynamic to actual news)
+    - title (< 95 chars, zero emojis, dynamic to actual news, with morning/evening slot)
     - description (<= 5,000 chars, zero emojis, zero timestamps)
     - tags (<= 500 chars, VidIQ-style live autocomplete + competitor tags, zero emojis)
     - categoryId ('25' = News & Politics)
     """
-    title = build_high_class_viral_title(all_stories=all_stories, bottom_number=bottom_number)
-    description = build_master_description(all_stories=all_stories, bottom_number=bottom_number)
+    if not slot_str:
+        slot_str = os.environ.get("NEWS_SLOT") or get_ist_slot()
+
+    title = build_high_class_viral_title(all_stories=all_stories, bottom_number=bottom_number, slot_str=slot_str)
+    description = build_master_description(all_stories=all_stories, bottom_number=bottom_number, slot_str=slot_str)
     tags = generate_vidiq_viral_tags(all_stories=all_stories, max_chars=495)
 
     return {
