@@ -321,7 +321,18 @@
       "out/story_01/news real image/context_img_1_05_02.jpg",
       "out/story_01/news real image/context_img_1_05_03.jpg"
     ],
-    "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / Dainik Hawk"
+    "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / Dainik Hawk",
+    "audio_duration": 29.57,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 887,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 887,
+      "total_story_seconds": 29.57
+    }
   },
   {
     "story_number": 2,
@@ -633,7 +644,18 @@
       "out/story_02/news real image/context_img_2_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / Dynamite News Hindi",
-    "thumbnail_path": "out/story_02/thumbnail_02.jpg"
+    "thumbnail_path": "out/story_02/thumbnail_02.jpg",
+    "audio_duration": 37.58,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1127,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1127,
+      "total_story_seconds": 37.58
+    }
   },
   {
     "story_number": 3,
@@ -945,7 +967,18 @@
       "out/story_03/news real image/context_img_3_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / Navbharat Live",
-    "thumbnail_path": "out/story_03/thumbnail_03.jpg"
+    "thumbnail_path": "out/story_03/thumbnail_03.jpg",
+    "audio_duration": 41.16,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1235,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1235,
+      "total_story_seconds": 41.16
+    }
   },
   {
     "story_number": 4,
@@ -1270,7 +1303,18 @@
       "out/story_04/news real image/context_img_4_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / दैनिक भास्कर",
-    "thumbnail_path": "out/story_04/thumbnail_04.jpg"
+    "thumbnail_path": "out/story_04/thumbnail_04.jpg",
+    "audio_duration": 41.74,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1252,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1252,
+      "total_story_seconds": 41.74
+    }
   },
   {
     "story_number": 5,
@@ -1570,7 +1614,18 @@
       "out/story_05/news real image/context_img_5_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / Satya Hindi",
-    "thumbnail_path": "out/story_05/thumbnail_05.jpg"
+    "thumbnail_path": "out/story_05/thumbnail_05.jpg",
+    "audio_duration": 48.5,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1455,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1455,
+      "total_story_seconds": 48.5
+    }
   },
   {
     "story_number": 6,
@@ -1882,7 +1937,18 @@
       "out/story_06/news real image/context_img_6_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / आज तक",
-    "thumbnail_path": "out/story_06/thumbnail_06.jpg"
+    "thumbnail_path": "out/story_06/thumbnail_06.jpg",
+    "audio_duration": 36.6,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1098,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1098,
+      "total_story_seconds": 36.6
+    }
   },
   {
     "story_number": 7,
@@ -2194,7 +2260,18 @@
       "out/story_07/news real image/context_img_7_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / दैनिक जागरण",
-    "thumbnail_path": "out/story_07/thumbnail_07.jpg"
+    "thumbnail_path": "out/story_07/thumbnail_07.jpg",
+    "audio_duration": 44.21,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1326,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1326,
+      "total_story_seconds": 44.21
+    }
   },
   {
     "story_number": 8,
@@ -2494,7 +2571,18 @@
       "out/story_08/news real image/context_img_8_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / IBC24",
-    "thumbnail_path": "out/story_08/thumbnail_08.jpg"
+    "thumbnail_path": "out/story_08/thumbnail_08.jpg",
+    "audio_duration": 35.52,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1066,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1066,
+      "total_story_seconds": 35.52
+    }
   },
   {
     "story_number": 9,
@@ -2806,7 +2894,18 @@
       "out/story_09/news real image/context_img_9_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / आज तक",
-    "thumbnail_path": "out/story_09/thumbnail_09.jpg"
+    "thumbnail_path": "out/story_09/thumbnail_09.jpg",
+    "audio_duration": 32.69,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 981,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 981,
+      "total_story_seconds": 32.69
+    }
   },
   {
     "story_number": 10,
@@ -3118,7 +3217,18 @@
       "out/story_10/news real image/context_img_10_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / दैनिक जागरण",
-    "thumbnail_path": "out/story_10/thumbnail_10.jpg"
+    "thumbnail_path": "out/story_10/thumbnail_10.jpg",
+    "audio_duration": 30.19,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 906,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 906,
+      "total_story_seconds": 30.19
+    }
   },
   {
     "story_number": 11,
@@ -3418,7 +3528,18 @@
       "out/story_11/news real image/context_img_11_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / Dainik Tribune",
-    "thumbnail_path": "out/story_11/thumbnail_11.jpg"
+    "thumbnail_path": "out/story_11/thumbnail_11.jpg",
+    "audio_duration": 36.48,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1094,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1094,
+      "total_story_seconds": 36.48
+    }
   },
   {
     "story_number": 12,
@@ -3728,7 +3849,18 @@
       "out/story_12/news real image/context_img_12_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / News18 हिंदी",
-    "thumbnail_path": "out/story_12/thumbnail_12.jpg"
+    "thumbnail_path": "out/story_12/thumbnail_12.jpg",
+    "audio_duration": 35.4,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1062,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1062,
+      "total_story_seconds": 35.4
+    }
   },
   {
     "story_number": 13,
@@ -4053,7 +4185,18 @@
       "out/story_13/news real image/context_img_13_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / दैनिक भास्कर",
-    "thumbnail_path": "out/story_13/thumbnail_13.jpg"
+    "thumbnail_path": "out/story_13/thumbnail_13.jpg",
+    "audio_duration": 40.87,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1226,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1226,
+      "total_story_seconds": 40.87
+    }
   },
   {
     "story_number": 14,
@@ -4378,7 +4521,18 @@
       "out/story_14/news real image/context_img_14_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / दैनिक भास्कर",
-    "thumbnail_path": "out/story_14/thumbnail_14.jpg"
+    "thumbnail_path": "out/story_14/thumbnail_14.jpg",
+    "audio_duration": 57.55,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1726,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1726,
+      "total_story_seconds": 57.55
+    }
   },
   {
     "story_number": 15,
@@ -4688,7 +4842,18 @@
       "out/story_15/news real image/context_img_15_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / दैनिक जागरण",
-    "thumbnail_path": "out/story_15/thumbnail_15.jpg"
+    "thumbnail_path": "out/story_15/thumbnail_15.jpg",
+    "audio_duration": 27.17,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 815,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 815,
+      "total_story_seconds": 27.17
+    }
   },
   {
     "story_number": 16,
@@ -5024,7 +5189,18 @@
       "out/story_16/news real image/context_img_16_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / India TV Hindi",
-    "thumbnail_path": "out/story_16/thumbnail_16.jpg"
+    "thumbnail_path": "out/story_16/thumbnail_16.jpg",
+    "audio_duration": 38.83,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1165,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1165,
+      "total_story_seconds": 38.83
+    }
   },
   {
     "story_number": 17,
@@ -5349,7 +5525,18 @@
       "out/story_17/news real image/context_img_17_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / आज तक",
-    "thumbnail_path": "out/story_17/thumbnail_17.jpg"
+    "thumbnail_path": "out/story_17/thumbnail_17.jpg",
+    "audio_duration": 38.3,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1149,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1149,
+      "total_story_seconds": 38.3
+    }
   },
   {
     "story_number": 18,
@@ -5674,7 +5861,18 @@
       "out/story_18/news real image/context_img_18_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / दैनिक भास्कर",
-    "thumbnail_path": "out/story_18/thumbnail_18.jpg"
+    "thumbnail_path": "out/story_18/thumbnail_18.jpg",
+    "audio_duration": 38.23,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1147,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1147,
+      "total_story_seconds": 38.23
+    }
   },
   {
     "story_number": 19,
@@ -5999,7 +6197,18 @@
       "out/story_19/news real image/context_img_19_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / Deshbandhu",
-    "thumbnail_path": "out/story_19/thumbnail_19.jpg"
+    "thumbnail_path": "out/story_19/thumbnail_19.jpg",
+    "audio_duration": 39.24,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1177,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1177,
+      "total_story_seconds": 39.24
+    }
   },
   {
     "story_number": 20,
@@ -6324,7 +6533,18 @@
       "out/story_20/news real image/context_img_20_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / Newstrack",
-    "thumbnail_path": "out/story_20/thumbnail_20.jpg"
+    "thumbnail_path": "out/story_20/thumbnail_20.jpg",
+    "audio_duration": 38.98,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1169,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1169,
+      "total_story_seconds": 38.98
+    }
   },
   {
     "story_number": 21,
@@ -6636,7 +6856,18 @@
       "out/story_21/news real image/context_img_21_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / The Follow Up",
-    "thumbnail_path": "out/story_21/thumbnail_21.jpg"
+    "thumbnail_path": "out/story_21/thumbnail_21.jpg",
+    "audio_duration": 43.63,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1309,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1309,
+      "total_story_seconds": 43.63
+    }
   },
   {
     "story_number": 22,
@@ -6961,7 +7192,18 @@
       "out/story_22/news real image/context_img_22_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / India TV Hindi",
-    "thumbnail_path": "out/story_22/thumbnail_22.jpg"
+    "thumbnail_path": "out/story_22/thumbnail_22.jpg",
+    "audio_duration": 33.77,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1013,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1013,
+      "total_story_seconds": 33.77
+    }
   },
   {
     "story_number": 23,
@@ -7273,7 +7515,18 @@
       "out/story_23/news real image/context_img_23_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / दैनिक जागरण",
-    "thumbnail_path": "out/story_23/thumbnail_23.jpg"
+    "thumbnail_path": "out/story_23/thumbnail_23.jpg",
+    "audio_duration": 34.8,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1044,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1044,
+      "total_story_seconds": 34.8
+    }
   },
   {
     "story_number": 24,
@@ -7597,7 +7850,18 @@
       "out/story_24/news real image/context_img_24_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / दैनिक भास्कर",
-    "thumbnail_path": "out/story_24/thumbnail_24.jpg"
+    "thumbnail_path": "out/story_24/thumbnail_24.jpg",
+    "audio_duration": 34.82,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1045,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1045,
+      "total_story_seconds": 34.82
+    }
   },
   {
     "story_number": 25,
@@ -7918,6 +8182,17 @@
       "out/story_25/news real image/context_img_25_05_03.jpg"
     ],
     "image_attribution_tag": "स्रोत: असली प्रेस कवरेज / दैनिक भास्कर",
-    "thumbnail_path": "out/story_25/thumbnail_25.jpg"
+    "thumbnail_path": "out/story_25/thumbnail_25.jpg",
+    "audio_duration": 40.1,
+    "timing_specs": {
+      "fps": 30,
+      "pre_padding_frames": 0,
+      "audio_start_frame": 0,
+      "audio_duration_frames": 1203,
+      "post_padding_frames": 0,
+      "transition_frames": 0,
+      "total_story_frames": 1203,
+      "total_story_seconds": 40.1
+    }
   }
 ]
