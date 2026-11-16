@@ -77,6 +77,16 @@ for push_attempt in range(1, 6):
 
 print("\n🎉 KERNEL TRIGGERED ON KAGGLE!", flush=True)
 print(f"🔗 Live Progress: https://www.kaggle.com/code/{kernel_id}", flush=True)
+
+# Trigger-only mode: GitHub Actions triggers Kaggle and exits; Kaggle runs autonomous render, YouTube upload and Gmail notification!
+if os.environ.get("GITHUB_ACTIONS") == "true" or "--trigger-only" in sys.argv or "--detach" in sys.argv or os.environ.get("TRIGGER_ONLY", "false").lower() in ["true", "1", "yes"]:
+    print("\n" + "=" * 65, flush=True)
+    print("🚀 [UNCUT भारत] KAGGLE GPU PIPELINE TRIGGERED (TRIGGER-ONLY MODE)!", flush=True)
+    print(f"🔗 Live Progress: https://www.kaggle.com/code/{kernel_id}", flush=True)
+    print("⚡ Kaggle GPU is now autonomously generating video, thumbnail,", flush=True)
+    print("   uploading directly to YouTube, and sending instant Gmail confirmation!", flush=True)
+    print("=" * 65 + "\n", flush=True)
+    sys.exit(0)
 print("\n⏳ Monitoring execution status...", flush=True)
 
 # Poll until completion (120 minutes safe wait for 25-story full TV bulletin)
