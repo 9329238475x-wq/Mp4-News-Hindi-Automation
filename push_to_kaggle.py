@@ -18,6 +18,16 @@ if hasattr(sys.stderr, "reconfigure"):
 
 ROOT = Path(__file__).resolve().parent
 
+# 0. Prevent duplicate triggers from GitHub schedule (User triggers via Cloudflare workflow_dispatch)
+event_name = os.environ.get("GITHUB_EVENT_NAME", "").lower()
+if event_name == "schedule":
+    print("\n" + "=" * 65, flush=True)
+    print("🛑 [CRON BLOCKED] GitHub Actions automatic schedule detected!", flush=True)
+    print("   User runs automation exclusively via Cloudflare (workflow_dispatch).", flush=True)
+    print("   Skipping Kaggle trigger to prevent duplicate runs and save credits!", flush=True)
+    print("=" * 65 + "\n", flush=True)
+    sys.exit(0)
+
 print("=" * 65, flush=True)
 print("🚀 [UNCUT भारत] KAGGLE HIGH-PERFORMANCE BROADCAST ENGINE TRIGGER", flush=True)
 print("=" * 65, flush=True)
