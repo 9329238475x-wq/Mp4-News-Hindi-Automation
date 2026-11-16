@@ -1,11 +1,6 @@
 name: "🎬 Generate MP4 News Hindi Video (Kaggle GPU)"
 
 on:
-  schedule:
-    # 4:00 AM IST daily (22:30 UTC previous day) -> Targets 7:00 AM IST YouTube Publish
-    - cron: '30 22 * * *'
-    # 4:00 PM IST daily (10:30 UTC) -> Targets 7:00 PM IST YouTube Publish
-    - cron: '30 10 * * *'
   workflow_dispatch:
     inputs:
       story_number:
@@ -60,18 +55,5 @@ jobs:
           DUBSTUDIO_TO_EMAIL: ${{ secrets.DUBSTUDIO_TO_EMAIL }}
           DUBSTUDIO_APP_PASS: ${{ secrets.DUBSTUDIO_APP_PASS }}
         run: |
-          python push_to_kaggle.py
-
-      - name: Upload Rendered Broadcast Video as Artifact
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: Mp4-News-Hindi-Rendered-Video
-          path: |
-            out/*.mp4
-            out/**/*.mp4
-            out/**/*.wav
-            out/**/*.mp3
-            out/**/script_*.txt
-          retention-days: 14
+          python push_to_kaggle.py --trigger-only
 
