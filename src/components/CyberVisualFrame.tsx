@@ -68,7 +68,6 @@ export const CyberVisualFrame: React.FC<CyberVisualFrameProps> = ({
             src={assetPath(visualSrc)}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
             muted
-            loop
           />
         ) : (
           <Img

@@ -83,7 +83,6 @@ export const DLSVisualFrame: React.FC<DLSVisualFrameProps> = ({
             src={assetPath(visualSrc)}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
             muted
-            loop
           />
         ) : (
           <Img

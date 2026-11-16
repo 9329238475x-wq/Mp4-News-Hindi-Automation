@@ -261,7 +261,6 @@ export const DLSTarajuShowcase: React.FC<DLSTarajuShowcaseProps> = ({
             src={assetPath(activeVideoUrl)}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
             muted
-            loop
           />
         ) : (
           <Img

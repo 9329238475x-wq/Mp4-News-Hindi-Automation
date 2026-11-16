@@ -278,7 +278,11 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
       </Loop>
 
       {/* ─── VOICEOVER AUDIO (Starts Frame 0, Boosted 130% Studio Volume) ─── */}
-      <Sequence from={audioStartFrame} name={`Audio: Story ${story.story_number}`}>
+      <Sequence
+        from={audioStartFrame}
+        durationInFrames={Math.max(1, durationInFrames - audioStartFrame)}
+        name={`Audio: Story ${story.story_number}`}
+      >
         {story.local_audio_asset && (
           <Audio src={assetPath(story.local_audio_asset)} volume={1.3} />
         )}
