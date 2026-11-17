@@ -291,7 +291,7 @@ def publish_broadcast_to_youtube(
     3. Attaches custom thumbnail.
     4. Sends instant notification to user's Gmail with clickable links.
     """
-    channel_name = os.environ.get("YOUTUBE_CHANNEL_NAME", "Mp4 News -हिन्दी")
+    channel_name = os.environ.get("YOUTUBE_CHANNEL_NAME", "Uncut भारत")
     print("\n" + "═" * 70)
     print(f"🚀 [{channel_name}] INITIATING AUTOMATED YOUTUBE UPLOAD & PUBLISH")
     print("═" * 70)

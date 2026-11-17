@@ -140,9 +140,9 @@ def generate_vidiq_viral_tags(all_stories: list = None, max_chars: int = 495) ->
         "superfast news",
         "hindi news live",
         "breaking news hindi",
-        "mp4 news",
-        "mp4 news hindi",
-        "mp4 news live",
+        "uncut bharat",
+        "uncut bharat news",
+        "ub news",
         "crime alert",
         "taza samachar",
         "top news hindi",
@@ -301,7 +301,7 @@ def build_high_class_viral_title(all_stories: list = None, bottom_number: str = 
 
 def build_master_description(
     all_stories: list = None,
-    channel_name: str = "Mp4 News -हिन्दी",
+    channel_name: str = "Uncut भारत",
     bottom_number: str = "25",
     slot_str: str = "",
     now_dt=None
@@ -374,7 +374,7 @@ def build_master_description(
     zone4 = (
         "चैनल एवं संपर्क विवरण:\n"
         f"• चैनल: {channel_name}\n"
-        "• यूट्यूब हैंडल: @Mp4News-Hindi\n"
+        "• यूट्यूब हैंडल: @UNCUT-भारत\n"
         "• ईमेल संपर्क: 9329238475x@gmail.com\n\n"
     )
 
@@ -393,7 +393,7 @@ def build_master_description(
         "#BreakingNews",
         "#SuperfastNews",
         f"#{bottom_number}BadiKhabrein",
-        "#Mp4NewsHindi",
+        "#UncutBharat",
         "#CrimeAlert",
         "#TodayNewsHindi",
         "#TazaKhabar",
@@ -437,7 +437,7 @@ def generate_youtube_seo_package(
     all_stories: list = None,
     bottom_number: str = "25",
     slot_str: str = "",
-    channel_name: str = "Mp4 News -हिन्दी",
+    channel_name: str = "Uncut भारत",
     now_dt=None
 ) -> dict:
     """

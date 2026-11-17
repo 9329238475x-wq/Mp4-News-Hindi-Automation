@@ -29,7 +29,7 @@ if event_name == "schedule":
     sys.exit(0)
 
 print("=" * 65, flush=True)
-print("🚀 [MP4 NEWS - हिन्दी] KAGGLE HIGH-PERFORMANCE BROADCAST ENGINE TRIGGER", flush=True)
+print("🚀 [UNCUT भारत] KAGGLE HIGH-PERFORMANCE BROADCAST ENGINE TRIGGER", flush=True)
 print("=" * 65, flush=True)
 
 # 1. Configure Kaggle Credentials from env or file
@@ -91,7 +91,7 @@ print(f"🔗 Live Progress: https://www.kaggle.com/code/{kernel_id}", flush=True
 # Trigger-only mode: GitHub Actions triggers Kaggle and exits; Kaggle runs autonomous render, YouTube upload and Gmail notification!
 if os.environ.get("GITHUB_ACTIONS") == "true" or "--trigger-only" in sys.argv or "--detach" in sys.argv or os.environ.get("TRIGGER_ONLY", "false").lower() in ["true", "1", "yes"]:
     print("\n" + "=" * 65, flush=True)
-    print("🚀 [MP4 NEWS - हिन्दी] KAGGLE GPU PIPELINE TRIGGERED (TRIGGER-ONLY MODE)!", flush=True)
+    print("🚀 [UNCUT भारत] KAGGLE GPU PIPELINE TRIGGERED (TRIGGER-ONLY MODE)!", flush=True)
     print(f"🔗 Live Progress: https://www.kaggle.com/code/{kernel_id}", flush=True)
     print("⚡ Kaggle GPU is now autonomously generating video, thumbnail,", flush=True)
     print("   uploading directly to YouTube, and sending instant Gmail confirmation!", flush=True)

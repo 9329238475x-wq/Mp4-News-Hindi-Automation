@@ -1034,7 +1034,7 @@ def generate_sensational_thumbnail(
     category: str = "क्राइम",
     story: dict = None,
     all_stories: list = None,
-    channel_name: str = "Mp4 News -हिन्दी",
+    channel_name: str = "Uncut भारत",
     bottom_number: str = "25",
     slot_str: str = "",
     now_dt=None

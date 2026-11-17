@@ -47,7 +47,7 @@ def send_upload_notification(
     studio_url = f"https://studio.youtube.com/video/{video_id}/edit"
     now_ist = datetime.now(IST_TZ)
     now_str = now_ist.strftime("%d %B %Y, %I:%M %p IST")
-    channel_name = os.environ.get("YOUTUBE_CHANNEL_NAME", "Mp4 News -हिन्दी")
+    channel_name = os.environ.get("YOUTUBE_CHANNEL_NAME", "Uncut भारत")
 
     subject = f"🚀 [{channel_name}] YouTube Video Uploaded Successfully! ({video_id})"
 
