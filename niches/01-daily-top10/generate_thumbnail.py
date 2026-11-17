@@ -20,6 +20,7 @@ import sys
 import re
 import json
 import shutil
+import base64
 import tempfile
 import subprocess
 from datetime import datetime
@@ -41,6 +42,23 @@ PROJECT_ROOT = SCRIPT_DIR.parent.parent
 FONT_BALOO = str(PROJECT_ROOT / "assets" / "Baloo2-Static-ExtraBold.ttf").replace("\\", "/")
 FONT_POPPINS = str(PROJECT_ROOT / "assets" / "Poppins-Black.ttf").replace("\\", "/")
 FONT_KHAND = str(PROJECT_ROOT / "assets" / "Khand-Bold.ttf").replace("\\", "/")
+
+_FONT_BASE64_CACHE = {}
+
+def get_font_base64(font_path: str) -> str:
+    """Reads and caches TTF font as base64 data for inline embedding in HTML."""
+    if font_path not in _FONT_BASE64_CACHE:
+        try:
+            p = Path(font_path)
+            if p.exists():
+                with open(p, "rb") as f:
+                    _FONT_BASE64_CACHE[font_path] = base64.b64encode(f.read()).decode("ascii")
+            else:
+                _FONT_BASE64_CACHE[font_path] = ""
+        except Exception as e:
+            print(f"  ⚠️ Warning reading font {font_path}: {e}")
+            _FONT_BASE64_CACHE[font_path] = ""
+    return _FONT_BASE64_CACHE[font_path]
 
 HINDI_DAYS = ["सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार"]
 HINDI_MONTHS = [
@@ -238,10 +256,23 @@ def build_dls_reference_html(
     """
     font_baloo_uri = Path(FONT_BALOO).resolve().as_uri()
     font_poppins_uri = Path(FONT_POPPINS).resolve().as_uri()
+    baloo_b64 = get_font_base64(FONT_BALOO)
+    poppins_b64 = get_font_base64(FONT_POPPINS)
+
+    if baloo_b64:
+        baloo_src = f"url('data:font/truetype;charset=utf-8;base64,{baloo_b64}') format('truetype'), url('{font_baloo_uri}') format('truetype')"
+    else:
+        baloo_src = f"url('{font_baloo_uri}') format('truetype')"
+
+    if poppins_b64:
+        poppins_src = f"url('data:font/truetype;charset=utf-8;base64,{poppins_b64}') format('truetype'), url('{font_poppins_uri}') format('truetype')"
+    else:
+        poppins_src = f"url('{font_poppins_uri}') format('truetype')"
 
     if not slot_str:
         slot_str = get_ist_slot()
     slot_class = "slot-morning" if slot_str == "सुबह" else "slot-evening"
+    day_font_size = "48px" if len(weekday_str) >= 7 else "54px"
 
     white_spans = []
     tot_white_chars = 0
@@ -294,12 +325,12 @@ def build_dls_reference_html(
 <style>
   @font-face {
     font-family: 'BalooLocal';
-    src: url('__FONT_BALOO__') format('truetype');
+    src: __BALOO_SRC__;
     font-weight: 700 900;
   }
   @font-face {
     font-family: 'PoppinsHeavy';
-    src: url('__FONT_POPPINS__') format('truetype');
+    src: __POPPINS_SRC__;
     font-weight: 900;
   }
 
@@ -432,6 +463,8 @@ def build_dls_reference_html(
     margin-right: 14px;
     letter-spacing: -6px;
     font-family: 'PoppinsHeavy', sans-serif;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .month-name {
@@ -444,6 +477,7 @@ def build_dls_reference_html(
     text-shadow: 3.5px 3.5px 0 #750000, 6px 6px 14px rgba(0,0,0,0.35);
     letter-spacing: -0.5px;
     font-family: 'BalooLocal', sans-serif;
+    white-space: nowrap;
   }
 
   /* C. Top-Right Box (Mukhya sits JUST ABOVE Samachar!) */
@@ -464,15 +498,17 @@ def build_dls_reference_html(
     justify-content: center;
     gap: 10px;
     width: 100%;
+    white-space: nowrap;
   }
 
   .day-name {
-    font-size: 56px;
+    font-size: __DAY_FONT_SIZE__;
     font-weight: 900;
     line-height: 0.95;
     color: #002b49;
     letter-spacing: -0.5px;
     font-family: 'BalooLocal', sans-serif;
+    white-space: nowrap;
   }
 
   .year-pill {
@@ -485,6 +521,8 @@ def build_dls_reference_html(
     border: 2.5px solid #000000;
     box-shadow: 0 2px 6px rgba(0,0,0,0.25);
     font-family: 'PoppinsHeavy', sans-serif;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   /* Sleek Slot Badge (सुबह: Orange #E65100 | शाम: Crimson Red #C80000) */
@@ -802,8 +840,9 @@ def build_dls_reference_html(
 
     return (
         template
-        .replace("__FONT_BALOO__", font_baloo_uri)
-        .replace("__FONT_POPPINS__", font_poppins_uri)
+        .replace("__BALOO_SRC__", baloo_src)
+        .replace("__POPPINS_SRC__", poppins_src)
+        .replace("__DAY_FONT_SIZE__", day_font_size)
         .replace("__DAY_NUM__", day_num)
         .replace("__MONTH_STR__", month_str)
         .replace("__WEEKDAY_STR__", weekday_str)
@@ -995,9 +1034,10 @@ def generate_sensational_thumbnail(
     category: str = "क्राइम",
     story: dict = None,
     all_stories: list = None,
-    channel_name: str = "Uncut भारत",
+    channel_name: str = "Mp4 News -हिन्दी",
     bottom_number: str = "25",
-    slot_str: str = ""
+    slot_str: str = "",
+    now_dt=None
 ) -> str:
     """
     Main Entrypoint: Generates the Master Superfast News YouTube Thumbnail
@@ -1009,18 +1049,24 @@ def generate_sensational_thumbnail(
     - White strip text enlarged (51px) to fill height with hard-news triggers
     - [क्राइम अलर्ट] badge on bottom left
     - [25 बड़ी खबरें] vertically centered in the red banner
-    - Dynamic Day, Date, Month & Year automatically computed from datetime.now()
+    - Dynamic Day, Date, Month & Year automatically computed in Indian Standard Time (IST)
     - Dynamic Cyan Pill and White Strip keywords from actual scraped stories
     """
+    if now_dt is None:
+        now = dt_module.datetime.now(IST_TZ)
+    elif now_dt.tzinfo is None:
+        now = now_dt.replace(tzinfo=IST_TZ)
+    else:
+        now = now_dt.astimezone(IST_TZ)
+
     if not slot_str:
-        slot_str = os.environ.get("NEWS_SLOT") or get_ist_slot()
+        slot_str = os.environ.get("NEWS_SLOT") or get_ist_slot(now)
 
     if not headline and all_stories:
         headline = all_stories[0].get("screen_headline") or all_stories[0].get("title") or "आज के मुख्य समाचार 25 बड़ी खबरें"
     if not headline:
         headline = "आज के मुख्य समाचार 25 बड़ी खबरें"
 
-    now = datetime.now()
     day_num = str(now.day)
     month_str = HINDI_MONTHS[now.month] if 1 <= now.month <= 12 else "नवंबर"
     weekday_str = HINDI_DAYS[now.weekday()]
@@ -1067,6 +1113,7 @@ def generate_sensational_thumbnail(
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
+                "--allow-file-access-from-files",
                 "--virtual-time-budget=2000",
                 f"--window-size={THUMB_W},{THUMB_H}",
                 f"--screenshot={out_abs}",
@@ -1105,7 +1152,7 @@ def generate_sensational_thumbnail(
 generate_superfast_news_thumbnail = generate_sensational_thumbnail
 
 
-def auto_generate_master_thumbnail(out_path: str = "", bottom_number: str = "25", slot_str: str = "") -> str:
+def auto_generate_master_thumbnail(out_path: str = "", bottom_number: str = "25", slot_str: str = "", now_dt=None) -> str:
     """100% Fully Automated: Loads current bulletin stories and renders the master thumbnail"""
     stories = []
     candidates = [
@@ -1140,7 +1187,8 @@ def auto_generate_master_thumbnail(out_path: str = "", bottom_number: str = "25"
         all_stories=stories,
         story=stories[0] if stories else None,
         bottom_number=bottom_number,
-        slot_str=slot_str
+        slot_str=slot_str,
+        now_dt=now_dt
     )
 
     # Automatically replicate to story_01 and root out/ so every consumer finds it immediately

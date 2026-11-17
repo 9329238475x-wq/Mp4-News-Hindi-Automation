@@ -27,6 +27,10 @@ from googleapiclient.http import MediaFileUpload
 CURR_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = CURR_DIR.parent.parent
 
+# Ensure current directory is in sys.path for sibling imports
+if str(CURR_DIR) not in sys.path:
+    sys.path.insert(0, str(CURR_DIR))
+
 # Sibling module imports
 from yt_seo_engine import generate_youtube_seo_package
 from email_notifier import send_upload_notification
@@ -287,8 +291,9 @@ def publish_broadcast_to_youtube(
     3. Attaches custom thumbnail.
     4. Sends instant notification to user's Gmail with clickable links.
     """
+    channel_name = os.environ.get("YOUTUBE_CHANNEL_NAME", "Mp4 News -हिन्दी")
     print("\n" + "═" * 70)
-    print("🚀 [UNCUT भारत] INITIATING AUTOMATED YOUTUBE UPLOAD & PUBLISH")
+    print(f"🚀 [{channel_name}] INITIATING AUTOMATED YOUTUBE UPLOAD & PUBLISH")
     print("═" * 70)
 
     # 1. Schedule Mode & Target Slot Calculation (Exact 7:00 AM IST or 7:00 PM IST)
@@ -303,7 +308,7 @@ def publish_broadcast_to_youtube(
         slot_str = os.environ.get("NEWS_SLOT") or ("सुबह" if datetime.datetime.now(IST_TZ).hour < 12 else "शाम")
 
     # 2. Generate SEO Metadata Package synced to Target Slot
-    seo_pkg = generate_youtube_seo_package(all_stories=all_stories, bottom_number="25", slot_str=slot_str)
+    seo_pkg = generate_youtube_seo_package(all_stories=all_stories, bottom_number="25", slot_str=slot_str, channel_name=channel_name)
     print(f"  ✓ SEO Package Ready ({slot_str}): '{seo_pkg['title']}'")
     print(f"  ✓ Video Upload Tags Box: KEPT EMPTY (as instructed)")
     print(f"  ✓ Description: {seo_pkg['desc_length']} chars (Zero Emojis, Zero Timestamps)")

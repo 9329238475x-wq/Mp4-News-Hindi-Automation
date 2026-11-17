@@ -10,6 +10,7 @@ import os
 import sys
 import smtplib
 from datetime import datetime
+import datetime as dt_module
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
@@ -18,6 +19,8 @@ from dotenv import load_dotenv
 # Ensure project root .env is loaded
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 load_dotenv(PROJECT_ROOT / ".env")
+
+IST_TZ = dt_module.timezone(dt_module.timedelta(hours=5, minutes=30))
 
 
 def send_upload_notification(
@@ -42,12 +45,14 @@ def send_upload_notification(
 
     watch_url = f"https://youtu.be/{video_id}"
     studio_url = f"https://studio.youtube.com/video/{video_id}/edit"
-    now_str = datetime.now().strftime("%d %B %Y, %I:%M %p IST")
+    now_ist = datetime.now(IST_TZ)
+    now_str = now_ist.strftime("%d %B %Y, %I:%M %p IST")
+    channel_name = os.environ.get("YOUTUBE_CHANNEL_NAME", "Mp4 News -हिन्दी")
 
-    subject = f"🚀 [Uncut भारत] YouTube Video Uploaded Successfully! ({video_id})"
+    subject = f"🚀 [{channel_name}] YouTube Video Uploaded Successfully! ({video_id})"
 
     # Plain-text version for basic email clients
-    plain_text = f"""Uncut भारत - YouTube Upload Report
+    plain_text = f"""{channel_name} - YouTube Upload Report
 ==============================================
 Status: Success ✅
 Upload Time: {now_str}
@@ -62,7 +67,7 @@ Links:
 - Watch Video: {watch_url}
 - YouTube Studio Edit: {studio_url}
 
-Uncut भारत Automated Broadcast Engine
+{channel_name} Automated Broadcast Engine
 """
 
     # Rich HTML version for modern email clients / smartphone screens
@@ -179,7 +184,7 @@ Uncut भारत Automated Broadcast Engine
 <body>
   <div class="container">
     <div class="header">
-      <h1>🚀 Uncut भारत</h1>
+      <h1>🚀 {channel_name}</h1>
       <p>YouTube Video Successfully Uploaded & Published</p>
     </div>
     
@@ -220,7 +225,7 @@ Uncut भारत Automated Broadcast Engine
     </div>
     
     <div class="footer">
-      Automated by Uncut भारत Broadcast Engine • Sicreat-automation
+      Automated by {channel_name} Broadcast Engine • Sicreat-automation
     </div>
   </div>
 </body>

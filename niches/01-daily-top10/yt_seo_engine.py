@@ -140,9 +140,9 @@ def generate_vidiq_viral_tags(all_stories: list = None, max_chars: int = 495) ->
         "superfast news",
         "hindi news live",
         "breaking news hindi",
-        "uncut bharat",
-        "uncut bharat news",
-        "ub news",
+        "mp4 news",
+        "mp4 news hindi",
+        "mp4 news live",
         "crime alert",
         "taza samachar",
         "top news hindi",
@@ -207,7 +207,7 @@ def generate_vidiq_viral_tags(all_stories: list = None, max_chars: int = 495) ->
 # 2. HIGH-CLASS DYNAMIC TITLE GENERATOR (< 95 Chars, ZERO EMOJIS)
 # ═════════════════════════════════════════════════════════════════════════════
 
-def build_high_class_viral_title(all_stories: list = None, bottom_number: str = "25", slot_str: str = "") -> str:
+def build_high_class_viral_title(all_stories: list = None, bottom_number: str = "25", slot_str: str = "", now_dt=None) -> str:
     """
     Constructs an algorithmic, high-class, Prime-Time news title strictly according
     to the actual news stories of that run.
@@ -216,10 +216,16 @@ def build_high_class_viral_title(all_stories: list = None, bottom_number: str = 
     2. ZERO EMOJIS.
     3. Incorporates exact date, morning/evening slot (सुबह / शाम) & today's top 2 breaking incidents.
     """
-    if not slot_str:
-        slot_str = os.environ.get("NEWS_SLOT") or get_ist_slot()
+    if now_dt is None:
+        now = dt_module.datetime.now(IST_TZ)
+    elif now_dt.tzinfo is None:
+        now = now_dt.replace(tzinfo=IST_TZ)
+    else:
+        now = now_dt.astimezone(IST_TZ)
 
-    now = datetime.now()
+    if not slot_str:
+        slot_str = os.environ.get("NEWS_SLOT") or get_ist_slot(now)
+
     day = now.day
     month = HINDI_MONTHS[now.month] if 1 <= now.month <= 12 else "नवंबर"
     year = now.year
@@ -295,9 +301,10 @@ def build_high_class_viral_title(all_stories: list = None, bottom_number: str = 
 
 def build_master_description(
     all_stories: list = None,
-    channel_name: str = "Uncut भारत",
+    channel_name: str = "Mp4 News -हिन्दी",
     bottom_number: str = "25",
-    slot_str: str = ""
+    slot_str: str = "",
+    now_dt=None
 ) -> str:
     """
     Generates a structured, high-class broadcast description up to 5,000 characters:
@@ -308,10 +315,16 @@ def build_master_description(
     - Legal fair use journalism disclaimer.
     - Clean viral hashtags.
     """
-    if not slot_str:
-        slot_str = os.environ.get("NEWS_SLOT") or get_ist_slot()
+    if now_dt is None:
+        now = dt_module.datetime.now(IST_TZ)
+    elif now_dt.tzinfo is None:
+        now = now_dt.replace(tzinfo=IST_TZ)
+    else:
+        now = now_dt.astimezone(IST_TZ)
 
-    now = datetime.now()
+    if not slot_str:
+        slot_str = os.environ.get("NEWS_SLOT") or get_ist_slot(now)
+
     day = now.day
     month = HINDI_MONTHS[now.month] if 1 <= now.month <= 12 else "नवंबर"
     year = now.year
@@ -361,7 +374,7 @@ def build_master_description(
     zone4 = (
         "चैनल एवं संपर्क विवरण:\n"
         f"• चैनल: {channel_name}\n"
-        "• यूट्यूब हैंडल: @UNCUT-भारत\n"
+        "• यूट्यूब हैंडल: @Mp4News-Hindi\n"
         "• ईमेल संपर्क: 9329238475x@gmail.com\n\n"
     )
 
@@ -380,7 +393,7 @@ def build_master_description(
         "#BreakingNews",
         "#SuperfastNews",
         f"#{bottom_number}BadiKhabrein",
-        "#UncutBharat",
+        "#Mp4NewsHindi",
         "#CrimeAlert",
         "#TodayNewsHindi",
         "#TazaKhabar",
@@ -420,7 +433,13 @@ def build_master_description(
 # 4. MASTER SEO PACKAGE BUNDLER
 # ═════════════════════════════════════════════════════════════════════════════
 
-def generate_youtube_seo_package(all_stories: list = None, bottom_number: str = "25", slot_str: str = "") -> dict:
+def generate_youtube_seo_package(
+    all_stories: list = None,
+    bottom_number: str = "25",
+    slot_str: str = "",
+    channel_name: str = "Mp4 News -हिन्दी",
+    now_dt=None
+) -> dict:
     """
     Main entrypoint: Generates the full SEO metadata package for YouTube upload:
     - title (< 95 chars, zero emojis, dynamic to actual news, with morning/evening slot)
@@ -428,11 +447,18 @@ def generate_youtube_seo_package(all_stories: list = None, bottom_number: str = 
     - tags (<= 500 chars, VidIQ-style live autocomplete + competitor tags, zero emojis)
     - categoryId ('25' = News & Politics)
     """
-    if not slot_str:
-        slot_str = os.environ.get("NEWS_SLOT") or get_ist_slot()
+    if now_dt is None:
+        now = dt_module.datetime.now(IST_TZ)
+    elif now_dt.tzinfo is None:
+        now = now_dt.replace(tzinfo=IST_TZ)
+    else:
+        now = now_dt.astimezone(IST_TZ)
 
-    title = build_high_class_viral_title(all_stories=all_stories, bottom_number=bottom_number, slot_str=slot_str)
-    description = build_master_description(all_stories=all_stories, bottom_number=bottom_number, slot_str=slot_str)
+    if not slot_str:
+        slot_str = os.environ.get("NEWS_SLOT") or get_ist_slot(now)
+
+    title = build_high_class_viral_title(all_stories=all_stories, bottom_number=bottom_number, slot_str=slot_str, now_dt=now)
+    description = build_master_description(all_stories=all_stories, channel_name=channel_name, bottom_number=bottom_number, slot_str=slot_str, now_dt=now)
     tags = generate_vidiq_viral_tags(all_stories=all_stories, max_chars=495)
 
     return {
