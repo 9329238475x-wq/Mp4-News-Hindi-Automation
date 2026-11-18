@@ -149,26 +149,30 @@ export const DLS_COLORS = TV_COLORS;
 export const DLS_TIMING = {
   fps: 30,
   prePaddingSeconds: 0,
-  postPaddingSeconds: 1.2, // 1.2s natural breathing room after speech ends
-  transitionSeconds: 0,
+  postPaddingSeconds: 0.5, // 0.5s natural breathing room after speech ends
+  transitionSeconds: 1.6, // 1.6s dedicated "अगली बड़ी ख़बर" broadcast stinger bumper
   defaultAudioSeconds: 20,
   introFrames: 93, // 3.10 seconds of Subscribe-video.mp4 (exclusively on first story)
 
   get prePaddingFrames() { return 0; },
-  get postPaddingFrames() { return 36; }, // 36 frames (1.2s buffer)
-  get transitionFrames() { return 0; },
+  get postPaddingFrames() { return 15; }, // 15 frames (0.5s buffer)
+  get transitionFrames() { return 48; }, // 48 frames (1.6s dedicated transition)
 } as const;
 
 export const getStoryDurationFrames = (
   story: DLSStory,
-  isFirstStory: boolean = false
+  isFirstStory: boolean = false,
+  isLastStory: boolean = false
 ): number => {
-  // Professional Broadcast Timing:
-  // Adds 36 frames (1.2s) of natural breathing pause at the end of the voiceover
-  // so the anchor never gets cut off mid-word or mid-sentence!
+  // Professional TV Broadcast Timing:
+  // 15 frames (0.5s) calm breathing pause after voiceover finishes
+  // + 48 frames (1.6s) dedicated "अगली बड़ी ख़बर" stinger transition (on all stories except last)
+  // On the final story (isLastStory), provides 36 frames (1.2s) outro calm pause instead of transition
   const durSeconds = story.audio_duration || DLS_TIMING.defaultAudioSeconds;
-  const postPadding = DLS_TIMING.postPaddingFrames;
-  const baseFrames = Math.ceil(durSeconds * DLS_TIMING.fps) + postPadding;
+  const paddingAndTransition = isLastStory
+    ? 36 // Last story: 1.2s outro calm breathing room, zero transition
+    : DLS_TIMING.postPaddingFrames + DLS_TIMING.transitionFrames; // 15 + 48 = 63 frames
+  const baseFrames = Math.ceil(durSeconds * DLS_TIMING.fps) + paddingAndTransition;
   return isFirstStory ? baseFrames + DLS_TIMING.introFrames : baseFrames;
 };
 

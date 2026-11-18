@@ -24,11 +24,16 @@ const fullBulletinProps = {
 
 export const DLSComposition: React.FC = () => {
   const totalFrames = loadedStories.reduce(
-    (acc, s, idx) => acc + getStoryDurationFrames(s, idx === 0),
+    (acc, s, idx) =>
+      acc + getStoryDurationFrames(s, idx === 0, idx === loadedStories.length - 1),
     0
   );
   const firstStory = loadedStories[0];
-  const firstStoryDuration = getStoryDurationFrames(firstStory, true);
+  const firstStoryDuration = getStoryDurationFrames(
+    firstStory,
+    true,
+    loadedStories.length === 1
+  );
   const allHeadlines = loadedStories.map((s) => s.screen_headline);
 
   return (
@@ -49,6 +54,7 @@ export const DLSComposition: React.FC = () => {
           channelTagline: fullBulletinProps.channelTagline,
           allHeadlines,
           globalStartFrame: 0,
+          mainDurationFrames: Math.max(1, firstStoryDuration - DLS_TIMING.introFrames),
         }}
       />
 
@@ -66,11 +72,19 @@ export const DLSComposition: React.FC = () => {
       {/* 3. Individual Story Compositions for Segmented Rendering & Lossless Concat */}
       {loadedStories.map((story, index) => {
         const isFirstStory = index === 0;
-        const duration = getStoryDurationFrames(story, isFirstStory);
+        const isLastStory = index === loadedStories.length - 1;
+        const duration = getStoryDurationFrames(story, isFirstStory, isLastStory);
         const globalStart = loadedStories
           .slice(0, index)
-          .reduce((acc, s, idx) => acc + getStoryDurationFrames(s, idx === 0), 0);
+          .reduce(
+            (acc, s, idx) =>
+              acc + getStoryDurationFrames(s, idx === 0, idx === loadedStories.length - 1),
+            0
+          );
         const compId = `DLSNewsStory-${String(story.story_number || index + 1).padStart(2, "0")}`;
+        const mainDuration = isFirstStory
+          ? Math.max(1, duration - DLS_TIMING.introFrames)
+          : duration;
 
         return (
           <Composition
@@ -89,6 +103,7 @@ export const DLSComposition: React.FC = () => {
               channelTagline: fullBulletinProps.channelTagline,
               allHeadlines,
               globalStartFrame: globalStart,
+              mainDurationFrames: mainDuration,
             }}
           />
         );

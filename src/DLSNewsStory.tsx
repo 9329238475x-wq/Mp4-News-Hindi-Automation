@@ -123,7 +123,7 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
 
   const audioStartFrame = 0; // 0s pre-padding (voice starts immediately at frame 0)
   const isSingleOrLast = !totalStories || totalStories === 1 || storyIndex === totalStories - 1;
-  const transitionDuration = isSingleOrLast ? 0 : 30; // 0s on single/last story so video finishes exactly with voice
+  const transitionDuration = isSingleOrLast ? 0 : DLS_TIMING.transitionFrames; // 48 frames (1.6s dedicated transition)
   const transitionStartFrame = Math.max(0, durationInFrames - transitionDuration);
   const nextStoryNumber = (story.story_number || storyIndex + 1) + 1;
   const isLastStory = isSingleOrLast;
@@ -348,7 +348,7 @@ const DLSStoryMain: React.FC<DLSStoryProps> = ({
       })}
 
       {/* ─── 5. "अगली बड़ी ख़बर" STINGER TRANSITION BUMPER (Z-Index 40: Above media/card, BEHIND Top Header & News Ticker) ─── */}
-      {!isLastStory && frame >= transitionStartFrame && (
+      {!isLastStory && transitionDuration > 0 && (
         <Sequence from={transitionStartFrame} durationInFrames={transitionDuration}>
           <NextStoryTransition
             nextStoryNumber={nextStoryNumber}
@@ -418,13 +418,15 @@ export const DLSNewsStory: React.FC<DLSStoryProps> = ({
   channelTagline = "100% निडर • निष्पक्ष • सच",
   allHeadlines = [],
   globalStartFrame = 0,
+  mainDurationFrames,
 }) => {
-  const { durationInFrames } = useVideoConfig();
+  const { durationInFrames: compositionFrames } = useVideoConfig();
 
   // Subscribe Intro video plays EXCLUSIVELY on the very first story (storyIndex === 0)
   const hasSubscribeIntro = storyIndex === 0;
   const introFrames = hasSubscribeIntro ? DLS_TIMING.introFrames : 0;
-  const mainDuration = Math.max(1, durationInFrames - introFrames);
+  const mainDuration =
+    mainDurationFrames ?? Math.max(1, compositionFrames - introFrames);
 
   return (
     <div

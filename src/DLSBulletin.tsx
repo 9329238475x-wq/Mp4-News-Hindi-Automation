@@ -22,7 +22,8 @@ export const DLSBulletin: React.FC<DLSBulletinProps> = ({
   const storyTimings = stories.map((story, index) => {
     const from = currentStart;
     const isFirstStory = index === 0;
-    const durationInFrames = getStoryDurationFrames(story, isFirstStory);
+    const isLastStory = index === stories.length - 1;
+    const durationInFrames = getStoryDurationFrames(story, isFirstStory, isLastStory);
 
     currentStart += durationInFrames;
     return { from, durationInFrames };
@@ -38,6 +39,11 @@ export const DLSBulletin: React.FC<DLSBulletinProps> = ({
     >
       {stories.map((story, index) => {
         const { from, durationInFrames } = storyTimings[index];
+        const isFirstStory = index === 0;
+        const mainDuration = isFirstStory
+          ? Math.max(1, durationInFrames - DLS_TIMING.introFrames)
+          : durationInFrames;
+
         return (
           <Sequence
             key={story.story_number}
@@ -53,6 +59,7 @@ export const DLSBulletin: React.FC<DLSBulletinProps> = ({
               channelTagline={channelTagline}
               allHeadlines={allHeadlines}
               globalStartFrame={from}
+              mainDurationFrames={mainDuration}
             />
           </Sequence>
         );

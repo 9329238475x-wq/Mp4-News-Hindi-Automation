@@ -22,38 +22,38 @@ export const NextStoryTransition: React.FC<NextStoryTransitionProps> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // ─── 1. POP-UP ENTRANCE SPRING (Forward 3D Zoom & Punchy Bounce) ───
+  // ─── 1. POP-UP ENTRANCE SPRING (Forward 3D Zoom & Punchy Bounce: Frames 0-14) ───
   const popSpring = spring({
     frame,
     fps,
-    config: { damping: 11, mass: 0.55, stiffness: 130 },
+    config: { damping: 12, mass: 0.6, stiffness: 130 },
   });
   const popScale = interpolate(popSpring, [0, 1], [0.55, 1.0]);
   const popTranslateY = interpolate(popSpring, [0, 1], [40, 0]);
 
-  // ─── 2. "अगली" SLIDE FROM LEFT ───
+  // ─── 2. "अगली" SLIDE FROM LEFT (Frames 0-14) ───
   const leftSpring = spring({
     frame,
     fps,
-    config: { damping: 12, mass: 0.6, stiffness: 135 },
+    config: { damping: 13, mass: 0.65, stiffness: 135 },
   });
   const agliTranslateX = interpolate(leftSpring, [0, 1], [-800, 0]);
   const agliOpacity = interpolate(leftSpring, [0, 0.3, 1], [0, 1, 1]);
 
-  // ─── 3. "बड़ी ख़बर" SLIDE FROM RIGHT ───
+  // ─── 3. "बड़ी ख़बर" SLIDE FROM RIGHT (Frames 0-14) ───
   const rightSpring = spring({
     frame,
     fps,
-    config: { damping: 12, mass: 0.6, stiffness: 135 },
+    config: { damping: 13, mass: 0.65, stiffness: 135 },
   });
   const badiTranslateX = interpolate(rightSpring, [0, 1], [800, 0]);
   const badiOpacity = interpolate(rightSpring, [0, 0.3, 1], [0, 1, 1]);
 
   // ─── 4. EXIT: "पीछे जाकर गायब हो जाना" (Zoom-Out into Depth & Fade Out) ───
-  // Active in the final 9 frames of the transition (frames 21 to 30)
+  // Active in the final 11 frames of the 48-frame transition (frames 37 to 47)
   const exitProgress = interpolate(
     frame,
-    [21, 29],
+    [37, 47],
     [0, 1],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
   );
@@ -64,18 +64,18 @@ export const NextStoryTransition: React.FC<NextStoryTransitionProps> = ({
   // Solid studio background throughout transition
   const bgTotalOpacity = 1;
 
-  // ─── 5. SHIMMER & FLARE LIGHT RAY (Across both words during peak impact) ───
-  const shimmerX = interpolate(frame, [8, 21], [-220, 320], {
+  // ─── 5. SHIMMER & FLARE LIGHT RAY (Sweeps across words during steady center hold) ───
+  const shimmerX = interpolate(frame, [10, 34], [-240, 340], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const shimmerOpacity = interpolate(frame, [8, 11, 17, 21], [0, 0.95, 0.95, 0], {
+  const shimmerOpacity = interpolate(frame, [10, 15, 29, 34], [0, 0.95, 0.95, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   // ─── 6. Subtle Ambient Zoom for Studio Background ───
-  const bgScale = 1 + frame * 0.004;
+  const bgScale = 1 + frame * 0.002;
 
   return (
     <div
