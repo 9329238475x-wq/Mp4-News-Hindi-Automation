@@ -44,10 +44,11 @@ TOKEN_FILE = str(PROJECT_ROOT / "token.json")
 
 RETRIABLE_STATUS_CODES = [500, 502, 503, 504]
 RETRIABLE_EXCEPTIONS = (
-    IOError, http.client.NotConnected,
-    http.client.IncompleteRead, http.client.ImproperConnectionState,
-    http.client.CannotSendRequest, http.client.CannotSendHeader,
-    http.client.ResponseNotReady, http.client.BadStatusLine
+    IOError, OSError, ConnectionError, BrokenPipeError, ConnectionResetError,
+    http.client.NotConnected, http.client.IncompleteRead,
+    http.client.ImproperConnectionState, http.client.CannotSendRequest,
+    http.client.CannotSendHeader, http.client.ResponseNotReady,
+    http.client.BadStatusLine
 )
 
 
@@ -200,10 +201,10 @@ def upload_video_resumable(
         "status": status_dict
     }
 
-    # 4MB chunks (must be multiple of 256KB)
+    # 16MB chunks (multiple of 256KB) for high-speed cloud upload throughput
     media = MediaFileUpload(
         video_path,
-        chunksize=4 * 1024 * 1024,
+        chunksize=16 * 1024 * 1024,
         resumable=True
     )
 
@@ -218,24 +219,28 @@ def upload_video_resumable(
     max_retries = 10
 
     while response is None:
+        error = None
         try:
             status, response = request.next_chunk()
             if status:
                 progress = int(status.progress() * 100)
                 print(f"  📤 Upload Progress: {progress}%", end="\r", flush=True)
+            # Reset retry counter on successful chunk upload
+            retry = 0
         except HttpError as e:
             if e.resp.status in RETRIABLE_STATUS_CODES:
-                print(f"\n  ⚠️ Retriable HTTP error {e.resp.status}: {e}. Retrying...")
+                error = f"Retriable HTTP error {e.resp.status}: {e}"
             else:
                 raise
         except RETRIABLE_EXCEPTIONS as e:
-            print(f"\n  ⚠️ Network error: {e}. Retrying...")
+            error = f"Network error: {e}"
 
-        if response is None:
+        if error is not None:
             retry += 1
             if retry > max_retries:
-                raise RuntimeError("Maximum upload retries exceeded. Check internet connection.")
-            sleep_sec = 2 ** retry
+                raise RuntimeError(f"Maximum upload retries exceeded ({max_retries}). Last error: {error}")
+            sleep_sec = min(60, 2 ** retry)
+            print(f"\n  ⚠️ {error}. Retrying...")
             print(f"  ⏳ Waiting {sleep_sec}s before retry {retry}/{max_retries}...")
             time.sleep(sleep_sec)
 
