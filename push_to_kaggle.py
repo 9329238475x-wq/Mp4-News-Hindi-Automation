@@ -99,8 +99,8 @@ if os.environ.get("GITHUB_ACTIONS") == "true" or "--trigger-only" in sys.argv or
     sys.exit(0)
 print("\n⏳ Monitoring execution status...", flush=True)
 
-# Poll until completion (120 minutes safe wait for 25-story full TV bulletin)
-max_wait = 7200
+# Poll until completion (Safe wait for Kaggle queue time + 25-story full TV bulletin)
+max_wait = 18000
 start_time = time.time()
 last_status = ""
 
