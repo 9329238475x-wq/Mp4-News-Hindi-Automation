@@ -11,9 +11,9 @@ startLocalAssetServer();
 
 Config.setRspack(true);
 Config.setVideoImageFormat("jpeg");
-Config.setJpegQuality(85);
+Config.setJpegQuality(80);
 Config.setOverwriteOutput(true);
-Config.setX264Preset("veryfast");
+Config.setX264Preset("superfast");
 Config.setDefaultPremountInSeconds(1);
 
 if (process.platform === "linux") {
