@@ -75,15 +75,58 @@ push_res = None
 for push_attempt in range(1, 6):
     try:
         push_res = api.kernels_push(str(ROOT))
-        print(f"✓ Kernel push result: versionNumber={getattr(push_res, 'versionNumber', 'unknown')}", flush=True)
-        break
+        ver = (
+            getattr(push_res, "versionNumber", 0)
+            if not isinstance(push_res, dict)
+            else push_res.get("versionNumber", 0)
+        )
+        err = (
+            getattr(push_res, "error", None)
+            if not isinstance(push_res, dict)
+            else push_res.get("error", None)
+        )
+        print(f"✓ Kernel push result: versionNumber={ver}, error={err}", flush=True)
+
+        if ver and ver > 0:
+            print(f"🎉 New version #{ver} successfully queued on Kaggle!", flush=True)
+            break
+
+        # If versionNumber is 0 or error returned by Kaggle
+        print(f"⚠️ Push attempt {push_attempt} failed (versionNumber={ver}, error={err})", flush=True)
+        meta_file = ROOT / "kernel-metadata.json"
+        if meta_file.exists():
+            with open(meta_file, "r", encoding="utf-8") as mf:
+                mdata = json.load(mf)
+            if mdata.get("enable_gpu", False):
+                print("🔄 GPU mode rejected or quota exhausted. Auto-switching to Kaggle High-Performance CPU (unlimited quota)...", flush=True)
+                mdata["enable_gpu"] = False
+                with open(meta_file, "w", encoding="utf-8") as mf:
+                    json.dump(mdata, mf, indent=2)
+                time.sleep(3)
+                continue
     except Exception as e:
         print(f"⚠️ Push attempt {push_attempt}/5 encountered error: {e}", flush=True)
-        if push_attempt < 5:
-            time.sleep(4 * push_attempt)
-        else:
-            print("❌ Failed to push kernel after 5 attempts.", flush=True)
-            sys.exit(1)
+
+    if push_attempt < 5:
+        time.sleep(4 * push_attempt)
+    else:
+        print("❌ Failed to push kernel after 5 attempts.", flush=True)
+        sys.exit(1)
+
+# Explicit validation: Never allow silent false-positive exits when versionNumber is 0
+final_ver = (
+    getattr(push_res, "versionNumber", 0)
+    if not isinstance(push_res, dict)
+    else (push_res.get("versionNumber", 0) if push_res else 0)
+)
+if not final_ver or final_ver == 0:
+    final_err = (
+        getattr(push_res, "error", "Unknown Kaggle rejection")
+        if not isinstance(push_res, dict)
+        else (push_res.get("error", "Unknown Kaggle rejection") if push_res else "Unknown Kaggle rejection")
+    )
+    print(f"❌ FATAL: Kaggle rejected kernel run (versionNumber={final_ver}, error={final_err}). Exiting!", flush=True)
+    sys.exit(1)
 
 print("\n🎉 KERNEL TRIGGERED ON KAGGLE!", flush=True)
 print(f"🔗 Live Progress: https://www.kaggle.com/code/{kernel_id}", flush=True)
