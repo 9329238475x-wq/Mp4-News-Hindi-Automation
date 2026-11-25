@@ -70,6 +70,35 @@ with open(config_path, "w", encoding="utf-8") as f:
     json.dump({"story_count": story_number, "force_refresh": force_refresh}, f, indent=2)
 print(f"✓ Configured broadcast bulletin: {story_number} stories (Config file ready)", flush=True)
 
+# Synchronize YouTube OAuth token into notebook fallback if available
+yt_env_token = os.environ.get("YOUTUBE_TOKEN_JSON", "")
+if not yt_env_token and (ROOT / "token.json").exists():
+    try:
+        with open(ROOT / "token.json", "r", encoding="utf-8") as _tf:
+            yt_env_token = _tf.read().strip()
+    except Exception:
+        pass
+
+if yt_env_token:
+    try:
+        nb_path = ROOT / "Mp4_News_Hindi_Pipeline.ipynb"
+        if nb_path.exists():
+            clean_tok = json.dumps(json.loads(yt_env_token))
+            tok_hex = bytes([b ^ 0x55 for b in clean_tok.encode("utf-8")]).hex()
+            with open(nb_path, "r", encoding="utf-8") as _nbf:
+                nb_obj = json.load(_nbf)
+            for _c in nb_obj.get("cells", []):
+                if _c.get("cell_type") == "code":
+                    _src = _c.get("source", [])
+                    for _i, _l in enumerate(_src):
+                        if "_x_hex = " in _l and len(_l) > 100:
+                            _src[_i] = f'        _x_hex = "{tok_hex}"\n'
+            with open(nb_path, "w", encoding="utf-8") as _nbf:
+                json.dump(nb_obj, _nbf, indent=1)
+            print("✓ Synchronized latest YouTube OAuth token into Kaggle notebook!", flush=True)
+    except Exception as _sync_err:
+        print(f"⚠️ Token notebook sync notice: {_sync_err}", flush=True)
+
 print(f"🚀 Deploying kernel to Kaggle ({kernel_id})...", flush=True)
 push_res = None
 for push_attempt in range(1, 6):
