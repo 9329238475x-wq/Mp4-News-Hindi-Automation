@@ -11,6 +11,7 @@ import os
 import sys
 import json
 import webbrowser
+import subprocess
 from pathlib import Path
 from flask import Flask, redirect, request, render_template_string, jsonify, flash
 from google_auth_oauthlib.flow import Flow
@@ -412,6 +413,11 @@ SUCCESS_HTML = """<!DOCTYPE html>
     <p>
       बधाई हो! आपका YouTube चैनल ऑथेंटिकेट हो गया है और नया <b>token.json</b> सुरक्षित रूप से सेव कर दिया गया है।
     </p>
+    {% if github_synced %}
+    <div style="background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #4ade80; padding: 12px; border-radius: 10px; margin-bottom: 18px; font-weight: 700; font-size: 14px;">
+      🚀 GitHub Actions Secret (YOUTUBE_TOKEN_JSON) में नया टोकन अपने आप सफलतापूर्वक अपडेट हो गया है!
+    </div>
+    {% endif %}
     <div class="details">
       <div>चैनल: <b style="color: #fff;">{{ title }}</b></div>
       <div style="margin-top: 6px;">सब्सक्राइबर्स: <b style="color: #fff;">{{ subscribers }}</b></div>
@@ -536,12 +542,29 @@ def oauth2callback():
     except Exception:
         pass
 
+    # 🚀 Automatically update GitHub Actions secret YOUTUBE_TOKEN_JSON
+    github_synced = False
+    try:
+        gh_proc = subprocess.run(
+            ["gh", "secret", "set", "YOUTUBE_TOKEN_JSON", "-R", "9329238475x-wq/Mp4-News-Hindi-Automation"],
+            input=creds_json.encode("utf-8"),
+            capture_output=True
+        )
+        if gh_proc.returncode == 0:
+            github_synced = True
+            print("\n✓ [GitHub Synced] YOUTUBE_TOKEN_JSON secret successfully updated on GitHub Actions!")
+        else:
+            print(f"\n⚠️ gh secret set notice: {gh_proc.stderr.decode('utf-8', errors='ignore')}")
+    except Exception as gh_e:
+        print(f"\n⚠️ Could not auto-sync GitHub secret: {gh_e}")
+
     return render_template_string(
         SUCCESS_HTML,
         title=ch_title,
         subscribers=sub_count,
         token_path=TOKEN_FILE,
-        token_content=creds_json
+        token_content=creds_json,
+        github_synced=github_synced
     )
 
 
